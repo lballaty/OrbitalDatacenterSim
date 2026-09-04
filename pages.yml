@@ -1,0 +1,58 @@
+name: Build and deploy to GitHub Pages
+
+on:
+  push:
+    branches: [main]
+  schedule:
+    - cron: "17 3 * * *"        # daily 03:17 UTC — refresh the CelesTrak catalog
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Recover previously published gp.json (fallback if CelesTrak is down)
+        continue-on-error: true
+        run: |
+          mkdir -p prev
+          curl -fsSL "https://${{ github.repository_owner }}.github.io/${{ github.event.repository.name }}/gp.json" -o prev/gp.json || true
+
+      - name: Fetch and compact CelesTrak catalog
+        run: python3 scripts/compact_gp.py site/gp.json prev/gp.json
+
+      - name: Assemble site
+        run: |
+          mkdir -p site
+          cp Space-Datacenter-Modeling-Tool.html site/
+          cp orbital_ai_datacenter_model_specification.md site/
+          cp README.md site/ 2>/dev/null || true
+          cat > site/index.html <<'HTML'
+          <!doctype html><meta charset="utf-8"><meta http-equiv="refresh" content="0; url=Space-Datacenter-Modeling-Tool.html">
+          <title>Orbital AI Data Center Economics Model</title><a href="Space-Datacenter-Modeling-Tool.html">Open the model</a>
+          HTML
+          touch site/.nojekyll
+
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: site
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v4
