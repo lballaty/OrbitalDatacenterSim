@@ -1,7 +1,7 @@
 # Orbital AI Data Center Economics Model
 ## Modeling Tool Specification — Revision 0.3
 
-**Companion tool:** `Space-Datacenter-Modeling-Tool.html` (internal version v4.7)  
+**Companion tool:** `index.html` (repository root; internal version v4.8)  
 **Status:** Working exploratory model — Ready for Review  
 **Base architecture:** one independently maneuverable 135 kW / 72-GPU GB300-class rack per satellite  
 **Scope:** inference workloads only; ground connectivity via leased relay capacity on an existing communications constellation. Training is out of scope (see §28.6).
@@ -34,6 +34,7 @@ Tool v3.1 adds an end-of-life disposal model (§10.1, §19, §20); v3.2 corrects
 | 4 | Expected capacity unavailable during failure replacement now multiplies effective availability | Was display-only. |
 | 5 | Architecture selector labelled "visualization only" | Economics are driven by racks-per-satellite and the replaceable-compute setting; the selector never changed results. |
 | 6 | Scope statements added: inference only; relay lease on existing constellation; ISL hops default 1 | Encodes the scoping decision; `nety` relabelled as relay capacity lease. |
+| 30 (v4.8) | Specification button opens this document in a floating modal or its own window, rendered by a built-in dependency-free Markdown renderer (fetches the sibling `.md` where allowed; file loader otherwise) | Spec and tool can be read side by side. |
 | 29 (v4.7) | Pop-out windows for each visualization, following the parent scenario via `postMessage` | Concept, engineering sheet, cluster, shells and 3D can be viewed concurrently on separate screens. |
 | 28 (v4.6) | Catalog load order: same-origin `./gp.json` → CelesTrak direct → file; page accepts raw GP or the compact bundle. Repository scaffolding: `scripts/compact_gp.py` (stdlib fetch + 8-field compaction, fallback to previous bundle), `.github/workflows/pages.yml` (daily cron, build `site/`, deploy via Actions artifact — no data commits), `README.md` | GitHub Pages hosting with a server-side fetch removes the CORS problem without a proxy and keeps repo history clean. |
 | 27 (v4.5) | Optional live catalog: CelesTrak active GP JSON via button (or dropped file), 24 h localStorage cache, mean-altitude binning replaces the embedded shell snapshot, two-body Keplerian propagation renders objects in the 3D view by operator with click-to-identify | Shell occupancy becomes measured rather than hand-entered when a catalog is loaded; the embedded snapshot remains the offline fallback. Live fetch could not be tested from the build sandbox (host blocked); the file loader path was tested. |
@@ -605,7 +606,7 @@ No ephemeris/TLE conjunction analysis, collision probability, debris-flux integr
 The tool is a single static file and runs from disk. For live catalog data it needs a same-origin `gp.json` or a CORS-permissive source. The repository provides:
 
 - `scripts/compact_gp.py` — fetches CelesTrak `GROUP=active` GP JSON, compacts each object to `[name, epoch_ms, n_rad_s, e, i, Ω, ω, M0, class]` (~80 B; ~1 MB total), writes `{fetched, source, count, recs}`; if the fetch fails and a previous bundle path is given, it republishes that bundle and exits 0.
-- `.github/workflows/pages.yml` — on push, daily cron (03:17 UTC) and manual dispatch: recovers the previously published `gp.json` from the live site as fallback, runs the script, assembles `site/` (tool, spec, README, `gp.json`, redirecting `index.html`, `.nojekyll`) and deploys with `actions/deploy-pages`. No data is committed to the repository.
+- `.github/workflows/pages.yml` — on push, daily cron (03:17 UTC) and manual dispatch: recovers the previously published `gp.json` from the live site as fallback, runs the script, assembles `site/` (`index.html`, spec, README, `gp.json`, `.nojekyll`) and deploys with `actions/deploy-pages`. No data is committed to the repository.
 - Load order in the page: `./gp.json` → CelesTrak direct → file loader → embedded snapshot; the status line reports which source is in force.
 
 ## 29. Interpretation rule

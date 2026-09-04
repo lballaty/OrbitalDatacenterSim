@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Orbital AI Data Center Economics Model (v4.7)</title>
+<title>Orbital AI Data Center Economics Model (v4.8)</title>
 <style>
 :root{
   --bg:#0d1117;--panel:#151b23;--panel2:#1b2330;--panel3:#10161e;
@@ -71,6 +71,11 @@ body.popout #popoutBar{display:none}
 #popoutBar{display:flex;gap:6px;flex-wrap:wrap;align-items:center;margin-bottom:8px;font-size:12px;color:var(--muted)}
 #popoutBar button{min-height:30px;padding:4px 8px;font-size:12px}
 #syncBadge{font-size:11px}
+#specBody h1{font-size:22px;margin:10px 0}#specBody h2{font-size:18px;margin:22px 0 8px;border-bottom:1px solid var(--line);padding-bottom:4px}#specBody h3{font-size:15px;margin:16px 0 6px}
+#specBody table{min-width:0;margin:8px 0}#specBody th,#specBody td{text-align:left;font-size:13px;vertical-align:top}
+#specBody pre{background:var(--bg);border:1px solid var(--line);border-radius:6px;padding:8px 10px;overflow:auto;font-size:12px}
+#specBody pre.math{color:var(--cyan);white-space:pre-wrap}#specBody blockquote{border-left:3px solid var(--accent);margin:8px 0;padding:4px 12px;color:var(--muted)}
+#specBody hr{border:0;border-top:1px solid var(--line);margin:18px 0}#specBody li{margin:2px 0}
 </style>
 </head>
 <body>
@@ -86,10 +91,18 @@ body.popout #popoutBar{display:none}
     <button id="download">Download scenario JSON</button>
     <button id="breakeven">Break-even solver</button>
     <button id="runtests">Run self-tests</button>
+    <button id="openSpec">Specification</button>
     <span class="badge">Base architecture: one 135 kW / 72-GPU rack per satellite</span>
     <span class="badge" id="regimeBadge">Cost regime: Traditional aerospace / low volume</span>
   </div>
 
+  <div id="specModal" style="display:none;position:fixed;inset:0;z-index:50;background:rgba(0,0,0,.55)">
+    <div style="position:absolute;inset:4vh 6vw;background:var(--panel);border:1px solid var(--line);border-radius:10px;display:flex;flex-direction:column;overflow:hidden">
+      <div class="row" style="padding:10px 14px;border-bottom:1px solid var(--line)"><strong>Model specification</strong>
+        <div style="display:flex;gap:6px"><button id="specWindow" style="min-height:30px">⧉ Open in its own window</button><label style="display:flex;align-items:center;gap:4px;font-size:12px;color:var(--muted)">load file: <input type="file" id="specFile" accept=".md,text/markdown" style="min-height:auto;font-size:11px"></label><button id="specClose" style="min-height:30px">Close</button></div></div>
+      <div id="specBody" style="overflow:auto;padding:16px 22px;line-height:1.5;font-size:14px"></div>
+    </div>
+  </div>
   <div id="beBox" class="panel" style="display:none;margin-bottom:14px">
     <div class="row"><h2 style="margin:0">Break-even solver</h2><button id="beClose" style="min-height:30px">Close</button></div>
     <div class="controls" style="margin-top:10px">
@@ -575,6 +588,7 @@ body.popout #popoutBar{display:none}
           <p><strong>Module refresh launch (v3):</strong> compute-module refresh uses its own modules-per-launch volume limit instead of the whole-satellite limit, which previously priced module refresh at roughly 3× the whole-satellite launch cost per kg.</p>
           <p><strong>Failure delay (v3):</strong> expected capacity unavailable while failed satellites await replacement now reduces effective availability instead of being display-only.</p>
           <p><strong>Drag geometry (v3):</strong> projected drag fraction is set per orbit preset (dawn-dusk SSO ~25%, inclined LEO ~50%).</p>
+          <p><strong>v4.8:</strong> a <em>Specification</em> button in the top bar opens the companion Markdown spec in a floating modal, rendered by a small built-in Markdown renderer (headings, lists, tables, code, blockquotes; LaTeX blocks shown as monospace). It fetches the sibling <code>.md</code> where the origin allows it (GitHub Pages, any static server) and otherwise offers a file loader; "Open in its own window" renders the same content in a separate browser window.</p>
           <p><strong>v4.7:</strong> pop-out windows: any visualization (concept, engineering sheet, cluster, orbital shells, 3D) can be opened in its own browser window via the bar above the view. Children open the same file with <code>?popout=&lt;view&gt;&amp;style=&lt;style&gt;</code>, hide everything but that view, and follow the parent's scenario live through <code>postMessage</code> (parent broadcasts on every recalculation; a child announces itself on load and receives the current state). Children are read-only followers; the live catalog is loaded per window.</p>
           <p><strong>v4.6:</strong> catalog load order is now same-origin <code>./gp.json</code> (published by the repository's GitHub Actions workflow, no CORS) → CelesTrak direct → file loader; the page accepts both raw GP records and the compact bundle written by <code>scripts/compact_gp.py</code>.</p>
           <p><strong>v4.5:</strong> optional live catalog: a button fetches CelesTrak's active-object GP JSON (or a downloaded copy can be dropped in via the file loader when CORS/offline blocks the fetch), compacts it to eight fields per object, caches it in localStorage for 24 h, bins objects by mean altitude into the six shells (replacing the embedded snapshot counts and re-dating the shells view), and draws them in the 3D view with two-body Keplerian propagation (Newton–Raphson Kepler solve) driven by the epoch date and UTC scrubber; coloured by operator, click-to-identify. Nothing is fetched automatically; without a catalog the embedded snapshot remains in force and the status line says so. Two-body propagation ignores J2 node drift (~5°/day for Starlink) — adequate for a same-day view.</p>
@@ -1933,6 +1947,63 @@ function runTests(){
 }
 $('runtests').addEventListener('click',runTests);
 $('testClose').addEventListener('click',()=>{$('testBox').style.display='none'});
+// ---------- Specification viewer (minimal markdown renderer, no dependencies) ----------
+function escHtml(t){return t.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
+function inlineMd(t){
+  t=escHtml(t);
+  t=t.replace(/\$([^$\n]+?)\$/g,(m,x)=>'<code>'+x+'</code>');
+  t=t.replace(/`([^`]+)`/g,'<code>$1</code>');
+  t=t.replace(/\*\*([^*]+)\*\*/g,'<strong>$1</strong>').replace(/~~([^~]+)~~/g,'<s>$1</s>').replace(/(^|[^*])\*([^*\n]+)\*/g,'$1<em>$2</em>');
+  t=t.replace(/\[([^\]]+)\]\(([^)]+)\)/g,'<a href="$2" target="_blank" rel="noopener">$1</a>');
+  return t;
+}
+function renderMd(md){
+  const lines=md.replace(/\r/g,'').split('\n');let out='',i=0,inList=null,para=[];
+  const flushP=()=>{if(para.length){out+='<p>'+inlineMd(para.join(' '))+'</p>';para=[];}};
+  const closeList=()=>{if(inList){out+='</'+inList+'>';inList=null;}};
+  while(i<lines.length){const L=lines[i];
+    if(/^\s*\$\$/.test(L)){flushP();closeList();let buf=[];const first=L.trim().slice(2);
+      if(first.endsWith('$$')&&first.length>=2){buf.push(first.slice(0,-2));i++;}
+      else{if(first)buf.push(first);i++;
+        while(i<lines.length){const t=lines[i];if(/^\s*\$\$\s*$/.test(t)){i++;break;}if(t.trimEnd().endsWith('$$')){buf.push(t.trimEnd().slice(0,-2));i++;break;}buf.push(t);i++;}}
+      out+='<pre class="math">'+escHtml(buf.join('\n').trim())+'</pre>';continue;}
+    if(/^```/.test(L)){flushP();closeList();let buf=[];i++;while(i<lines.length&&!/^```/.test(lines[i]))buf.push(lines[i++]);i++;out+='<pre>'+escHtml(buf.join('\n'))+'</pre>';continue;}
+    if(/^\s*\|/.test(L)){flushP();closeList();const rows=[];while(i<lines.length&&/^\s*\|/.test(lines[i]))rows.push(lines[i++]);
+      const cells=r=>r.trim().replace(/^\||\|$/g,'').split('|').map(c=>c.trim());
+      let html='<div class="table"><table>';rows.forEach((r,k)=>{if(k===1&&/^[\s|:-]+$/.test(r))return;const tag=k===0?'th':'td';html+='<tr>'+cells(r).map(c=>'<'+tag+'>'+inlineMd(c)+'</'+tag+'>').join('')+'</tr>';});out+=html+'</table></div>';continue;}
+    const h=L.match(/^(#{1,6})\s+(.*)/);if(h){flushP();closeList();out+='<h'+h[1].length+'>'+inlineMd(h[2])+'</h'+h[1].length+'>';i++;continue;}
+    if(/^\s*(---|\*\*\*)\s*$/.test(L)){flushP();closeList();out+='<hr>';i++;continue;}
+    if(/^\s*>/.test(L)){flushP();closeList();out+='<blockquote>'+inlineMd(L.replace(/^\s*>\s?/,''))+'</blockquote>';i++;continue;}
+    const ul=L.match(/^\s*[-*]\s+(.*)/),ol=L.match(/^\s*\d+\.\s+(.*)/);
+    if(ul||ol){flushP();const tag=ul?'ul':'ol';if(inList!==tag){closeList();out+='<'+tag+'>';inList=tag;}out+='<li>'+inlineMd((ul||ol)[1])+'</li>';i++;continue;}
+    if(!L.trim()){flushP();closeList();i++;continue;}
+    para.push(L.trim());i++;}
+  flushP();closeList();return out;
+}
+let SPEC_MD=null;
+async function loadSpec(){
+  if(SPEC_MD)return SPEC_MD;
+  try{const r=await fetch('./orbital_ai_datacenter_model_specification.md',{cache:'no-cache'});if(!r.ok)throw new Error('HTTP '+r.status);SPEC_MD=await r.text();return SPEC_MD;}
+  catch(e){return null;}
+}
+async function showSpec(){
+  $('specModal').style.display='block';
+  const md=await loadSpec();
+  $('specBody').innerHTML=md?renderMd(md):'<p class="muted">The specification file could not be fetched from this location (from a <code>file://</code> origin browsers block sibling-file reads). Use "load file" above to open <code>orbital_ai_datacenter_model_specification.md</code> from disk, or view it on the repository / GitHub Pages site where it loads automatically.</p>';
+}
+function specWindow(){
+  const md=SPEC_MD;if(!md){alert('Load the specification first (fetch or file).');return;}
+  const css=document.querySelector('style').textContent;
+  const w=window.open('','_blank','width=1000,height=800');if(!w)return;
+  w.document.write('<!doctype html><html><head><meta charset="utf-8"><title>Orbital AI DC model — specification</title><style>'+css+'</style></head><body><div class="wrap"><div id="specBody">'+renderMd(md)+'</div></div></body></html>');w.document.close();
+}
+$('openSpec').addEventListener('click',showSpec);
+$('specClose').addEventListener('click',()=>{$('specModal').style.display='none'});
+$('specModal').addEventListener('click',e=>{if(e.target===$('specModal'))$('specModal').style.display='none'});
+$('specWindow').addEventListener('click',specWindow);
+$('specFile').addEventListener('change',e=>{const f=e.target.files&&e.target.files[0];if(!f)return;const rd=new FileReader();rd.onload=()=>{SPEC_MD=rd.result;$('specBody').innerHTML=renderMd(SPEC_MD);};rd.readAsText(f);});
+document.addEventListener('keydown',e=>{if(e.key==='Escape')$('specModal').style.display='none';});
+
 // ---------- Pop-out windows (concurrent views) ----------
 const QS=new URLSearchParams(location.search);
 const POPOUT=QS.get('popout'); // view id when this window is a child

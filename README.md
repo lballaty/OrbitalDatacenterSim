@@ -4,7 +4,7 @@ A single-file, zero-dependency browser tool that asks a narrow question: **given
 
 It is deliberately bottom-up. Orbital mechanics that can be calculated are calculated (period, eclipse from β-angle geometry, drag, J2 precession, deorbit Δv, propellant). Everything that cannot yet be defended from public engineering data is an explicit, labelled input. The point is not to produce one number for "data centers in space" but to make every assumption inspectable and changeable without touching code.
 
-**Live tool:** `https://<owner>.github.io/<repo>/` (after the first workflow run)
+**Live tool:** `https://<owner>.github.io/<repo>/`
 **Specification:** [`orbital_ai_datacenter_model_specification.md`](orbital_ai_datacenter_model_specification.md) — every formula, default, source and known limitation.
 
 ---
@@ -27,11 +27,11 @@ Plus: a ±20% sensitivity tornado, a dawn-dusk altitude sweep, a break-even solv
 
 ## Quick start
 
-1. Open `Space-Datacenter-Modeling-Tool.html` in any modern browser. No install, no network required.
+1. Open `index.html` in any modern browser. No install, no network required.
 2. The default scenario is one 135 kW GB300-class rack per satellite, 1 MW productive, 650 km dawn-dusk sun-synchronous orbit, traditional-aerospace cost regime. Change anything; everything recalculates.
 3. Read the **Model cautions** box first — it tells you which constraints the current design violates.
 4. **Run self-tests** (button, or append `?test` to the URL) checks the physics functions and a regression anchor. All 8 should pass.
-5. Use the **⧉ Open in its own window** buttons above the visualization to put the concept drawing, engineering sheet, cluster view, shells view or 3D globe on separate screens; they follow the main window's scenario live.
+5. Use the **⧉ Open in its own window** buttons above the visualization to put the concept drawing, engineering sheet, cluster view, shells view or 3D globe on separate screens; they follow the main window's scenario live. The **Specification** button in the top bar opens the full spec in a modal or its own window (on GitHub Pages it loads automatically; from disk, pick the `.md` file when prompted).
 
 ## Live satellite catalog
 
@@ -48,7 +48,7 @@ Objects are propagated two-body (Keplerian). That is fine for a same-day picture
 The repo is set up for GitHub Pages via Actions — no committed data, no server:
 
 1. Fork or push this repo. In **Settings → Pages**, set *Source* to **GitHub Actions**.
-2. Push to `main` (or run the workflow manually). `.github/workflows/pages.yml` fetches CelesTrak with `scripts/compact_gp.py`, assembles `site/` (tool + spec + `gp.json` + redirecting `index.html`) and deploys it.
+2. Push to `main` (or run the workflow manually). `.github/workflows/pages.yml` fetches CelesTrak with `scripts/compact_gp.py`, assembles `site/` (tool + spec + `gp.json`) and deploys it.
 3. The schedule refreshes the catalog daily at 03:17 UTC. If CelesTrak is unreachable the previously published `gp.json` is kept, so the site never regresses to no data.
 
 Nothing about the tool itself needs GitHub: the HTML runs from any static host or from disk.
@@ -64,7 +64,7 @@ Nothing about the tool itself needs GitHub: the HTML runs from any static host o
 ## Repository layout
 
 ```
-Space-Datacenter-Modeling-Tool.html          the tool (single file)
+index.html                                   the tool (single file)
 orbital_ai_datacenter_model_specification.md formulas, defaults, sources, limitations, revision history
 scripts/compact_gp.py                        CelesTrak fetch + compaction (stdlib only)
 .github/workflows/pages.yml                  build + deploy to Pages, daily catalog refresh
