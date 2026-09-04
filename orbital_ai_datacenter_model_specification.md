@@ -1,7 +1,7 @@
 # Orbital AI Data Center Economics Model
 ## Modeling Tool Specification — Revision 0.3
 
-**Companion tool:** `Space-Datacenter-Modeling-Tool.html` (internal version v4.4)  
+**Companion tool:** `Space-Datacenter-Modeling-Tool.html` (internal version v4.7)  
 **Status:** Working exploratory model — Ready for Review  
 **Base architecture:** one independently maneuverable 135 kW / 72-GPU GB300-class rack per satellite  
 **Scope:** inference workloads only; ground connectivity via leased relay capacity on an existing communications constellation. Training is out of scope (see §28.6).
@@ -34,6 +34,9 @@ Tool v3.1 adds an end-of-life disposal model (§10.1, §19, §20); v3.2 corrects
 | 4 | Expected capacity unavailable during failure replacement now multiplies effective availability | Was display-only. |
 | 5 | Architecture selector labelled "visualization only" | Economics are driven by racks-per-satellite and the replaceable-compute setting; the selector never changed results. |
 | 6 | Scope statements added: inference only; relay lease on existing constellation; ISL hops default 1 | Encodes the scoping decision; `nety` relabelled as relay capacity lease. |
+| 29 (v4.7) | Pop-out windows for each visualization, following the parent scenario via `postMessage` | Concept, engineering sheet, cluster, shells and 3D can be viewed concurrently on separate screens. |
+| 28 (v4.6) | Catalog load order: same-origin `./gp.json` → CelesTrak direct → file; page accepts raw GP or the compact bundle. Repository scaffolding: `scripts/compact_gp.py` (stdlib fetch + 8-field compaction, fallback to previous bundle), `.github/workflows/pages.yml` (daily cron, build `site/`, deploy via Actions artifact — no data commits), `README.md` | GitHub Pages hosting with a server-side fetch removes the CORS problem without a proxy and keeps repo history clean. |
+| 27 (v4.5) | Optional live catalog: CelesTrak active GP JSON via button (or dropped file), 24 h localStorage cache, mean-altitude binning replaces the embedded shell snapshot, two-body Keplerian propagation renders objects in the 3D view by operator with click-to-identify | Shell occupancy becomes measured rather than hand-entered when a catalog is loaded; the embedded snapshot remains the offline fallback. Live fetch could not be tested from the build sandbox (host blocked); the file loader path was tested. |
 | 26 (v4.4) | 3D modeled-orbit node placed at Sun RA + (LTAN−12)·15° for SSO (terminator-aligned for LTAN 06:00); non-SSO nodes drift at the J2 rate | Drawing had the node fixed on the x-axis, so the plane appeared perpendicular to day/night; eclipse maths was unaffected. |
 | 25 (v4.3) | Cluster model from the literature: design selector (Suncatcher rect / optimal planar hex / 3D), R_min, clusters, Clos fabric with dedicated switch satellites (k ISLs), switch mass/cost fractions; derived R_max, footprint vs self-shadow limit, Clos layers, switch count. Switch satellites join the fleet for launch, ops, disposal, congestion. Cluster view redrawn in the Hill frame to scale; 3D draws each cluster as one point | The old cluster view was a ring of satellites joined nose-to-tail — not a formation. 1 GW in one cluster: R_max 90 km and 69% of the fleet as switches at k=10; 100 clusters: 7 km, 50%. The fabric is a first-order cost the model previously ignored. |
 | 24 (v4.2) | "Orbit paths" toggle: continuous tracks for every visible shell plane; modeled constellation track always solid. Conical shadow evaluated and deferred (<0.1% effect at 1,200 km) | Path lines were requested alongside the per-shell dot toggles. |
@@ -96,6 +99,10 @@ A 1200×760 SVG replacing the former "technical schematic" (which was the concep
 
 Note the two span figures deliberately differ: characteristic span (44 m base) is the square-equivalent used by the screening flags; wing-based tip-to-tip (≈96 m base) is what a deployed 3.6:1 array would actually measure. The flags are therefore conservative-low; tighten the envelope input if tip-to-tip is the binding constraint.
 
+### 3.3b Pop-out windows (v4.7)
+
+Buttons above the visualization open concept, engineering sheet, cluster, orbital shells or 3D in a separate window (`?popout=<view>&style=<style>`). A pop-out hides all controls and panels except the chosen view, announces itself to the opener, and thereafter mirrors every recalculation of the parent through `window.postMessage` (all input and select values are sent; file inputs and 3D time controls are excluded). Children are followers only — edits are made in the parent. Works from `file://`, a local server and GitHub Pages; the live catalog is loaded per window (a child is told when the parent has one).
+
 ### 3.4 Architecture selector
 
 The **Architecture** dropdown (independent satellites / multi-rack modules / persistent platform) changes the drawing only. It is labelled "visualization only" in the tool. Economic architecture is set by:
@@ -112,6 +119,10 @@ Fidelity rules (v3.2): solar and radiator panels are drawn at one shared 12 px²
 ### 3.7 Shells 3D view (v3.6)
 
 Hand-rolled canvas projection (no external library). Each band is six RAAN planes at a representative inclination (43°, 43°, 53°, 52°, 89°, 88°), point density ∝ tracked + announced. The modeled constellation is drawn as the exact number of satellites (v4.1), evenly phased across a configurable number of orbital planes at the configured altitude and inclination and moving at mean motion, over a faint orbit track; above 2,000 satellites every k-th is shown and labelled so. The cluster view (v4.3) is drawn in the Hill frame to scale: lattice per design, satellite footprints at R_sat, R_max circle and the inscribed 2:1 ellipse for the rectangular design, the outermost satellite's relative orbit, and compute→switch / switch↔switch ISLs; above 400 satellites an inner region is drawn at the same R_min, and ISLs are omitted above 150. Each cluster appears in the 3D view as a single point since R_max is ≪ 1% of the orbit radius. The Earth sphere carries Natural Earth 110m land outlines (Douglas-Peucker simplified to 1,019 vertices, public domain) rotating with Earth by GMST, a graticule and N/S pole labels; a UTC time scrubber (1×/60×/600× playback) moves satellites at their mean motion and drives a solar terminator with night-side shading and a Sun marker; coastline/graticule/terminator layers toggle independently (v3.9). Interaction: per-shell and scenario visibility checkboxes (v3.8), an "Orbit paths" toggle drawing continuous tracks per plane (v4.2), drag to rotate, Shift-drag or right/middle-drag to pan, wheel to zoom, click any dot to identify its shell/scenario/moon label. Radial scales: linear with altitude ×4 (Moon off-screen), and log-radial $r=1+1.15\log_{10}(1+h/300\,\text{km})$ placing LEO at ≈1.35–1.7 R and the Moon at ≈4.6 R (Moon drawn at ≈0.27 R true ratio ×2 for legibility, capped so it never rivals the Earth). The earlier 0.55-coefficient map collapsed LEO onto the surface at Moon scale and is replaced.
+
+### 3.6a Live catalog (v4.5)
+
+Opt-in only. "Load live catalog" fetches `https://celestrak.org/NORAD/ELEMENTS/gp.php?GROUP=active&FORMAT=json`; if the browser blocks it (CORS from a `file://` origin, or offline), the status line says so and a file input accepts a manually downloaded copy of the same JSON. Records are compacted to name, epoch, mean motion, eccentricity, inclination, RAAN, argument of perigee and mean anomaly (~80 bytes each; ~1 MB for the active catalog) and cached in `localStorage` for 24 h. Each object's mean altitude is $a-R_E$ with $a=(\mu/n^2)^{1/3}$; objects are binned into the six shells, overwriting `SHELLS[].now` (announced figures are untouched) and re-dating the shells view and Orbit-tab hint. In the 3D view objects are propagated two-body (Newton–Raphson Kepler solve) to the epoch-date + UTC-scrubber time and drawn by operator class (Starlink, OneWeb, Amazon Leo, Guowang/Qianfan, other); click identifies name, altitude, inclination. Two-body propagation omits J2 node drift (~5°/day for Starlink) and drag; fine for a same-day picture, not for conjunction work. The live fetch path could not be exercised from the build environment; the file path was tested with synthetic records.
 
 ### 3.6 Orbital Shells view
 
@@ -588,6 +599,14 @@ No ephemeris/TLE conjunction analysis, collision probability, debris-flux integr
 - Google Suncatcher paper: https://goo.gle/project-suncatcher-paper
 
 ---
+
+## 28a. Hosting and data pipeline (v4.6)
+
+The tool is a single static file and runs from disk. For live catalog data it needs a same-origin `gp.json` or a CORS-permissive source. The repository provides:
+
+- `scripts/compact_gp.py` — fetches CelesTrak `GROUP=active` GP JSON, compacts each object to `[name, epoch_ms, n_rad_s, e, i, Ω, ω, M0, class]` (~80 B; ~1 MB total), writes `{fetched, source, count, recs}`; if the fetch fails and a previous bundle path is given, it republishes that bundle and exits 0.
+- `.github/workflows/pages.yml` — on push, daily cron (03:17 UTC) and manual dispatch: recovers the previously published `gp.json` from the live site as fallback, runs the script, assembles `site/` (tool, spec, README, `gp.json`, redirecting `index.html`, `.nojekyll`) and deploys with `actions/deploy-pages`. No data is committed to the repository.
+- Load order in the page: `./gp.json` → CelesTrak direct → file loader → embedded snapshot; the status line reports which source is in force.
 
 ## 29. Interpretation rule
 
