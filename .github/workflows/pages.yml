@@ -34,13 +34,9 @@ jobs:
       - name: Assemble site
         run: |
           mkdir -p site
-          cp Space-Datacenter-Modeling-Tool.html site/
+          cp index.html site/
           cp orbital_ai_datacenter_model_specification.md site/
           cp README.md site/ 2>/dev/null || true
-          cat > site/index.html <<'HTML'
-          <!doctype html><meta charset="utf-8"><meta http-equiv="refresh" content="0; url=Space-Datacenter-Modeling-Tool.html">
-          <title>Orbital AI Data Center Economics Model</title><a href="Space-Datacenter-Modeling-Tool.html">Open the model</a>
-          HTML
           touch site/.nojekyll
 
       - uses: actions/upload-pages-artifact@v3
