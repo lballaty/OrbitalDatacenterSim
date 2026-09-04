@@ -81,3 +81,18 @@ Lenovo GB300 NVL72 · NVIDIA inference benchmarks · SpaceX Falcon 9 capabilitie
 ## Licence
 
 Choose one before publishing (MIT is the usual fit for a single-file tool). Natural Earth data is public domain; CelesTrak data is subject to their terms.
+
+
+## Contributing
+
+Issues, comments, and pull requests are all welcome, but `main` stays controlled: only the maintainer ([@lballaty](https://github.com/lballaty)) merges to it, so the published tool and its history stay clean.
+
+**To report or discuss:** open an [issue](../../issues) or comment on an existing one. No fork needed to flag a bug, a wrong assumption, a missing source, or a feature idea.
+
+**To propose a change:**
+
+1. Fork the repo to your own account.
+2. Branch in your fork (`git checkout -b my-change`).
+3. Keep it single-file and dependency-free, and keep file names stable (see Versioning).
+4. Run the self-tests (**Run self-tests** button, or append `?test` to the URL). All 8 should pass.
+5. Open a pull request against `main`. Every PR gets read; expect questions on any input that changes a default or a labelled assumption.
