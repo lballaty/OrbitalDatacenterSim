@@ -1,0 +1,3208 @@
+{
+  "$schema": "https://labguide.io/schemas/agent-test-catalog.v1.json",
+  "meta": {
+    "target": "Orbital AI Data Center Economics Model",
+    "url": "https://lballaty.github.io/OrbitalDatacenterSim/",
+    "app_version_at_authoring": "v5.4",
+    "catalog_version": "1.2.0",
+    "authored": "2026-09-05",
+    "author": "Test plan generated for Libor Ballaty (Arion Networks s.r.o.)",
+    "status": "Ready for Review",
+    "purpose": "Executable spec an LLM/browser agent follows to verify 100% of actions, dropdowns, modals and text in the app AND that the numbers produced are physically/economically reasonable.",
+    "companion_doc": "OrbitalDatacenterSim-test-plan.md",
+    "notes": [
+      "The app is a single-file client-side HTML calculator. There is no server round-trip; every input change should be reflected after Recalculate (or on-change where the app auto-recalcs).",
+      "Control IDs below are stable DOM element ids. If an id is not found at runtime, the agent MUST re-enumerate the DOM (see runner_protocol.self_heal) and report drift rather than silently skipping.",
+      "Derived/computed fields are read-only in their default mode and only become editable in an alternate mode (see mode_gated_inputs)."
+    ],
+    "changelog": [
+      "1.2.0: designated as canonical manifest; added tag_contract (in-page data-test-* attribute schema) + reconciliation workflow. Companion: OrbitalDatacenterSim-reconcile.js, OrbitalDatacenterSim-tagging-convention.md.",
+      "1.1.0: added display_registry (81 non-interactive readouts the user sees) + suite S12; catalog_version bump.",
+      "1.0.0: initial interactive control registry + suites S1-S11 + 22 reasonableness rules."
+    ],
+    "role": "Canonical MANIFEST for the app: the single source of rich per-element detail (validity rules, expected direction, formulas, baselines) that the in-page data-test-* tags cannot hold. The reconciliation script (OrbitalDatacenterSim-reconcile.js) checks the live DOM tags against this manifest so the two never drift."
+  },
+  "runner_protocol": {
+    "capabilities_required": [
+      "Navigate to the URL and confirm document.title starts with 'Orbital AI Data Center Economics Model'.",
+      "Read/enumerate DOM (ids, values, options, disabled state, offsetParent visibility).",
+      "Set a numeric input: focus, clear, type value, dispatch 'input' and 'change' events.",
+      "Set a <select>: assign value + dispatch 'change'.",
+      "Toggle checkbox: set .checked + dispatch 'change'.",
+      "Click any button by id or visible text.",
+      "Read <output> and result KPI text after recalculation.",
+      "Capture a screenshot for any view/canvas/SVG assertion.",
+      "Read the downloaded scenario JSON (or intercept the Blob) for the download test."
+    ],
+    "value_io": {
+      "set_number": "el = document.getElementById(id); el.value=''; el.value=String(v); el.dispatchEvent(new Event('input',{bubbles:true})); el.dispatchEvent(new Event('change',{bubbles:true}));",
+      "set_select": "el.value=v; el.dispatchEvent(new Event('change',{bubbles:true}));",
+      "set_checkbox": "el.checked=b; el.dispatchEvent(new Event('change',{bubbles:true}));",
+      "recalc": "document.getElementById('calc').click();",
+      "read_kpi": "document.getElementById(id).textContent.trim();",
+      "is_editable": "el = document.getElementById(id); !(el.disabled || el.readOnly || el.offsetParent===null);"
+    },
+    "run_sequence": [
+      "1. SMOKE (S1): load page, assert no console errors, assert baseline KPIs render.",
+      "2. RESET baseline: click #reset, click #calc, snapshot baseline KPI vector (see oracle.baseline_kpis).",
+      "3. NAV (S2): visit every tab, assert its controls become visible.",
+      "4. FUNCTIONAL parametric: S3 numerics, S4 selects, S5 checkboxes, S6 views, S7 modals, S8 actions, S10 catalog/time.",
+      "5. VALIDITY (S9): run reasonableness/oracle assertions on baseline and on directional perturbations.",
+      "6. CROSS-FIELD (S11): mode-gated + derived-field consistency.",
+      "7. Emit report per report_schema. Reset to baseline between destructive suites."
+    ],
+    "self_heal": {
+      "on_missing_id": "Re-enumerate: [...document.querySelectorAll('input,select,button')].map(e=>e.id). If the labelled control exists under a new id, record a DRIFT finding with old+new id and continue. If truly absent, record MISSING and mark the case blocked.",
+      "on_disabled": "If a target input is disabled/readonly in the current mode, first set the governing mode select (see mode_gated_inputs) then retry; if still disabled, record as expected mode-gating (PASS for gating, skip value test)."
+    },
+    "between_cases": "Most inputs auto-recalc on change; always click #calc before reading KPIs to be deterministic. After a suite that changed many inputs, click #reset then #calc to restore baseline."
+  },
+  "control_registry": {
+    "top_bar_actions": [
+      {
+        "id": "calc",
+        "type": "button",
+        "label": "Recalculate",
+        "effect": "Recomputes all outputs from current inputs."
+      },
+      {
+        "id": "reset",
+        "type": "button",
+        "label": "Reset base scenario",
+        "effect": "Restores all inputs to defaults listed in this registry."
+      },
+      {
+        "id": "download",
+        "type": "button",
+        "label": "Download scenario JSON",
+        "effect": "Downloads current scenario as JSON (side-effect: file download)."
+      },
+      {
+        "id": "breakeven",
+        "type": "button",
+        "label": "Break-even solver",
+        "effect": "Opens break-even modal."
+      },
+      {
+        "id": "runtests",
+        "type": "button",
+        "label": "Run self-tests",
+        "effect": "Opens self-test modal and runs in-file assertions."
+      },
+      {
+        "id": "openSpec",
+        "type": "button",
+        "label": "Specification",
+        "effect": "Opens spec modal (fetches sibling .md, renders markdown)."
+      }
+    ],
+    "tabs": [
+      {
+        "key": "arch",
+        "label": "Architecture",
+        "expected_visible_controls": 12
+      },
+      {
+        "key": "orbit",
+        "label": "Orbit & traffic",
+        "expected_visible_controls": 27
+      },
+      {
+        "key": "craft",
+        "label": "Spacecraft",
+        "expected_visible_controls": 48
+      },
+      {
+        "key": "cost",
+        "label": "Costs & launch",
+        "expected_visible_controls": 35
+      },
+      {
+        "key": "infer",
+        "label": "Inference",
+        "expected_visible_controls": 20
+      },
+      {
+        "key": "time",
+        "label": "Timeline",
+        "expected_visible_controls": 7
+      }
+    ],
+    "numeric_inputs": [
+      {
+        "tab": "arch",
+        "id": "mw",
+        "label": "Target productive compute for whole constellation, MW",
+        "default": 1,
+        "min": 0.001,
+        "step": 0.135,
+        "unit": "MW"
+      },
+      {
+        "tab": "arch",
+        "id": "rps",
+        "label": "Racks / maneuverable satellite",
+        "default": 1,
+        "min": 1,
+        "unit": "racks"
+      },
+      {
+        "tab": "arch",
+        "id": "rkw",
+        "label": "Rack TDP, kW",
+        "default": 135,
+        "min": 1,
+        "unit": "kW"
+      },
+      {
+        "tab": "arch",
+        "id": "rpk",
+        "label": "Rack peak, kW (used when battery power basis = peak)",
+        "default": 155,
+        "min": 1,
+        "unit": "kW"
+      },
+      {
+        "tab": "arch",
+        "id": "rm",
+        "label": "Rack hardware mass, kg",
+        "default": 1580,
+        "min": 1,
+        "unit": "kg"
+      },
+      {
+        "tab": "arch",
+        "id": "gpu",
+        "label": "GPUs / rack",
+        "default": 72,
+        "min": 1,
+        "unit": "count"
+      },
+      {
+        "tab": "arch",
+        "id": "rcost",
+        "label": "Compute cost / rack, $M",
+        "default": 4,
+        "min": 0,
+        "step": 0.1,
+        "unit": "$M"
+      },
+      {
+        "tab": "arch",
+        "id": "itoh",
+        "label": "IT overhead beyond rack TDP, %",
+        "default": 10,
+        "min": 0,
+        "unit": "%"
+      },
+      {
+        "tab": "arch",
+        "id": "netm",
+        "label": "Network/storage mass / rack, kg",
+        "default": 250,
+        "min": 0,
+        "unit": "kg"
+      },
+      {
+        "tab": "arch",
+        "id": "relaym",
+        "label": "Optical relay terminal mass / satellite, kg",
+        "default": 60,
+        "min": 0,
+        "unit": "kg"
+      },
+      {
+        "tab": "arch",
+        "id": "spare",
+        "label": "Installed spare capacity, %",
+        "default": 10,
+        "min": 0,
+        "unit": "%"
+      },
+      {
+        "tab": "orbit",
+        "id": "alt",
+        "label": "Altitude, km",
+        "default": 650,
+        "min": 160,
+        "unit": "km",
+        "note": "editable only when op=custom"
+      },
+      {
+        "tab": "orbit",
+        "id": "inc",
+        "label": "Inclination, deg",
+        "default": 97.99,
+        "min": 0,
+        "max": 180,
+        "step": 0.01,
+        "unit": "deg",
+        "note": "editable only when op=custom"
+      },
+      {
+        "tab": "orbit",
+        "id": "planes",
+        "label": "Orbital planes for modeled constellation layout",
+        "default": 1,
+        "min": 1,
+        "unit": "count"
+      },
+      {
+        "tab": "orbit",
+        "id": "ltan",
+        "label": "Local time of ascending node, h (SSO only)",
+        "default": 6,
+        "min": 0,
+        "max": 24,
+        "step": 0.25,
+        "unit": "h"
+      },
+      {
+        "tab": "orbit",
+        "id": "sun",
+        "label": "Sunlight fraction (annual average)",
+        "default": 0.963,
+        "min": 0.05,
+        "max": 1,
+        "step": 0.01,
+        "unit": "fraction",
+        "derived_when": "illumMode=geom"
+      },
+      {
+        "tab": "orbit",
+        "id": "eclmax",
+        "label": "Worst-season eclipse, min/orbit",
+        "default": 19.7,
+        "min": 0,
+        "step": 0.5,
+        "unit": "min",
+        "derived_when": "illumMode=geom"
+      },
+      {
+        "tab": "orbit",
+        "id": "rho",
+        "label": "Mean atmospheric density, kg/m^3",
+        "default": 1.2e-13,
+        "min": 0,
+        "step": 1e-15,
+        "unit": "kg/m^3"
+      },
+      {
+        "tab": "orbit",
+        "id": "cd",
+        "label": "Drag coefficient",
+        "default": 2.2,
+        "min": 0.5,
+        "step": 0.1
+      },
+      {
+        "tab": "orbit",
+        "id": "dragfrac",
+        "label": "Projected drag area, % of array+radiator",
+        "default": 25,
+        "min": 0,
+        "max": 100,
+        "unit": "%",
+        "note": "set per orbit preset"
+      },
+      {
+        "tab": "orbit",
+        "id": "sk",
+        "label": "Non-drag stationkeeping dv, m/s/yr",
+        "default": 1,
+        "min": 0,
+        "step": 0.1,
+        "unit": "m/s/yr"
+      },
+      {
+        "tab": "orbit",
+        "id": "pop",
+        "label": "Existing active population in selected shell",
+        "default": 2500,
+        "min": 0,
+        "unit": "count"
+      },
+      {
+        "tab": "orbit",
+        "id": "cap",
+        "label": "Practical shell capacity",
+        "default": 12000,
+        "min": 1,
+        "unit": "count"
+      },
+      {
+        "tab": "orbit",
+        "id": "av0",
+        "label": "Baseline avoidance maneuvers/sat/yr",
+        "default": 4,
+        "min": 0,
+        "step": 0.1
+      },
+      {
+        "tab": "orbit",
+        "id": "exp",
+        "label": "Capacity-pressure exponent",
+        "default": 2,
+        "min": 0.1,
+        "step": 0.1
+      },
+      {
+        "tab": "orbit",
+        "id": "avdv",
+        "label": "dv / avoidance maneuver, m/s",
+        "default": 0.1,
+        "min": 0,
+        "step": 0.01,
+        "unit": "m/s"
+      },
+      {
+        "tab": "orbit",
+        "id": "avh",
+        "label": "Compute interruption / maneuver, h",
+        "default": 0.5,
+        "min": 0,
+        "step": 0.1,
+        "unit": "h"
+      },
+      {
+        "tab": "orbit",
+        "id": "avcap",
+        "label": "Autonomous maneuver capacity, events/day",
+        "default": 2,
+        "min": 0.01,
+        "step": 0.1
+      },
+      {
+        "tab": "orbit",
+        "id": "debris",
+        "label": "Debris-risk multiplier",
+        "default": 1,
+        "min": 0.1,
+        "step": 0.1
+      },
+      {
+        "tab": "orbit",
+        "id": "spacing",
+        "label": "Minimum inter-satellite spacing R_min, m",
+        "default": 500,
+        "min": 10,
+        "unit": "m"
+      },
+      {
+        "tab": "orbit",
+        "id": "clusters",
+        "label": "Clusters (formations) in the constellation",
+        "default": 1,
+        "min": 1,
+        "unit": "count"
+      },
+      {
+        "tab": "orbit",
+        "id": "closk",
+        "label": "ISLs per switch satellite, k",
+        "default": 10,
+        "min": 4,
+        "max": 32,
+        "step": 2,
+        "note": "used when closOn=yes"
+      },
+      {
+        "tab": "orbit",
+        "id": "switchMassFrac",
+        "label": "Switch satellite wet mass, fraction of compute sat",
+        "default": 0.35,
+        "min": 0.05,
+        "max": 1,
+        "step": 0.05
+      },
+      {
+        "tab": "orbit",
+        "id": "switchCostFrac",
+        "label": "Switch satellite non-compute cost, fraction",
+        "default": 0.4,
+        "min": 0.05,
+        "max": 1,
+        "step": 0.05
+      },
+      {
+        "tab": "craft",
+        "id": "busm",
+        "label": "Bus/control base dry mass / satellite, kg",
+        "default": 1500,
+        "min": 0,
+        "unit": "kg"
+      },
+      {
+        "tab": "craft",
+        "id": "busmrack",
+        "label": "Additional bus/control per rack beyond first, kg",
+        "default": 250,
+        "min": 0,
+        "unit": "kg"
+      },
+      {
+        "tab": "craft",
+        "id": "propm",
+        "label": "Propulsion hardware / satellite, kg",
+        "default": 250,
+        "min": 0,
+        "unit": "kg"
+      },
+      {
+        "tab": "craft",
+        "id": "shield",
+        "label": "Shielding / rack, kg",
+        "default": 500,
+        "min": 0,
+        "unit": "kg"
+      },
+      {
+        "tab": "craft",
+        "id": "swkg",
+        "label": "Solar specific power, W/kg",
+        "default": 85,
+        "min": 1,
+        "unit": "W/kg"
+      },
+      {
+        "tab": "craft",
+        "id": "swm2",
+        "label": "Solar areal output, W/m^2",
+        "default": 300,
+        "min": 1,
+        "unit": "W/m^2"
+      },
+      {
+        "tab": "craft",
+        "id": "smar",
+        "label": "Solar design margin, %",
+        "default": 20,
+        "min": 0,
+        "unit": "%"
+      },
+      {
+        "tab": "craft",
+        "id": "peff",
+        "label": "Power conversion efficiency, %",
+        "default": 92,
+        "min": 1,
+        "max": 100,
+        "unit": "%"
+      },
+      {
+        "tab": "craft",
+        "id": "chargeeff",
+        "label": "Battery charge efficiency, %",
+        "default": 90,
+        "min": 1,
+        "max": 100,
+        "unit": "%"
+      },
+      {
+        "tab": "craft",
+        "id": "battkwhrack",
+        "label": "Fixed usable battery, kWh per rack",
+        "default": 40,
+        "min": 0,
+        "step": 0.1,
+        "unit": "kWh",
+        "note": "used when battMode=perrack"
+      },
+      {
+        "tab": "craft",
+        "id": "dod",
+        "label": "Battery usable depth of discharge, %",
+        "default": 35,
+        "min": 1,
+        "max": 100,
+        "unit": "%"
+      },
+      {
+        "tab": "craft",
+        "id": "bwh",
+        "label": "Battery specific energy, Wh/kg (pack level)",
+        "default": 130,
+        "min": 1,
+        "unit": "Wh/kg"
+      },
+      {
+        "tab": "craft",
+        "id": "bres",
+        "label": "Battery reserve beyond eclipse, min",
+        "default": 15,
+        "min": 0,
+        "unit": "min"
+      },
+      {
+        "tab": "craft",
+        "id": "tRad",
+        "label": "Radiator mean surface temperature, K",
+        "default": 305,
+        "min": 200,
+        "max": 450,
+        "unit": "K"
+      },
+      {
+        "tab": "craft",
+        "id": "emis",
+        "label": "Radiator emissivity",
+        "default": 0.88,
+        "min": 0.1,
+        "max": 1,
+        "step": 0.01
+      },
+      {
+        "tab": "craft",
+        "id": "sides",
+        "label": "Radiating sides",
+        "default": 2,
+        "min": 1,
+        "max": 2,
+        "step": 1
+      },
+      {
+        "tab": "craft",
+        "id": "envflux",
+        "label": "Absorbed environmental flux per side, W/m^2",
+        "default": 120,
+        "min": 0,
+        "unit": "W/m^2"
+      },
+      {
+        "tab": "craft",
+        "id": "fineff",
+        "label": "Fin / flow effectiveness",
+        "default": 0.85,
+        "min": 0.3,
+        "max": 1,
+        "step": 0.01
+      },
+      {
+        "tab": "craft",
+        "id": "degr",
+        "label": "Coating degradation margin, %",
+        "default": 10,
+        "min": 0,
+        "unit": "%"
+      },
+      {
+        "tab": "craft",
+        "id": "tInlet",
+        "label": "GPU coolant inlet limit, K",
+        "default": 318,
+        "min": 250,
+        "unit": "K"
+      },
+      {
+        "tab": "craft",
+        "id": "rflux",
+        "label": "Radiator net rejection, W/m^2",
+        "default": 477,
+        "min": 10,
+        "unit": "W/m^2",
+        "derived_when": "thermMode=derived"
+      },
+      {
+        "tab": "craft",
+        "id": "rkg",
+        "label": "Radiator areal density, kg/m^2",
+        "default": 8,
+        "min": 0.1,
+        "step": 0.1,
+        "unit": "kg/m^2"
+      },
+      {
+        "tab": "craft",
+        "id": "httkg",
+        "label": "Heat transport, kg/kW",
+        "default": 3,
+        "min": 0,
+        "step": 0.1,
+        "unit": "kg/kW"
+      },
+      {
+        "tab": "craft",
+        "id": "struct",
+        "label": "Structure/deployment, % of subsystem dry mass",
+        "default": 15,
+        "min": 0,
+        "unit": "%"
+      },
+      {
+        "tab": "craft",
+        "id": "isp",
+        "label": "Electric propulsion Isp, s",
+        "default": 1900,
+        "min": 100,
+        "unit": "s"
+      },
+      {
+        "tab": "craft",
+        "id": "contdv",
+        "label": "Relocation/contingency dv reserve, m/s",
+        "default": 100,
+        "min": 0,
+        "unit": "m/s"
+      },
+      {
+        "tab": "craft",
+        "id": "fairing",
+        "label": "Max deployed characteristic span, m",
+        "default": 60,
+        "min": 1,
+        "unit": "m"
+      },
+      {
+        "tab": "craft",
+        "id": "slewlim",
+        "label": "Area-to-mass agility limit, m^2/kg",
+        "default": 0.25,
+        "min": 0.01,
+        "step": 0.01,
+        "unit": "m^2/kg"
+      },
+      {
+        "tab": "craft",
+        "id": "demise",
+        "label": "Demisability mass threshold, kg",
+        "default": 800,
+        "min": 1,
+        "unit": "kg"
+      },
+      {
+        "tab": "craft",
+        "id": "crhw",
+        "label": "Controlled re-entry stage hardware, kg",
+        "default": 150,
+        "min": 0,
+        "unit": "kg"
+      },
+      {
+        "tab": "craft",
+        "id": "crperi",
+        "label": "Controlled re-entry target perigee, km",
+        "default": 50,
+        "min": 0,
+        "max": 150,
+        "unit": "km"
+      },
+      {
+        "tab": "craft",
+        "id": "crisp",
+        "label": "Chemical stage Isp, s",
+        "default": 230,
+        "min": 50,
+        "unit": "s"
+      },
+      {
+        "tab": "craft",
+        "id": "dispsucc",
+        "label": "Planned-retirement disposal success, %",
+        "default": 95,
+        "min": 0,
+        "max": 100,
+        "step": 0.5,
+        "unit": "%"
+      },
+      {
+        "tab": "craft",
+        "id": "dispsuccFail",
+        "label": "Failed-satellite disposal success, %",
+        "default": 60,
+        "min": 0,
+        "max": 100,
+        "step": 0.5,
+        "unit": "%"
+      },
+      {
+        "tab": "craft",
+        "id": "adrc",
+        "label": "Active debris removal cost / object, $M",
+        "default": 20,
+        "min": 0,
+        "step": 1,
+        "unit": "$M",
+        "note": "used when dispfail=adr"
+      },
+      {
+        "tab": "craft",
+        "id": "dispops",
+        "label": "Disposal operations cost / event, $M",
+        "default": 0.3,
+        "min": 0,
+        "step": 0.05,
+        "unit": "$M"
+      },
+      {
+        "tab": "craft",
+        "id": "life",
+        "label": "Mission design life, years",
+        "default": 5,
+        "min": 0.5,
+        "step": 0.5,
+        "unit": "yr"
+      },
+      {
+        "tab": "craft",
+        "id": "avail",
+        "label": "Base availability excl. maneuvers/radiation, %",
+        "default": 98,
+        "min": 1,
+        "max": 100,
+        "step": 0.1,
+        "unit": "%"
+      },
+      {
+        "tab": "craft",
+        "id": "fail",
+        "label": "Annual spacecraft failure probability, %",
+        "default": 3,
+        "min": 0,
+        "max": 100,
+        "step": 0.1,
+        "unit": "%"
+      },
+      {
+        "tab": "craft",
+        "id": "radfail",
+        "label": "Radiation failure multiplier",
+        "default": 1.25,
+        "min": 0.1,
+        "step": 0.05
+      },
+      {
+        "tab": "craft",
+        "id": "raddown",
+        "label": "Radiation-related availability loss, %",
+        "default": 0.2,
+        "min": 0,
+        "max": 100,
+        "step": 0.05,
+        "unit": "%"
+      },
+      {
+        "tab": "craft",
+        "id": "radlife",
+        "label": "COTS compute assumed qualified life, years",
+        "default": 5,
+        "min": 0.5,
+        "step": 0.5,
+        "unit": "yr"
+      },
+      {
+        "tab": "cost",
+        "id": "busc",
+        "label": "Bus/control manufacturing / satellite, $M",
+        "default": 15,
+        "min": 0,
+        "step": 0.1,
+        "unit": "$M",
+        "note": "editable when costPreset=custom"
+      },
+      {
+        "tab": "cost",
+        "id": "solc",
+        "label": "Solar subsystem manufacturing, $/kg",
+        "default": 20000,
+        "min": 0,
+        "unit": "$/kg"
+      },
+      {
+        "tab": "cost",
+        "id": "thermc",
+        "label": "Thermal subsystem manufacturing, $/kg",
+        "default": 10000,
+        "min": 0,
+        "unit": "$/kg"
+      },
+      {
+        "tab": "cost",
+        "id": "otherc",
+        "label": "Other spacecraft hardware, $/kg",
+        "default": 15000,
+        "min": 0,
+        "unit": "$/kg"
+      },
+      {
+        "tab": "cost",
+        "id": "intc",
+        "label": "Integration/qualification / satellite, $M",
+        "default": 5,
+        "min": 0,
+        "step": 0.1,
+        "unit": "$M"
+      },
+      {
+        "tab": "cost",
+        "id": "nref",
+        "label": "Preset reference cumulative unit",
+        "default": 5,
+        "min": 1,
+        "step": 1
+      },
+      {
+        "tab": "cost",
+        "id": "learn",
+        "label": "Learning rate, % cost per doubling (all)",
+        "default": 85,
+        "min": 50,
+        "max": 100,
+        "step": 0.5,
+        "unit": "%"
+      },
+      {
+        "tab": "cost",
+        "id": "learnStruct",
+        "label": "Structure/mechanical LR %",
+        "default": 82,
+        "min": 50,
+        "max": 100,
+        "step": 0.5,
+        "unit": "%",
+        "note": "used when learnMode=split"
+      },
+      {
+        "tab": "cost",
+        "id": "learnBus",
+        "label": "Avionics/bus LR %",
+        "default": 90,
+        "min": 50,
+        "max": 100,
+        "step": 0.5,
+        "unit": "%",
+        "note": "used when learnMode=split"
+      },
+      {
+        "tab": "cost",
+        "id": "learnInt",
+        "label": "Integration/qualification LR %",
+        "default": 88,
+        "min": 50,
+        "max": 100,
+        "step": 0.5,
+        "unit": "%",
+        "note": "used when learnMode=split"
+      },
+      {
+        "tab": "cost",
+        "id": "nre",
+        "label": "Spacecraft development / qualification NRE, $M",
+        "default": 500,
+        "min": 0,
+        "step": 10,
+        "unit": "$M"
+      },
+      {
+        "tab": "cost",
+        "id": "lmission",
+        "label": "Mission price, $M (list, launch #1)",
+        "default": 74,
+        "min": 0,
+        "step": 0.25,
+        "unit": "$M",
+        "note": "used when lmode=mission"
+      },
+      {
+        "tab": "cost",
+        "id": "launchDisc",
+        "label": "Launch volume discount, % per doubling",
+        "default": 5,
+        "min": 0,
+        "max": 50,
+        "step": 0.5,
+        "unit": "%"
+      },
+      {
+        "tab": "cost",
+        "id": "launchFloor",
+        "label": "Launch price floor, % of list",
+        "default": 60,
+        "min": 10,
+        "max": 100,
+        "unit": "%"
+      },
+      {
+        "tab": "cost",
+        "id": "lcap",
+        "label": "Usable payload to selected orbit, kg",
+        "default": 13500,
+        "min": 1,
+        "unit": "kg"
+      },
+      {
+        "tab": "cost",
+        "id": "lsat",
+        "label": "Satellites per launch (volume)",
+        "default": 2,
+        "min": 1,
+        "step": 1
+      },
+      {
+        "tab": "cost",
+        "id": "modlsat",
+        "label": "Max compute modules per refresh launch",
+        "default": 6,
+        "min": 1,
+        "step": 1
+      },
+      {
+        "tab": "cost",
+        "id": "lkg",
+        "label": "Bulk launch price, $/kg",
+        "default": 1500,
+        "min": 0,
+        "unit": "$/kg",
+        "note": "used when lmode=kg"
+      },
+      {
+        "tab": "cost",
+        "id": "ridekg",
+        "label": "Rideshare price, $/kg",
+        "default": 7000,
+        "min": 0,
+        "unit": "$/kg",
+        "note": "used when lmode=ride"
+      },
+      {
+        "tab": "cost",
+        "id": "ridelim",
+        "label": "Rideshare max mass / port, kg",
+        "default": 831,
+        "min": 1,
+        "unit": "kg"
+      },
+      {
+        "tab": "cost",
+        "id": "opsy",
+        "label": "Mission operations / satellite / year, $M",
+        "default": 1,
+        "min": 0,
+        "step": 0.1,
+        "unit": "$M/yr"
+      },
+      {
+        "tab": "cost",
+        "id": "nety",
+        "label": "Relay capacity lease / satellite / year, $M",
+        "default": 0.5,
+        "min": 0,
+        "step": 0.1,
+        "unit": "$M/yr",
+        "note": "used when relayMode=flat"
+      },
+      {
+        "tab": "cost",
+        "id": "relaygbps",
+        "label": "Relay lease, $ / Gbit/s / month",
+        "default": 500,
+        "min": 0,
+        "step": 10,
+        "unit": "$/Gbps/mo",
+        "note": "used when relayMode=gbps"
+      },
+      {
+        "tab": "cost",
+        "id": "relayc",
+        "label": "Relay terminal hardware cost / satellite, $M",
+        "default": 0.8,
+        "min": 0,
+        "step": 0.1,
+        "unit": "$M"
+      },
+      {
+        "tab": "cost",
+        "id": "ins",
+        "label": "Insurance/risk reserve, % CAPEX/year",
+        "default": 2,
+        "min": 0,
+        "unit": "%"
+      },
+      {
+        "tab": "cost",
+        "id": "years",
+        "label": "Analysis horizon, years",
+        "default": 10,
+        "min": 1,
+        "unit": "yr"
+      },
+      {
+        "tab": "cost",
+        "id": "disc",
+        "label": "Discount rate, %",
+        "default": 8,
+        "min": 0,
+        "unit": "%"
+      },
+      {
+        "tab": "cost",
+        "id": "refresh",
+        "label": "Compute economic refresh interval, years",
+        "default": 3,
+        "min": 0.5,
+        "step": 0.5,
+        "unit": "yr"
+      },
+      {
+        "tab": "cost",
+        "id": "serv",
+        "label": "Robotic service cost / satellite refresh, $M",
+        "default": 2,
+        "min": 0,
+        "step": 0.1,
+        "unit": "$M",
+        "note": "used when replace=yes"
+      },
+      {
+        "tab": "infer",
+        "id": "tpsmw",
+        "label": "Inference throughput, tokens/s/productive MW",
+        "default": 2800000,
+        "min": 1,
+        "unit": "tok/s/MW"
+      },
+      {
+        "tab": "infer",
+        "id": "util",
+        "label": "Compute utilization, %",
+        "default": 75,
+        "min": 1,
+        "max": 100,
+        "unit": "%"
+      },
+      {
+        "tab": "infer",
+        "id": "tpsu",
+        "label": "Benchmark interactivity, tokens/s/user",
+        "default": 116,
+        "min": 1,
+        "unit": "tok/s/user"
+      },
+      {
+        "tab": "infer",
+        "id": "earthtok",
+        "label": "Published terrestrial $ / 1M tokens",
+        "default": 0.123,
+        "min": 0,
+        "step": 0.001,
+        "unit": "$/1M",
+        "note": "benchmark when benchMode=published"
+      },
+      {
+        "tab": "infer",
+        "id": "tFac",
+        "label": "Terrestrial facility capex, $M / MW IT",
+        "default": 12,
+        "min": 0,
+        "step": 0.5,
+        "unit": "$M/MW"
+      },
+      {
+        "tab": "infer",
+        "id": "tFacLife",
+        "label": "Facility economic life, years",
+        "default": 15,
+        "min": 1,
+        "unit": "yr"
+      },
+      {
+        "tab": "infer",
+        "id": "tPue",
+        "label": "PUE",
+        "default": 1.3,
+        "min": 1,
+        "step": 0.01
+      },
+      {
+        "tab": "infer",
+        "id": "tPower",
+        "label": "Electricity, $ / MWh",
+        "default": 80,
+        "min": 0,
+        "unit": "$/MWh"
+      },
+      {
+        "tab": "infer",
+        "id": "tAvail",
+        "label": "Terrestrial availability, %",
+        "default": 99.5,
+        "min": 1,
+        "max": 100,
+        "step": 0.1,
+        "unit": "%"
+      },
+      {
+        "tab": "infer",
+        "id": "tOpex",
+        "label": "Facility opex, % facility capex",
+        "default": 4,
+        "min": 0,
+        "step": 0.5,
+        "unit": "%"
+      },
+      {
+        "tab": "infer",
+        "id": "route",
+        "label": "Space-segment slant/route factor",
+        "default": 1.5,
+        "min": 1,
+        "step": 0.1
+      },
+      {
+        "tab": "infer",
+        "id": "gndms",
+        "label": "User-to-gateway latency, ms",
+        "default": 20,
+        "min": 0,
+        "unit": "ms"
+      },
+      {
+        "tab": "infer",
+        "id": "routems",
+        "label": "Additional routing/switching, ms",
+        "default": 5,
+        "min": 0,
+        "unit": "ms"
+      },
+      {
+        "tab": "infer",
+        "id": "procms",
+        "label": "Queue + processing TTFT, ms",
+        "default": 100,
+        "min": 0,
+        "unit": "ms"
+      },
+      {
+        "tab": "infer",
+        "id": "hops",
+        "label": "ISL hops/request",
+        "default": 1,
+        "min": 0,
+        "step": 1
+      },
+      {
+        "tab": "infer",
+        "id": "islkm",
+        "label": "Mean ISL separation, km",
+        "default": 200,
+        "min": 0,
+        "unit": "km"
+      },
+      {
+        "tab": "infer",
+        "id": "islms",
+        "label": "ISL switching / hop, ms",
+        "default": 0.1,
+        "min": 0,
+        "step": 0.01,
+        "unit": "ms"
+      },
+      {
+        "tab": "infer",
+        "id": "tbday",
+        "label": "Input/downlink traffic, TB/day/productive MW",
+        "default": 1,
+        "min": 0,
+        "step": 0.1,
+        "unit": "TB/day/MW"
+      },
+      {
+        "tab": "infer",
+        "id": "gbps",
+        "label": "Usable leased relay ISL capacity / compute sat, Gbit/s",
+        "default": 100,
+        "min": 0.1,
+        "unit": "Gbit/s"
+      },
+      {
+        "tab": "infer",
+        "id": "duty",
+        "label": "Relay link duty cycle, %",
+        "default": 80,
+        "min": 1,
+        "max": 100,
+        "unit": "%"
+      },
+      {
+        "tab": "time",
+        "id": "dev",
+        "label": "Spacecraft development/qualification lead, months",
+        "default": 30,
+        "min": 0,
+        "unit": "mo"
+      },
+      {
+        "tab": "time",
+        "id": "prod",
+        "label": "Production ramp/first batch, months",
+        "default": 12,
+        "min": 0,
+        "unit": "mo"
+      },
+      {
+        "tab": "time",
+        "id": "queue",
+        "label": "Launch queue/integration delay, months",
+        "default": 6,
+        "min": 0,
+        "unit": "mo"
+      },
+      {
+        "tab": "time",
+        "id": "cad",
+        "label": "Available launch cadence, launches/month",
+        "default": 1,
+        "min": 0.01,
+        "step": 0.1,
+        "unit": "/mo"
+      },
+      {
+        "tab": "time",
+        "id": "comm",
+        "label": "Commissioning/formation integration, days/batch",
+        "default": 14,
+        "min": 0,
+        "unit": "days"
+      },
+      {
+        "tab": "time",
+        "id": "repldays",
+        "label": "Failure replacement logistics, days",
+        "default": 120,
+        "min": 0,
+        "unit": "days"
+      },
+      {
+        "tab": "time",
+        "id": "earthlead",
+        "label": "Terrestrial time-to-power comparator, months",
+        "default": 36,
+        "min": 0,
+        "unit": "mo"
+      }
+    ],
+    "selects": [
+      {
+        "tab": "arch",
+        "id": "mode",
+        "label": "Architecture visualization",
+        "options": [
+          "individual",
+          "module",
+          "platform"
+        ],
+        "default": "individual",
+        "effect": "Changes architecture drawing only; economics unchanged (documented behavior — verify in S9.arch_drawing_only)."
+      },
+      {
+        "tab": "orbit",
+        "id": "op",
+        "label": "Orbit preset",
+        "options": [
+          "400",
+          "550",
+          "650",
+          "800",
+          "1200",
+          "custom"
+        ],
+        "default": "650",
+        "effect": "Sets alt/inc/dragfrac; 'custom' unlocks alt & inc."
+      },
+      {
+        "tab": "orbit",
+        "id": "illumMode",
+        "label": "Illumination basis",
+        "options": [
+          "geom",
+          "preset"
+        ],
+        "default": "geom",
+        "effect": "geom derives sun & eclmax (read-only); preset unlocks them."
+      },
+      {
+        "tab": "orbit",
+        "id": "clusterDesign",
+        "label": "Cluster orbital design",
+        "options": [
+          "rect",
+          "hex",
+          "3d"
+        ],
+        "default": "rect",
+        "effect": "Changes packing law -> R_max, self-shadow limits."
+      },
+      {
+        "tab": "orbit",
+        "id": "closOn",
+        "label": "ISL fabric",
+        "options": [
+          "yes",
+          "no"
+        ],
+        "default": "yes",
+        "effect": "yes adds Clos switch satellites (closk, switchMassFrac, switchCostFrac apply)."
+      },
+      {
+        "tab": "craft",
+        "id": "battMode",
+        "label": "Battery sizing basis",
+        "options": [
+          "eclipse",
+          "perrack"
+        ],
+        "default": "eclipse",
+        "effect": "perrack uses battkwhrack; eclipse sizes from eclmax."
+      },
+      {
+        "tab": "craft",
+        "id": "battPower",
+        "label": "Battery power basis during eclipse",
+        "options": [
+          "tdp",
+          "peak"
+        ],
+        "default": "tdp",
+        "effect": "peak uses rpk instead of rkw for eclipse load."
+      },
+      {
+        "tab": "craft",
+        "id": "thermMode",
+        "label": "Radiator rejection model",
+        "options": [
+          "derived",
+          "manual"
+        ],
+        "default": "derived",
+        "effect": "derived computes rflux (read-only); manual unlocks rflux."
+      },
+      {
+        "tab": "craft",
+        "id": "deorbitMode",
+        "label": "Deorbit propulsion model",
+        "options": [
+          "spiral",
+          "impulsive"
+        ],
+        "default": "spiral"
+      },
+      {
+        "tab": "craft",
+        "id": "disposal",
+        "label": "End-of-life disposal method",
+        "options": [
+          "auto",
+          "controlled",
+          "uncontrolled"
+        ],
+        "default": "auto",
+        "effect": "controlled adds chemical stage (crhw/crperi/crisp)."
+      },
+      {
+        "tab": "craft",
+        "id": "dispfail",
+        "label": "Failed disposal handling",
+        "options": [
+          "adr",
+          "pop"
+        ],
+        "default": "adr",
+        "effect": "adr prices removal (adrc); pop adds derelicts to shell population."
+      },
+      {
+        "tab": "cost",
+        "id": "costPreset",
+        "label": "Manufacturing cost regime",
+        "options": [
+          "traditional",
+          "mid",
+          "constellation",
+          "custom"
+        ],
+        "default": "traditional",
+        "effect": "Sets busc/solc/thermc/otherc/intc/nref; 'custom' unlocks them. Result is highly sensitive to this."
+      },
+      {
+        "tab": "cost",
+        "id": "learnMode",
+        "label": "Per-subsystem learning override",
+        "options": [
+          "single",
+          "split"
+        ],
+        "default": "single",
+        "effect": "split uses learnStruct/learnBus/learnInt."
+      },
+      {
+        "tab": "cost",
+        "id": "launchPreset",
+        "label": "Launch vehicle/performance preset",
+        "options": [
+          "f9sso",
+          "f9max",
+          "heavy100",
+          "custom"
+        ],
+        "default": "f9sso",
+        "effect": "Sets lcap and related; 'custom' unlocks."
+      },
+      {
+        "tab": "cost",
+        "id": "lmode",
+        "label": "Launch pricing model",
+        "options": [
+          "mission",
+          "kg",
+          "ride"
+        ],
+        "default": "mission",
+        "effect": "Selects which of lmission/lkg/ridekg drives launch cost."
+      },
+      {
+        "tab": "cost",
+        "id": "relayMode",
+        "label": "Relay lease basis",
+        "options": [
+          "flat",
+          "gbps"
+        ],
+        "default": "flat",
+        "effect": "flat uses nety; gbps uses relaygbps."
+      },
+      {
+        "tab": "cost",
+        "id": "replace",
+        "label": "Replaceable compute modules?",
+        "options": [
+          "no",
+          "yes"
+        ],
+        "default": "no",
+        "effect": "yes enables serv (robotic service cost) and module-refresh path."
+      },
+      {
+        "tab": "infer",
+        "id": "benchMode",
+        "label": "Terrestrial benchmark basis",
+        "options": [
+          "stack",
+          "published"
+        ],
+        "default": "stack",
+        "effect": "stack computes terrestrial TCO; published uses earthtok."
+      }
+    ],
+    "modal_selects": [
+      {
+        "id": "beTarget",
+        "label": "Break-even: solve for",
+        "options": [
+          "lmission",
+          "lkg",
+          "solc",
+          "otherc",
+          "busc",
+          "rcost",
+          "util",
+          "tpsmw"
+        ],
+        "default": "util",
+        "context": "break-even modal"
+      },
+      {
+        "id": "beGoal",
+        "label": "Break-even: parity goal",
+        "options": [
+          "terr",
+          "mult2",
+          "mult5"
+        ],
+        "default": "mult2",
+        "context": "break-even modal"
+      }
+    ],
+    "checkboxes_3d_layers": [
+      {
+        "id": "t3sun",
+        "label": "Sun & sunlight",
+        "default": true
+      },
+      {
+        "id": "t3term",
+        "label": "Terminator",
+        "default": true
+      },
+      {
+        "id": "t3coast",
+        "label": "Coastlines",
+        "default": true
+      },
+      {
+        "id": "t3grat",
+        "label": "Graticule",
+        "default": true
+      },
+      {
+        "id": "t3paths",
+        "label": "Orbit paths",
+        "default": false
+      },
+      {
+        "id": "t3live",
+        "label": "Live catalog",
+        "default": false
+      },
+      {
+        "id": "t3ecc",
+        "label": "Include eccentric / beyond-LEO objects",
+        "default": false
+      },
+      {
+        "id": "t3synth",
+        "label": "Synthetic shell density",
+        "default": true
+      },
+      {
+        "id": "t3rings",
+        "label": "Altitude guide rings",
+        "default": true
+      }
+    ],
+    "view_selector_buttons": [
+      {
+        "text": "Single satellite",
+        "group": "main_view"
+      },
+      {
+        "text": "Cluster",
+        "group": "main_view"
+      },
+      {
+        "text": "System overview",
+        "group": "main_view"
+      },
+      {
+        "text": "Orbital shells",
+        "group": "main_view"
+      },
+      {
+        "text": "Shells 3D",
+        "group": "main_view"
+      },
+      {
+        "text": "Both styles",
+        "group": "style"
+      },
+      {
+        "text": "Concept",
+        "group": "style"
+      },
+      {
+        "text": "Technical",
+        "group": "style"
+      }
+    ],
+    "popout_buttons": [
+      {
+        "id": "specWindow",
+        "text": "Open in its own window",
+        "context": "spec modal"
+      },
+      {
+        "text": "⧉ Concept",
+        "context": "viz bar"
+      },
+      {
+        "text": "⧉ Engineering sheet",
+        "context": "viz bar"
+      },
+      {
+        "text": "⧉ Cluster",
+        "context": "viz bar"
+      },
+      {
+        "text": "⧉ Orbital shells",
+        "context": "viz bar"
+      },
+      {
+        "text": "⧉ Shells 3D",
+        "context": "viz bar"
+      }
+    ],
+    "three_d_controls": [
+      {
+        "id": "scaleTrue",
+        "type": "button",
+        "label": "True scale (zoom out to the Moon)"
+      },
+      {
+        "id": "scaleLeo",
+        "type": "button",
+        "label": "LEO exaggerated x4"
+      },
+      {
+        "id": "scaleGeo",
+        "type": "button",
+        "label": "Log compressed"
+      },
+      {
+        "id": "resetView",
+        "type": "button",
+        "label": "Reset view"
+      },
+      {
+        "id": "t3now",
+        "type": "button",
+        "label": "Now"
+      },
+      {
+        "id": "t3play",
+        "type": "button",
+        "label": "Play"
+      },
+      {
+        "id": "t3s1",
+        "type": "button",
+        "label": "1x speed"
+      },
+      {
+        "id": "t3s60",
+        "type": "button",
+        "label": "60x speed"
+      },
+      {
+        "id": "t3s600",
+        "type": "button",
+        "label": "600x speed"
+      },
+      {
+        "id": "epoch",
+        "type": "date",
+        "label": "Epoch date"
+      },
+      {
+        "id": "t3time",
+        "type": "range",
+        "label": "UTC time scrubber"
+      },
+      {
+        "id": "liveLoad",
+        "type": "button",
+        "label": "Load live catalog (CelesTrak)",
+        "side_effect": "network fetch"
+      },
+      {
+        "id": "liveClear",
+        "type": "button",
+        "label": "Clear cache"
+      },
+      {
+        "id": "liveFile",
+        "type": "file",
+        "label": "Live catalog file loader"
+      },
+      {
+        "id": "exportModeled",
+        "type": "button",
+        "label": "Export modeled fleet (GP JSON)",
+        "side_effect": "file download"
+      }
+    ],
+    "shells_view_buttons": [
+      {
+        "id": "loadShell",
+        "type": "button",
+        "label": "Load tracked count for this altitude band (into pop)"
+      },
+      {
+        "id": "loadShellPlanned",
+        "type": "button",
+        "label": "Load tracked + announced (into pop)"
+      }
+    ],
+    "spec_modal": [
+      {
+        "id": "openSpec",
+        "type": "button",
+        "label": "Specification (open)"
+      },
+      {
+        "id": "specWindow",
+        "type": "button",
+        "label": "Open in its own window"
+      },
+      {
+        "id": "specClose",
+        "type": "button",
+        "label": "Close"
+      },
+      {
+        "id": "specFile",
+        "type": "file",
+        "label": "Spec markdown file loader (fallback when fetch blocked)"
+      }
+    ],
+    "breakeven_modal": [
+      {
+        "id": "breakeven",
+        "type": "button",
+        "label": "Open break-even solver"
+      },
+      {
+        "id": "beTarget",
+        "type": "select"
+      },
+      {
+        "id": "beGoal",
+        "type": "select"
+      },
+      {
+        "id": "beResult",
+        "type": "output",
+        "label": "Solver result text"
+      },
+      {
+        "id": "beClose",
+        "type": "button",
+        "label": "Close"
+      }
+    ],
+    "selftest_modal": [
+      {
+        "id": "runtests",
+        "type": "button",
+        "label": "Run self-tests"
+      },
+      {
+        "id": "testClose",
+        "type": "button",
+        "label": "Close"
+      }
+    ],
+    "render_surfaces": [
+      {
+        "id": "conceptSvg",
+        "type": "svg",
+        "view": "concept"
+      },
+      {
+        "id": "technicalSvg",
+        "type": "svg",
+        "view": "engineering sheet"
+      },
+      {
+        "id": "sweepSvg",
+        "type": "svg",
+        "view": "dawn-dusk altitude sweep"
+      },
+      {
+        "id": "tornado",
+        "type": "svg",
+        "view": "sensitivity tornado"
+      },
+      {
+        "id": "orbitCanvas",
+        "type": "canvas",
+        "view": "orbit/cluster/shells 2D"
+      },
+      {
+        "id": "threeCanvas",
+        "type": "canvas",
+        "view": "Shells 3D"
+      }
+    ],
+    "result_kpi_ids": {
+      "capex": "Initial CAPEX incl. NRE / productive MW",
+      "tco": "Discounted lifecycle TCO / productive MW",
+      "tokc": "Delivered cost / 1M tokens (orbital)",
+      "tokcmp": "Multiple vs terrestrial (e.g. 56.5x)",
+      "terrTok": "Modeled terrestrial cost / 1M tokens",
+      "massmw": "Orbital wet mass / productive MW",
+      "nsat": "Satellites",
+      "satsOut": "Satellites (alt readout)",
+      "satd": "Sat detail line",
+      "nlaunch": "Initial launches",
+      "launchd": "Initial payload detail",
+      "ttft": "Inference TTFT",
+      "eavail": "Effective availability",
+      "avail": "Base availability input echo",
+      "rsatOut": "Racks/sat readout",
+      "rsatD": "Racks detail"
+    },
+    "display_registry": [
+      {
+        "id": "archDerived",
+        "region": "Architecture tab",
+        "shows": "Derivation sentence: target kW / rack -> productive+spare racks -> satellites",
+        "baseline": "1,000 kW ÷ 135 = 7.41→8 +1 spare = 9 sats",
+        "check": "Recomputes and stays internally consistent with mw/rkw/rps/spare; no NaN",
+        "rules": "R5,R21"
+      },
+      {
+        "id": "prodRacksOut",
+        "region": "Architecture tab",
+        "shows": "Total productive racks (derived)",
+        "baseline": "8 racks = 1.08 MW",
+        "check": "= ceil(mw/ (rkw/1000)) ; integer ≥1",
+        "rules": "R5"
+      },
+      {
+        "id": "instRacksOut",
+        "region": "Architecture tab",
+        "shows": "Total installed racks incl. spares",
+        "baseline": "9 racks (1 spare)",
+        "check": "= productive + ceil(productive*spare%)",
+        "rules": "R5"
+      },
+      {
+        "id": "satsOut",
+        "region": "Architecture tab",
+        "shows": "Satellites (derived)",
+        "baseline": "9 compute × 1 rack",
+        "check": "= installed racks / rps ; matches nsat",
+        "rules": "R5"
+      },
+      {
+        "id": "regimeBadge",
+        "region": "top bar / Costs",
+        "shows": "Active manufacturing cost regime badge",
+        "baseline": "Traditional aerospace / low volume",
+        "check": "Reflects costPreset select; updates on change",
+        "rules": "R12,R21"
+      },
+      {
+        "id": "sunBadge",
+        "region": "Orbit tab",
+        "shows": "Computed sunlight fraction badge",
+        "baseline": "0.963",
+        "check": "Present when illumMode=geom; 0<val≤1",
+        "rules": "R10,R21"
+      },
+      {
+        "id": "eclBadge",
+        "region": "Orbit tab",
+        "shows": "Computed worst-season eclipse badge",
+        "baseline": "19.7 min",
+        "check": "≥0; →0 at eclipse-free altitude",
+        "rules": "R10,R11"
+      },
+      {
+        "id": "syncBadge",
+        "region": "Orbit tab",
+        "shows": "Sun-synchronous status badge",
+        "baseline": "(SSO/inclination note)",
+        "check": "Consistent with op preset / inc",
+        "rules": "R21"
+      },
+      {
+        "id": "rfluxBadge",
+        "region": "Spacecraft tab",
+        "shows": "Derived radiator net rejection badge",
+        "baseline": "477 W/m²",
+        "check": "Present when thermMode=derived; >0",
+        "rules": "R21"
+      },
+      {
+        "id": "illumNote",
+        "region": "Orbit tab",
+        "shows": "Illumination-mode explanatory note",
+        "baseline": "(geom vs preset text)",
+        "check": "Matches illumMode select",
+        "rules": "R21"
+      },
+      {
+        "id": "thermNote",
+        "region": "Spacecraft tab",
+        "shows": "Thermal-model explanatory note",
+        "baseline": "(derived vs manual text)",
+        "check": "Matches thermMode select",
+        "rules": "R21"
+      },
+      {
+        "id": "costPresetNote",
+        "region": "Costs tab",
+        "shows": "Cost-preset note (cumulative unit etc.)",
+        "baseline": "(preset text)",
+        "check": "Matches costPreset; states nref",
+        "rules": "R12,R21"
+      },
+      {
+        "id": "launchPresetNote",
+        "region": "Costs tab",
+        "shows": "Launch-preset note",
+        "baseline": "(preset text)",
+        "check": "Matches launchPreset",
+        "rules": "R21"
+      },
+      {
+        "id": "shellHint",
+        "region": "Orbit tab",
+        "shows": "Shell population helper hint",
+        "baseline": "(hint text)",
+        "check": "Present; guides pop/cap",
+        "rules": "R21"
+      },
+      {
+        "id": "capex",
+        "region": "Scenario result",
+        "shows": "Initial CAPEX incl. NRE / productive MW",
+        "baseline": "$2.61B",
+        "check": "≥0; finite",
+        "rules": "R2,R3"
+      },
+      {
+        "id": "tco",
+        "region": "Scenario result",
+        "shows": "Discounted lifecycle TCO / productive MW",
+        "baseline": "$6B",
+        "check": "≥0; > capex (adds opex/refresh)",
+        "rules": "R2,R3"
+      },
+      {
+        "id": "tokc",
+        "region": "Scenario result",
+        "shows": "Delivered cost / 1M tokens (orbital)",
+        "baseline": "$13.971",
+        "check": "≥0; ↓ with util & tpsmw",
+        "rules": "R2,R3,R6,R7"
+      },
+      {
+        "id": "tokcmp",
+        "region": "Scenario result",
+        "shows": "Multiple vs terrestrial",
+        "baseline": "56.5×",
+        "check": "= tokc/terrTok; >1 in normal ranges",
+        "rules": "R13"
+      },
+      {
+        "id": "terrTok",
+        "region": "Scenario result",
+        "shows": "Modeled terrestrial cost / 1M tokens",
+        "baseline": "$0.247",
+        "check": "≥0; from benchMode",
+        "rules": "R2,R3"
+      },
+      {
+        "id": "terrDetail",
+        "region": "Scenario result",
+        "shows": "Terrestrial cost breakdown line",
+        "baseline": "facility $14.85M/MW, energy…, PUE 1.3",
+        "check": "Values echo Inference-tab terrestrial inputs",
+        "rules": "R21"
+      },
+      {
+        "id": "massmw",
+        "region": "Scenario result",
+        "shows": "Orbital wet mass / productive MW",
+        "baseline": "114.7 t/MW",
+        "check": "≥0; = wet total / productive MW",
+        "rules": "R4"
+      },
+      {
+        "id": "nsat",
+        "region": "Scenario result",
+        "shows": "Satellites",
+        "baseline": "9",
+        "check": "integer ≥1; = satsOut",
+        "rules": "R5"
+      },
+      {
+        "id": "satd",
+        "region": "Scenario result",
+        "shows": "Satellite composition detail",
+        "baseline": "1 rack/sat; 8 productive + 1 spare",
+        "check": "productive+spare = installed",
+        "rules": "R5"
+      },
+      {
+        "id": "nlaunch",
+        "region": "Scenario result",
+        "shows": "Initial launches",
+        "baseline": "9",
+        "check": "integer ≥1; consistent with lsat & mass",
+        "rules": "R14"
+      },
+      {
+        "id": "launchd",
+        "region": "Scenario result",
+        "shows": "Initial payload detail",
+        "baseline": "123.8 t initial payload",
+        "check": "≥0",
+        "rules": "R21"
+      },
+      {
+        "id": "ttft",
+        "region": "Scenario result",
+        "shows": "Inference TTFT",
+        "baseline": "133 ms",
+        "check": "≥0; rises with alt/hops/procms",
+        "rules": "R9"
+      },
+      {
+        "id": "eavail",
+        "region": "Scenario result",
+        "shows": "Effective availability",
+        "baseline": "96.57%",
+        "check": "0–100%; ≤ base avail input",
+        "rules": "R17"
+      },
+      {
+        "id": "solarAreaOut",
+        "region": "Power & geometry",
+        "shows": "Solar array area / satellite",
+        "baseline": "674 m²",
+        "check": "≥0; scales with load & sun fraction",
+        "rules": "R21"
+      },
+      {
+        "id": "solarPowerOut",
+        "region": "Power & geometry",
+        "shows": "Solar array nameplate",
+        "baseline": "202 kW",
+        "check": "≥ IT load incl. overhead/margin",
+        "rules": "R21"
+      },
+      {
+        "id": "radAreaOut",
+        "region": "Power & geometry",
+        "shows": "Radiator area / satellite",
+        "baseline": "311 m²",
+        "check": "≥0; scales with heat load / rflux",
+        "rules": "R21"
+      },
+      {
+        "id": "batteryOut",
+        "region": "Power & geometry",
+        "shows": "Battery nameplate / satellite",
+        "baseline": "245 kWh",
+        "check": "≥0; scales with eclipse & DoD",
+        "rules": "R11"
+      },
+      {
+        "id": "eclipseOut",
+        "region": "Power & geometry",
+        "shows": "Eclipse design detail",
+        "baseline": "19.7 min design + 15 min reserve",
+        "check": "reserve = bres input",
+        "rules": "R11"
+      },
+      {
+        "id": "spanOut",
+        "region": "Power & geometry",
+        "shows": "Deployed characteristic span",
+        "baseline": "44 m",
+        "check": "≤ fairing envelope or flagged",
+        "rules": "R21"
+      },
+      {
+        "id": "slewOut",
+        "region": "Power & geometry",
+        "shows": "Area-to-mass ratio",
+        "baseline": "0.075 m²/kg",
+        "check": "≤ slewlim or flagged",
+        "rules": "R21"
+      },
+      {
+        "id": "spacecraftKgCost",
+        "region": "Power & geometry",
+        "shows": "Non-compute spacecraft manufacturing $/kg",
+        "baseline": "$14.4k/kg",
+        "check": "≥0; excludes launch/compute",
+        "rules": "R21"
+      },
+      {
+        "id": "mt",
+        "region": "Mass stack table",
+        "shows": "Per-subsystem mass table (kg, % wet mass)",
+        "baseline": "11 subsystems + wet total 13,759 kg",
+        "check": "% column sums ~100%; wet total = Σ rows",
+        "rules": "R4"
+      },
+      {
+        "id": "fleetOut",
+        "region": "Cluster geometry",
+        "shows": "Fleet size",
+        "baseline": "9 satellites",
+        "check": "= compute+switch sats",
+        "rules": "R5"
+      },
+      {
+        "id": "fleetD",
+        "region": "Cluster geometry",
+        "shows": "Fleet composition detail",
+        "baseline": "9 compute + 0 switch, 1 cluster",
+        "check": "switch>0 only when closOn=yes",
+        "rules": "R18"
+      },
+      {
+        "id": "rmaxOut",
+        "region": "Cluster geometry",
+        "shows": "Cluster radius R_max",
+        "baseline": "1.68 km",
+        "check": "≥ R_min (spacing input)",
+        "rules": "R18"
+      },
+      {
+        "id": "rmaxD",
+        "region": "Cluster geometry",
+        "shows": "R_max derivation detail",
+        "baseline": "Suncatcher rect · N≈…",
+        "check": "matches clusterDesign law",
+        "rules": "R18"
+      },
+      {
+        "id": "rsatOut",
+        "region": "Cluster geometry",
+        "shows": "Satellite footprint vs shadow limit",
+        "baseline": "40 m vs 250 m",
+        "check": "footprint < shadow limit or flagged",
+        "rules": "R18"
+      },
+      {
+        "id": "rsatD",
+        "region": "Cluster geometry",
+        "shows": "Footprint detail",
+        "baseline": "tip-to-tip 80 m · no self-shadowing",
+        "check": "flags self-shadow in hex/3d",
+        "rules": "R18"
+      },
+      {
+        "id": "closOut",
+        "region": "Cluster geometry",
+        "shows": "ISL fabric type",
+        "baseline": "full mesh",
+        "check": "full mesh (closOn=no) / Clos (yes)",
+        "rules": "R18"
+      },
+      {
+        "id": "closD",
+        "region": "Cluster geometry",
+        "shows": "ISL fabric detail",
+        "baseline": "8 ISL/compute sat · switch sats 0",
+        "check": "consistent with closOn/closk",
+        "rules": "R18"
+      },
+      {
+        "id": "period",
+        "region": "Orbit & fill-up",
+        "shows": "Orbital period",
+        "baseline": "97.6 min",
+        "check": "matches altitude (Kepler)",
+        "rules": "R9"
+      },
+      {
+        "id": "ddv",
+        "region": "Orbit & fill-up",
+        "shows": "End-of-life Δv",
+        "baseline": "253.7 m/s",
+        "check": "≥0; rises with altitude",
+        "rules": "R9"
+      },
+      {
+        "id": "deorbitLabel",
+        "region": "Orbit & fill-up",
+        "shows": "Deorbit method detail",
+        "baseline": "low-thrust spiral + chemical…",
+        "check": "matches deorbitMode/disposal",
+        "rules": "R21"
+      },
+      {
+        "id": "ave",
+        "region": "Orbit & fill-up",
+        "shows": "Avoidance events / sat / year",
+        "baseline": "4.01",
+        "check": "≥ av0 baseline; rises w/ occupancy",
+        "rules": "R21"
+      },
+      {
+        "id": "ldv",
+        "region": "Orbit & fill-up",
+        "shows": "Lifetime propulsion Δv",
+        "baseline": "382.8 m/s",
+        "check": "≥ stationkeeping+contingency",
+        "rules": "R21"
+      },
+      {
+        "id": "dragOut",
+        "region": "Orbit & fill-up",
+        "shows": "Drag detail",
+        "baseline": "4.4 m/s/yr on 246 m² projected",
+        "check": "≥0; rises with rho & area",
+        "rules": "R21"
+      },
+      {
+        "id": "occ",
+        "region": "Orbit & fill-up",
+        "shows": "Shell occupancy after deployment",
+        "baseline": "2,509 / 12,000 (20.9%)",
+        "check": "= (pop+sats)/cap ; 0–100%",
+        "rules": "R21"
+      },
+      {
+        "id": "occw",
+        "region": "Orbit & fill-up",
+        "shows": "Occupancy threshold status",
+        "baseline": "Below configured threshold",
+        "check": "warns when over threshold",
+        "rules": "R14"
+      },
+      {
+        "id": "occb",
+        "region": "Orbit & fill-up",
+        "shows": "Occupancy gauge bar (visual)",
+        "baseline": "(fill bar)",
+        "check": "fill % matches occ",
+        "rules": "R21"
+      },
+      {
+        "id": "occe",
+        "region": "Orbit & fill-up",
+        "shows": "Occupancy gauge marker (visual)",
+        "baseline": "(threshold marker)",
+        "check": "marker at threshold",
+        "rules": "R21"
+      },
+      {
+        "id": "rackCounts",
+        "region": "Inference economics",
+        "shows": "Productive / installed racks",
+        "baseline": "8 productive / 9 installed",
+        "check": "matches prod/instRacksOut",
+        "rules": "R5"
+      },
+      {
+        "id": "tps",
+        "region": "Inference economics",
+        "shows": "Effective delivered tokens/s",
+        "baseline": "2,190,264",
+        "check": "≥0; = tpsmw*MW*util*avail",
+        "rules": "R6,R7"
+      },
+      {
+        "id": "tpy",
+        "region": "Inference economics",
+        "shows": "Delivered tokens/year",
+        "baseline": "0.069 quadrillion",
+        "check": "≥0; = tps*seconds/yr",
+        "rules": "R21"
+      },
+      {
+        "id": "gpuh",
+        "region": "Inference economics",
+        "shows": "TCO-derived $/GPU-hour",
+        "baseline": "$264.235",
+        "check": "≥0",
+        "rules": "R2"
+      },
+      {
+        "id": "linku",
+        "region": "Inference economics",
+        "shows": "Leased relay capacity utilization",
+        "baseline": "0.01%",
+        "check": "0–100%",
+        "rules": "R21"
+      },
+      {
+        "id": "proprt",
+        "region": "Inference economics",
+        "shows": "Space propagation contribution RTT",
+        "baseline": "6.5 ms",
+        "check": "≥0; rises with altitude",
+        "rules": "R9"
+      },
+      {
+        "id": "itt",
+        "region": "Inference economics",
+        "shows": "Inter-token time at interactivity",
+        "baseline": "8.62 ms",
+        "check": "≥0; = 1000/tpsu",
+        "rules": "R21"
+      },
+      {
+        "id": "ct",
+        "region": "Cost stack table",
+        "shows": "Per-category cost table ($M total, $M/MW)",
+        "baseline": "Compute…Launch…Total 2,317.8",
+        "check": "Σ categories = total CAPEX row",
+        "rules": "R2,R3"
+      },
+      {
+        "id": "footerCosts",
+        "region": "Cost stack table",
+        "shows": "NRE / learning-curve footnote line",
+        "baseline": "NRE $500M; learning units 1–9…",
+        "check": "echoes nre & learn inputs",
+        "rules": "R21"
+      },
+      {
+        "id": "deploy",
+        "region": "Deployment burden",
+        "shows": "Modeled full deployment time",
+        "baseline": "57.5 months",
+        "check": "≥0; ↑ as launch cadence ↓",
+        "rules": "R19"
+      },
+      {
+        "id": "edeploy",
+        "region": "Deployment burden",
+        "shows": "Terrestrial comparator",
+        "baseline": "36 months",
+        "check": "= earthlead input",
+        "rules": "R19"
+      },
+      {
+        "id": "rmy",
+        "region": "Deployment burden",
+        "shows": "Replacement mass / year",
+        "baseline": "45.9 t/year",
+        "check": "≥0",
+        "rules": "R21"
+      },
+      {
+        "id": "rly",
+        "region": "Deployment burden",
+        "shows": "Equivalent replacement launches / year",
+        "baseline": "3.4",
+        "check": "≥0",
+        "rules": "R21"
+      },
+      {
+        "id": "fsy",
+        "region": "Deployment burden",
+        "shows": "Expected failed satellites / year",
+        "baseline": "0.34",
+        "check": "≥0; = fleet*fail%",
+        "rules": "R21"
+      },
+      {
+        "id": "fd",
+        "region": "Deployment burden",
+        "shows": "Capacity unavailable from replacement delay",
+        "baseline": "1.23%",
+        "check": "0–100%; reduces eavail",
+        "rules": "R17"
+      },
+      {
+        "id": "dispev",
+        "region": "Deployment burden",
+        "shows": "Disposal events / year",
+        "baseline": "3.34",
+        "check": "≥0; retirements+failures",
+        "rules": "R21"
+      },
+      {
+        "id": "derel",
+        "region": "Deployment burden",
+        "shows": "Expected derelicts / year",
+        "baseline": "0.285 /yr",
+        "check": "≥0; from disposal success %",
+        "rules": "R15"
+      },
+      {
+        "id": "dispcost",
+        "region": "Deployment burden",
+        "shows": "Disposal + debris removal cost / year",
+        "baseline": "$6.7M",
+        "check": "≥0",
+        "rules": "R21"
+      },
+      {
+        "id": "status",
+        "region": "Scenario result / Model cautions",
+        "shows": "Model cautions list (dynamic warnings)",
+        "baseline": "5 cautions at baseline",
+        "check": "Fires/clears per conditions; matches oracle.known_model_cautions",
+        "rules": "R14,R15"
+      },
+      {
+        "id": "vizCaption",
+        "region": "Visualization",
+        "shows": "Caption under active view",
+        "baseline": "(view-specific text)",
+        "check": "Updates per selected view; values match scenario",
+        "rules": "R21"
+      },
+      {
+        "id": "sweepNote",
+        "region": "Dawn-dusk sweep panel",
+        "shows": "Sweep narrative (eclipse/battery/shell vs altitude)",
+        "baseline": "At 650 km: eclipse 19.7 min…",
+        "check": "Numbers consistent with alt & sweep curve",
+        "rules": "R10"
+      },
+      {
+        "id": "tornadoNote",
+        "region": "Sensitivity tornado",
+        "shows": "Tornado narrative (top driver, spans)",
+        "baseline": "Top driver: Tokens/s/MW (span $5.82)",
+        "check": "Top driver matches largest bar",
+        "rules": "R16"
+      },
+      {
+        "id": "liveStatus",
+        "region": "Shells 3D",
+        "shows": "Live-catalog status line",
+        "baseline": "(embedded snapshot / loaded / cached)",
+        "check": "States catalog source & count",
+        "rules": "R21"
+      },
+      {
+        "id": "t3label",
+        "region": "Shells 3D",
+        "shows": "3D time / epoch label",
+        "baseline": "(UTC time)",
+        "check": "Tracks scrubber/epoch",
+        "rules": "R21"
+      },
+      {
+        "id": "beResult",
+        "region": "Break-even modal",
+        "shows": "Solver result text",
+        "baseline": "No parity in searched range…",
+        "check": "Value or explained no-solution; never NaN/empty",
+        "rules": "R13"
+      },
+      {
+        "id": "specBody",
+        "region": "Specification modal",
+        "shows": "Rendered spec markdown",
+        "baseline": "(spec Rev 0.3 content)",
+        "check": "Renders headings/lists/tables; not raw markdown",
+        "rules": "R21"
+      },
+      {
+        "id": "testRows",
+        "region": "Self-test modal",
+        "shows": "Self-test results table",
+        "baseline": "(PASS/FAIL rows)",
+        "check": "All app self-tests PASS",
+        "rules": "R3"
+      }
+    ]
+  },
+  "mode_gated_inputs": [
+    {
+      "input": "alt",
+      "editable_when": "op=custom",
+      "else": "driven by preset"
+    },
+    {
+      "input": "inc",
+      "editable_when": "op=custom",
+      "else": "driven by preset"
+    },
+    {
+      "input": "sun",
+      "editable_when": "illumMode=preset",
+      "else": "derived (read-only)"
+    },
+    {
+      "input": "eclmax",
+      "editable_when": "illumMode=preset",
+      "else": "derived (read-only)"
+    },
+    {
+      "input": "rflux",
+      "editable_when": "thermMode=manual",
+      "else": "derived (read-only)"
+    },
+    {
+      "input": "battkwhrack",
+      "active_when": "battMode=perrack"
+    },
+    {
+      "input": "rpk",
+      "active_when": "battPower=peak"
+    },
+    {
+      "input": [
+        "crhw",
+        "crperi",
+        "crisp"
+      ],
+      "active_when": "disposal in [auto(if over threshold),controlled]"
+    },
+    {
+      "input": "adrc",
+      "active_when": "dispfail=adr"
+    },
+    {
+      "input": [
+        "busc",
+        "solc",
+        "thermc",
+        "otherc",
+        "intc",
+        "nref"
+      ],
+      "editable_when": "costPreset=custom",
+      "else": "driven by preset"
+    },
+    {
+      "input": [
+        "learnStruct",
+        "learnBus",
+        "learnInt"
+      ],
+      "active_when": "learnMode=split"
+    },
+    {
+      "input": "lcap",
+      "editable_when": "launchPreset=custom",
+      "else": "driven by preset"
+    },
+    {
+      "input": "lmission",
+      "active_when": "lmode=mission"
+    },
+    {
+      "input": "lkg",
+      "active_when": "lmode=kg"
+    },
+    {
+      "input": [
+        "ridekg",
+        "ridelim"
+      ],
+      "active_when": "lmode=ride"
+    },
+    {
+      "input": "nety",
+      "active_when": "relayMode=flat"
+    },
+    {
+      "input": "relaygbps",
+      "active_when": "relayMode=gbps"
+    },
+    {
+      "input": "serv",
+      "active_when": "replace=yes"
+    },
+    {
+      "input": "earthtok",
+      "active_when": "benchMode=published"
+    },
+    {
+      "input": [
+        "tFac",
+        "tFacLife",
+        "tPue",
+        "tPower",
+        "tAvail",
+        "tOpex"
+      ],
+      "active_when": "benchMode=stack"
+    },
+    {
+      "input": [
+        "closk",
+        "switchMassFrac",
+        "switchCostFrac"
+      ],
+      "active_when": "closOn=yes"
+    }
+  ],
+  "test_suites": [
+    {
+      "id": "S1",
+      "name": "Smoke / load",
+      "cases": [
+        {
+          "id": "S1.1",
+          "step": "Navigate to URL.",
+          "expect": "document.title contains 'Orbital AI Data Center Economics Model'. No uncaught console errors on load."
+        },
+        {
+          "id": "S1.2",
+          "step": "Read baseline KPIs after load.",
+          "expect": "capex, tco, tokc, terrTok, nsat, nlaunch, ttft, eavail all present and non-empty."
+        },
+        {
+          "id": "S1.3",
+          "step": "Confirm same-origin gp.json load status line renders.",
+          "expect": "A catalog/status line is shown (embedded snapshot if no catalog)."
+        }
+      ]
+    },
+    {
+      "id": "S2",
+      "name": "Tab navigation",
+      "parametric_over": "control_registry.tabs",
+      "template": {
+        "step": "Click tab '{label}'.",
+        "expect": "All controls whose tab=='{key}' become visible (offsetParent!=null); count matches expected_visible_controls +/- documented derived-field gating."
+      }
+    },
+    {
+      "id": "S3",
+      "name": "Numeric inputs — functional",
+      "parametric_over": "control_registry.numeric_inputs",
+      "per_input_cases": [
+        {
+          "id": "nominal",
+          "action": "set to default, recalc",
+          "expect": "KPIs recompute without error; value accepted."
+        },
+        {
+          "id": "low",
+          "action": "set to min (or min+step), recalc",
+          "expect": "Accepted; no NaN/Infinity in any KPI; warnings may appear (record them)."
+        },
+        {
+          "id": "high",
+          "action": "set to a large plausible value (default x10, or max if bounded), recalc",
+          "expect": "Accepted; KPIs finite; directional effect matches reasonableness_rules where a rule exists."
+        },
+        {
+          "id": "invalid_neg",
+          "action": "set to -1 (or below min), recalc",
+          "expect": "Either clamped/rejected OR flagged; MUST NOT yield NaN, blank, or negative $/1M tokens. Record actual behavior."
+        },
+        {
+          "id": "invalid_text",
+          "action": "type 'abc', recalc",
+          "expect": "Ignored/rejected; last valid value or empty handled gracefully; no crash."
+        },
+        {
+          "id": "restore",
+          "action": "reset field to default",
+          "expect": "back to baseline"
+        }
+      ],
+      "notes": "For mode-gated inputs, first enable the governing mode (see mode_gated_inputs) before value tests; otherwise verify the field is correctly disabled and skip value tests (that is a PASS for gating)."
+    },
+    {
+      "id": "S4",
+      "name": "Dropdowns — every option",
+      "parametric_over": "control_registry.selects + control_registry.modal_selects",
+      "per_select_cases": [
+        {
+          "id": "each_option",
+          "action": "select each option in turn, recalc",
+          "expect": "No error; documented 'effect' is observable (e.g., preset options populate their driven inputs; 'custom' unlocks previously-disabled fields)."
+        },
+        {
+          "id": "gating",
+          "action": "after selecting an option that unlocks fields",
+          "expect": "The fields named in mode_gated_inputs become editable/disabled accordingly."
+        },
+        {
+          "id": "restore",
+          "action": "return to default option"
+        }
+      ]
+    },
+    {
+      "id": "S5",
+      "name": "3D layer checkboxes",
+      "precondition": "Switch main view to 'Shells 3D'.",
+      "parametric_over": "control_registry.checkboxes_3d_layers",
+      "per_checkbox_cases": [
+        {
+          "id": "toggle_off",
+          "action": "uncheck, observe threeCanvas",
+          "expect": "Corresponding layer disappears (screenshot diff or documented behavior); no error."
+        },
+        {
+          "id": "toggle_on",
+          "action": "check",
+          "expect": "Layer reappears."
+        }
+      ],
+      "special": [
+        {
+          "id": "S5.live",
+          "note": "t3live requires a loaded catalog; if none loaded, expect it to be inert or to prompt — record which."
+        },
+        {
+          "id": "S5.synth",
+          "note": "t3synth (synthetic shell density) should auto-disable when a live catalog is loaded (documented v5.0 behavior)."
+        }
+      ]
+    },
+    {
+      "id": "S6",
+      "name": "Views, style toggles, pop-outs, render surfaces",
+      "cases": [
+        {
+          "id": "S6.1",
+          "step": "Click each main view button (Single satellite, Cluster, System overview, Orbital shells, Shells 3D).",
+          "expect": "The matching render surface (SVG/canvas) becomes visible and non-blank; view legend text updates."
+        },
+        {
+          "id": "S6.2",
+          "step": "Click style toggles (Both styles, Concept, Technical).",
+          "expect": "conceptSvg and/or technicalSvg show accordingly; Technical shows dimension lines/callouts."
+        },
+        {
+          "id": "S6.3",
+          "step": "For each pop-out button, click and confirm a child window opens.",
+          "expect": "Child window opens same file with ?popout=<view>; child shows only that view with its own controls (regression guard for v5.2)."
+        },
+        {
+          "id": "S6.4",
+          "step": "Change a scenario input in parent, recalc, with a pop-out open.",
+          "expect": "Child view updates live via postMessage (v4.7)."
+        },
+        {
+          "id": "S6.5",
+          "step": "On Shells 3D: click scaleTrue / scaleLeo / scaleGeo / resetView.",
+          "expect": "Radial mapping changes; guide rings adapt; no error. resetView returns to default framing."
+        },
+        {
+          "id": "S6.6",
+          "step": "On Shells 3D: set epoch date, drag t3time scrubber, click t3now, t3play, and speed t3s1/t3s60/t3s600.",
+          "expect": "Satellites move; scrubber drives time; Now snaps to current UTC; playback speeds differ; Play toggles."
+        },
+        {
+          "id": "S6.7",
+          "step": "Interact with orbitCanvas / SVGs: wheel zoom, drag pan, double-click fit.",
+          "expect": "Zoom/pan/fit work on conceptSvg, technicalSvg, orbitCanvas, threeCanvas."
+        },
+        {
+          "id": "S6.8",
+          "step": "On Orbital shells view, click loadShell then loadShellPlanned.",
+          "expect": "pop input is populated with the shell's tracked (then tracked+announced) count; recalc reflects new population."
+        }
+      ]
+    },
+    {
+      "id": "S7",
+      "name": "Modals",
+      "cases": [
+        {
+          "id": "S7.1",
+          "step": "Click Specification (openSpec).",
+          "expect": "Spec modal opens; markdown renders (headings/lists/tables). On GitHub Pages the sibling .md is fetched. specClose closes it."
+        },
+        {
+          "id": "S7.2",
+          "step": "In spec modal click 'Open in its own window' (specWindow).",
+          "expect": "Separate window renders same spec content."
+        },
+        {
+          "id": "S7.3",
+          "step": "Spec fetch-blocked path: (simulated/offline) confirm specFile loader is offered.",
+          "expect": "File loader appears when fetch not allowed."
+        },
+        {
+          "id": "S7.4",
+          "step": "Click Break-even solver (breakeven).",
+          "expect": "Modal opens with beTarget + beGoal selects and beResult."
+        },
+        {
+          "id": "S7.5",
+          "step": "For beTarget in each option x beGoal in each option: change selection.",
+          "expect": "beResult updates with either a solved value or a clear 'no solution in range' message (structural). Message must name the searched input and goal; MUST NOT show NaN or empty. Verify: with default util target & mult2 goal, message reports no parity in [1,100]%."
+        },
+        {
+          "id": "S7.6",
+          "step": "Set beTarget=tpsmw, beGoal=terr; read beResult.",
+          "expect": "Either a plausible tokens/s/MW value at which parity is reached, or an explained no-solution. Cross-check sign vs sensitivity (tpsmw is top driver)."
+        },
+        {
+          "id": "S7.7",
+          "step": "Close break-even (beClose).",
+          "expect": "Modal closes; scenario unchanged."
+        },
+        {
+          "id": "S7.8",
+          "step": "Click Run self-tests (runtests).",
+          "expect": "Self-test modal opens; in-file assertions run; PASS/FAIL summary shown. Record any FAIL verbatim (these are the app's own regression anchors, e.g. $/1M token anchor)."
+        },
+        {
+          "id": "S7.9",
+          "step": "Close self-test modal (testClose)."
+        }
+      ]
+    },
+    {
+      "id": "S8",
+      "name": "Global actions",
+      "cases": [
+        {
+          "id": "S8.1",
+          "step": "Change several inputs, click Recalculate (calc).",
+          "expect": "All dependent KPIs update consistently."
+        },
+        {
+          "id": "S8.2",
+          "step": "Click Reset base scenario (reset), then Recalculate.",
+          "expect": "Every input returns to registry defaults; KPIs return to baseline vector (oracle.baseline_kpis within tolerance)."
+        },
+        {
+          "id": "S8.3",
+          "step": "Click Download scenario JSON (download).",
+          "expect": "A JSON file is produced (PERMISSION: this is a download side-effect). Parse it: it must contain the current input values; round-trip check — values match the live inputs."
+        },
+        {
+          "id": "S8.4",
+          "step": "Click Export modeled fleet GP JSON (exportModeled) on 3D view.",
+          "expect": "GP JSON downloads; NORAD IDs >= 900000; COMMENT marks synthetic (v5.3)."
+        }
+      ]
+    },
+    {
+      "id": "S9",
+      "name": "Reasonableness / validity (does it produce usable information?)",
+      "note": "Run each rule in reasonableness_rules on the baseline and on the stated perturbation. A rule FAIL is a validity defect even if the UI 'worked'.",
+      "parametric_over": "reasonableness_rules"
+    },
+    {
+      "id": "S10",
+      "name": "Live catalog & data ingest",
+      "cases": [
+        {
+          "id": "S10.1",
+          "step": "Click Load live catalog (liveLoad).",
+          "expect": "PERMISSION: external network fetch to CelesTrak. On success: objects bin into shells, 3D shows real objects, t3synth auto-off, status line updates + caches 24h. On CORS/offline failure: graceful message + file loader (liveFile) offered."
+        },
+        {
+          "id": "S10.2",
+          "step": "Use liveFile to load a downloaded GP JSON (raw or compact).",
+          "expect": "Both formats accepted (v4.6); objects render; click-to-identify works."
+        },
+        {
+          "id": "S10.3",
+          "step": "Click Clear cache (liveClear).",
+          "expect": "Cached catalog cleared; reverts to embedded snapshot; status line says so."
+        },
+        {
+          "id": "S10.4",
+          "step": "Toggle t3ecc (eccentric objects) with a catalog loaded.",
+          "expect": "GTO/Molniya/eccentric objects appear in amber labelled perigee x apogee (v4.9)."
+        }
+      ]
+    },
+    {
+      "id": "S11",
+      "name": "Cross-field consistency & mode gating",
+      "parametric_over": "mode_gated_inputs",
+      "template": {
+        "step": "Set governing select to the non-default option; confirm the listed field(s) toggle editable/active; set back and confirm they lock.",
+        "expect": "Gating matches mode_gated_inputs exactly."
+      },
+      "extra_cases": [
+        {
+          "id": "S11.a",
+          "step": "op preset change 650 -> 400 -> 1200.",
+          "expect": "alt & inc auto-update to preset; dragfrac updates per preset; alt/inc become read-only (only editable at op=custom)."
+        },
+        {
+          "id": "S11.b",
+          "step": "illumMode geom -> preset.",
+          "expect": "sun & eclmax become editable; geom re-derives and locks them."
+        },
+        {
+          "id": "S11.c",
+          "step": "costPreset traditional -> constellation -> custom.",
+          "expect": "$/kg and $M manufacturing inputs jump to preset values; nref changes (5/100/2000); custom unlocks all; $/1M tokens drops substantially under constellation (model integrity note: highly sensitive)."
+        },
+        {
+          "id": "S11.d",
+          "step": "benchMode stack -> published.",
+          "expect": "terrestrial comparator switches from computed stack to earthtok; tokcmp multiple recomputes."
+        }
+      ]
+    },
+    {
+      "id": "S12",
+      "name": "Display / output completeness (what the user reads)",
+      "note": "Every entry in control_registry.display_registry must render a meaningful value after recalc and pass its 'check'. This is the read-side of validity; pair with S9 reasonableness_rules referenced in each entry's 'rules'.",
+      "parametric_over": "control_registry.display_registry",
+      "per_element_cases": [
+        {
+          "id": "renders",
+          "action": "read element text after #calc",
+          "expect": "non-empty; no 'NaN'/'undefined'/'Infinity'/'[object Object]'; expected unit/format present."
+        },
+        {
+          "id": "responds",
+          "action": "perturb a governing input, recalc",
+          "expect": "value changes in the documented direction (see 'check' / 'rules'); derived readouts stay consistent with their formula."
+        },
+        {
+          "id": "consistency",
+          "action": "cross-check paired readouts",
+          "expect": "e.g. satsOut==nsat; mt % column sums ~100%; ct category rows sum to total; tokcmp==tokc/terrTok."
+        }
+      ]
+    }
+  ],
+  "reasonableness_rules": [
+    {
+      "id": "R1",
+      "name": "No NaN/Infinity/blank",
+      "check": "After any valid input, all result_kpi_ids render finite numbers (no 'NaN', 'Infinity', '', 'undefined').",
+      "severity": "critical"
+    },
+    {
+      "id": "R2",
+      "name": "Non-negative economics",
+      "check": "capex, tco, tokc, terrTok >= 0 for all non-degenerate inputs.",
+      "severity": "critical"
+    },
+    {
+      "id": "R3",
+      "name": "Baseline anchor",
+      "check": "At reset defaults (v5.4): tokc ≈ $13.971/1M, terrTok ≈ $0.247/1M, tokcmp ≈ 56.5x, nsat=9, nlaunch=9, ttft≈133 ms, eavail≈96.57%. Tolerance +/-2% (the app may evolve; flag as INFO if drifted, FAIL if wildly off e.g. sign flip or 10x).",
+      "severity": "high"
+    },
+    {
+      "id": "R4",
+      "name": "Mass balance",
+      "check": "Mass-stack subsystem percentages sum to ~100% (+/-0.5%). Wet total = sum of subsystem masses.",
+      "severity": "high"
+    },
+    {
+      "id": "R5",
+      "name": "Satellite count derivation",
+      "check": "nsat = ceil(target racks / racks-per-sat) + spares logic. At default: ceil(1MW/0.135MW)=8 productive + 1 spare = 9. Changing mw or rps changes nsat monotonically and consistently.",
+      "severity": "high"
+    },
+    {
+      "id": "R6",
+      "name": "Utilization monotonicity",
+      "check": "Increasing util (1->100%) monotonically DECREASES $/1M tokens (more tokens over same cost). Confirms sensitivity sign (util listed -2.33/+3.49).",
+      "severity": "high"
+    },
+    {
+      "id": "R7",
+      "name": "Throughput monotonicity",
+      "check": "Increasing tpsmw monotonically DECREASES $/1M tokens; it is the top sensitivity driver (span ~$5.82). Directional and largest-magnitude among single inputs.",
+      "severity": "high"
+    },
+    {
+      "id": "R8",
+      "name": "Launch price direction",
+      "check": "Increasing lmission (mission price) INCREASES capex and $/1M tokens.",
+      "severity": "medium"
+    },
+    {
+      "id": "R9",
+      "name": "Altitude -> latency",
+      "check": "Higher altitude increases RTT/space-propagation contribution (650km ~6.5ms; 1200km higher). RTT rises with alt.",
+      "severity": "medium"
+    },
+    {
+      "id": "R10",
+      "name": "Eclipse-free high orbit",
+      "check": "Dawn-dusk SSO becomes eclipse-free only at high altitude (~>=1400km): at such alt, worst eclipse -> 0 and battery mass falls to reserve-only. At 650km eclipse ~19-20 min.",
+      "severity": "medium"
+    },
+    {
+      "id": "R11",
+      "name": "Battery sizing responds to eclipse",
+      "check": "Longer eclmax (preset mode) increases battery nameplate & mass; shorter decreases. In geom mode, higher alt (less eclipse) reduces battery.",
+      "severity": "medium"
+    },
+    {
+      "id": "R12",
+      "name": "Cost regime sensitivity",
+      "check": "costPreset constellation yields much lower $/1M tokens than traditional; the app explicitly flags high sensitivity to manufacturing regime.",
+      "severity": "high"
+    },
+    {
+      "id": "R13",
+      "name": "Terrestrial gap plausibility",
+      "check": "Orbital $/1M tokens >> terrestrial across normal ranges (structural gap). tokcmp stays >1 unless extreme favorable inputs; break-even solver should report 'no solution' for single-parameter util sweep at default.",
+      "severity": "medium"
+    },
+    {
+      "id": "R14",
+      "name": "Payload capacity warning",
+      "check": "When per-launch wet mass exceeds lcap, a 'single launch unit exceeds payload-to-orbit capacity' caution appears in Model cautions.",
+      "severity": "medium"
+    },
+    {
+      "id": "R15",
+      "name": "Demisability warning",
+      "check": "When dry mass > demise threshold and disposal=auto, a controlled re-entry stage is added and a demisability caution appears.",
+      "severity": "medium"
+    },
+    {
+      "id": "R16",
+      "name": "Sensitivity tornado ordering",
+      "check": "Tornado chart is sorted by |effect| descending; top driver = Tokens/s/MW; each bar labels +20%/-20% and sign matches R6-R8.",
+      "severity": "medium"
+    },
+    {
+      "id": "R17",
+      "name": "Availability bounds",
+      "check": "eavail (effective availability) is 0-100% and <= base avail input; replacement-delay and radiation losses reduce it (v3 behavior).",
+      "severity": "medium"
+    },
+    {
+      "id": "R18",
+      "name": "Cluster geometry sanity",
+      "check": "clusterDesign=rect at R_min=500m gives R_max ~1.68km & footprint 40m < 250m shadow limit (OK). Switching to hex/3d changes packing law and may trigger self-shadow flags for an ~80m satellite (documented finding).",
+      "severity": "low"
+    },
+    {
+      "id": "R19",
+      "name": "Timeline plausibility",
+      "check": "Modeled full deployment months > 0 and scales with sat count / launch cadence (cad). Terrestrial comparator = earthlead. Deployment months increase as cad decreases.",
+      "severity": "low"
+    },
+    {
+      "id": "R20",
+      "name": "Architecture selector is drawing-only",
+      "check": "Changing mode (individual/module/platform) changes the drawing but leaves capex/tco/tokc unchanged (documented). Verify KPIs identical before/after.",
+      "severity": "medium"
+    },
+    {
+      "id": "R21",
+      "name": "Text/label integrity",
+      "check": "No placeholder/error strings in the UI ('NaN', 'undefined', '[object Object]', 'Infinity', empty derived readouts). All 'computed'/'derived' readouts show a value after recalc.",
+      "severity": "high"
+    },
+    {
+      "id": "R22",
+      "name": "Download round-trip fidelity",
+      "check": "Downloaded scenario JSON re-imports/reflects the exact current inputs; no field silently dropped.",
+      "severity": "medium"
+    }
+  ],
+  "oracle": {
+    "baseline_kpis": {
+      "as_of": "v5.4 defaults after Reset",
+      "tokc": "$13.971 / 1M tokens",
+      "terrTok": "$0.247 / 1M tokens",
+      "tokcmp": "56.5x terrestrial",
+      "capex": "$2.61B / productive MW",
+      "tco": "$6B / productive MW",
+      "massmw": "114.7 t / productive MW",
+      "nsat": 9,
+      "nlaunch": 9,
+      "ttft": "133 ms",
+      "eavail": "96.57%",
+      "tolerance": "+/-2% numeric; sign/structure must match exactly"
+    },
+    "known_model_cautions_at_baseline": [
+      "A single launch unit exceeds the configured payload-to-orbit capacity.",
+      "At this altitude, active end-of-life disposal should be treated as mandatory.",
+      "Auto disposal selected a controlled re-entry stage: dry mass exceeds the 800 kg demisability threshold.",
+      "Expected ~2.9 derelict satellites over the analysis horizon from failed disposals.",
+      "GB300/HBM is not space-qualified; radiation survival remains a scenario risk."
+    ]
+  },
+  "report_schema": {
+    "run": {
+      "timestamp": "ISO8601",
+      "app_url": "string",
+      "app_version_detected": "string",
+      "catalog_version": "1.0.0",
+      "browser": "string"
+    },
+    "summary": {
+      "total_cases": "int",
+      "passed": "int",
+      "failed": "int",
+      "blocked": "int",
+      "drift": "int",
+      "coverage_pct": "float"
+    },
+    "coverage_manifest": {
+      "numeric_inputs_tested": "count / 132",
+      "selects_tested": "count / 20 (18 main + 2 modal)",
+      "checkboxes_tested": "count / 9",
+      "buttons_exercised": "count",
+      "modals_exercised": "3 / 3 (spec, break-even, self-tests)",
+      "views_rendered": "count / 5 main + 2 styles",
+      "reasonableness_rules_run": "count / 22",
+      "display_readouts_tested": "count / 81"
+    },
+    "findings": [
+      {
+        "case_id": "string",
+        "suite": "string",
+        "control_id": "string",
+        "status": "PASS|FAIL|BLOCKED|DRIFT|INFO",
+        "severity": "critical|high|medium|low",
+        "observed": "string",
+        "expected": "string",
+        "screenshot": "path|null",
+        "notes": "string"
+      }
+    ],
+    "review_flags": [
+      "Manual confirmation items — e.g. self-test FAILs, catalog fetch (needs network), any KPI drift from oracle baseline, download side-effects."
+    ]
+  },
+  "permission_and_safety_notes": [
+    "Download scenario JSON (S8.3), Export modeled fleet (S8.4): these trigger file downloads — a side-effecting action. An autonomous agent should treat downloads as permitted only for this local artifact and verify content in-memory (Blob) where possible.",
+    "Load live catalog (S10.1): external network request to CelesTrak. If the runner forbids external fetches, mark S10.1 as BLOCKED (needs network) rather than FAIL.",
+    "Pop-out windows (S6.3): open child browser windows; ensure popup blocking is disabled for the test origin.",
+    "No credentials, payments, or account actions exist in this app — no prohibited actions are involved."
+  ],
+  "tag_contract": {
+    "purpose": "Every interactive element and every readout in the app carries an in-element identifier + light metadata as data-test-* attributes, so the UI is self-describing and discoverable without any documentation. Rich detail that will not fit in attributes lives here in the manifest, keyed by the same id. The reconciliation script proves the two agree.",
+    "attribute_prefix": "data-test-",
+    "id_rule": "data-test-id (controls) / data-test-out (readouts) MUST equal the element's existing DOM id. This keeps the manifest, the flat indexes, and the tags on one key.",
+    "required_on_every_interactive_element": [
+      "data-test-id   (= DOM id)",
+      "data-test-kind (one of the kinds list)",
+      "data-test-tab  (one of the tabs/regions list)",
+      "data-test-label(short human name; matches the visible label)"
+    ],
+    "required_on_every_readout": [
+      "data-test-out  (= DOM id)",
+      "data-test-kind = 'output'",
+      "data-test-tab  (region)",
+      "data-test-label(what it shows)"
+    ],
+    "optional": [
+      "data-test-unit    (e.g. '$/1M', 'kg', 'ms')",
+      "data-test-role    (kpi | derived | badge | note | table | warning)",
+      "data-test-gated-by(id of the select that unlocks/locks this input, e.g. 'illumMode')",
+      "data-test-dir     (short expected-direction hint, e.g. 'util-up->tokc-down')"
+    ],
+    "kinds": [
+      "input",
+      "select",
+      "checkbox",
+      "button",
+      "tab",
+      "file",
+      "date",
+      "range",
+      "view",
+      "popout",
+      "output"
+    ],
+    "tabs": [
+      "arch",
+      "orbit",
+      "craft",
+      "cost",
+      "infer",
+      "time",
+      "global",
+      "modal:breakeven",
+      "modal:spec",
+      "modal:test",
+      "view3d",
+      "shells"
+    ],
+    "rich_metadata_manifest_only": [
+      "numeric default / min / max / step beyond native attributes",
+      "select option lists",
+      "mode-gating rules (mode_gated_inputs)",
+      "validity check + expected direction + formula (display_registry.check, reasonableness_rules)",
+      "cross-field consistency assertions",
+      "baseline (oracle) values",
+      "which test suite(s) cover the element"
+    ],
+    "reconciliation": {
+      "script": "OrbitalDatacenterSim-reconcile.js",
+      "passes_when": "dom_only, manifest_only, untagged, attr_mismatch, missing_required_tags are ALL empty",
+      "meaning": {
+        "untagged": "element that should carry data-test-* but does not — a new/renamed control added without tagging (primary drift signal)",
+        "dom_only": "tagged in the DOM but absent from this manifest — add a manifest entry",
+        "manifest_only": "in the manifest but no matching element found — element removed/renamed; update manifest or restore tag",
+        "attr_mismatch": "tag 'kind' disagrees with the manifest (hard fail); tab/label differences are reported as soft warnings",
+        "missing_required_tags": "tagged element missing one of the required data-test-* attributes"
+      },
+      "recommended_wiring": "Call reconcile() from the app's in-file self-tests (Run self-tests button) and assert report.pass === true, so drift fails the self-test suite."
+    }
+  }
+}

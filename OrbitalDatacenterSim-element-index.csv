@@ -1,0 +1,220 @@
+index,ref,type,context,label,default,suites,notes
+EL-001,Architecture,tab,top bar,Tab: Architecture,,S2,expects 12 controls
+EL-002,Orbit & traffic,tab,top bar,Tab: Orbit & traffic,,S2,expects 27 controls
+EL-003,Spacecraft,tab,top bar,Tab: Spacecraft,,S2,expects 48 controls
+EL-004,Costs & launch,tab,top bar,Tab: Costs & launch,,S2,expects 35 controls
+EL-005,Inference,tab,top bar,Tab: Inference,,S2,expects 20 controls
+EL-006,Timeline,tab,top bar,Tab: Timeline,,S2,expects 7 controls
+EL-007,mw,number,Architecture,"Target productive compute for whole constellation, MW",1,S3,
+EL-008,rps,number,Architecture,Racks / maneuverable satellite,1,S3,
+EL-009,rkw,number,Architecture,"Rack TDP, kW",135,S3,
+EL-010,rpk,number,Architecture,"Rack peak, kW (used when battery power basis = peak)",155,"S3,S11",
+EL-011,rm,number,Architecture,"Rack hardware mass, kg",1580,S3,
+EL-012,gpu,number,Architecture,GPUs / rack,72,S3,
+EL-013,rcost,number,Architecture,"Compute cost / rack, $M",4,S3,
+EL-014,itoh,number,Architecture,"IT overhead beyond rack TDP, %",10,S3,
+EL-015,netm,number,Architecture,"Network/storage mass / rack, kg",250,S3,
+EL-016,relaym,number,Architecture,"Optical relay terminal mass / satellite, kg",60,S3,
+EL-017,spare,number,Architecture,"Installed spare capacity, %",10,S3,
+EL-018,alt,number,Orbit & traffic,"Altitude, km",650,"S3,S11",editable only when op=custom
+EL-019,inc,number,Orbit & traffic,"Inclination, deg",97.99,"S3,S11",editable only when op=custom
+EL-020,planes,number,Orbit & traffic,Orbital planes for modeled constellation layout,1,S3,
+EL-021,ltan,number,Orbit & traffic,"Local time of ascending node, h (SSO only)",6,S3,
+EL-022,sun,number,Orbit & traffic,Sunlight fraction (annual average),0.963,"S3,S11",illumMode=geom
+EL-023,eclmax,number,Orbit & traffic,"Worst-season eclipse, min/orbit",19.7,"S3,S11",illumMode=geom
+EL-024,rho,number,Orbit & traffic,"Mean atmospheric density, kg/m^3",1.2e-13,S3,
+EL-025,cd,number,Orbit & traffic,Drag coefficient,2.2,S3,
+EL-026,dragfrac,number,Orbit & traffic,"Projected drag area, % of array+radiator",25,S3,set per orbit preset
+EL-027,sk,number,Orbit & traffic,"Non-drag stationkeeping dv, m/s/yr",1,S3,
+EL-028,pop,number,Orbit & traffic,Existing active population in selected shell,2500,S3,
+EL-029,cap,number,Orbit & traffic,Practical shell capacity,12000,S3,
+EL-030,av0,number,Orbit & traffic,Baseline avoidance maneuvers/sat/yr,4,S3,
+EL-031,exp,number,Orbit & traffic,Capacity-pressure exponent,2,S3,
+EL-032,avdv,number,Orbit & traffic,"dv / avoidance maneuver, m/s",0.1,S3,
+EL-033,avh,number,Orbit & traffic,"Compute interruption / maneuver, h",0.5,S3,
+EL-034,avcap,number,Orbit & traffic,"Autonomous maneuver capacity, events/day",2,S3,
+EL-035,debris,number,Orbit & traffic,Debris-risk multiplier,1,S3,
+EL-036,spacing,number,Orbit & traffic,"Minimum inter-satellite spacing R_min, m",500,S3,
+EL-037,clusters,number,Orbit & traffic,Clusters (formations) in the constellation,1,S3,
+EL-038,closk,number,Orbit & traffic,"ISLs per switch satellite, k",10,"S3,S11",used when closOn=yes
+EL-039,switchMassFrac,number,Orbit & traffic,"Switch satellite wet mass, fraction of compute sat",0.35,"S3,S11",
+EL-040,switchCostFrac,number,Orbit & traffic,"Switch satellite non-compute cost, fraction",0.4,"S3,S11",
+EL-041,busm,number,Spacecraft,"Bus/control base dry mass / satellite, kg",1500,S3,
+EL-042,busmrack,number,Spacecraft,"Additional bus/control per rack beyond first, kg",250,S3,
+EL-043,propm,number,Spacecraft,"Propulsion hardware / satellite, kg",250,S3,
+EL-044,shield,number,Spacecraft,"Shielding / rack, kg",500,S3,
+EL-045,swkg,number,Spacecraft,"Solar specific power, W/kg",85,S3,
+EL-046,swm2,number,Spacecraft,"Solar areal output, W/m^2",300,S3,
+EL-047,smar,number,Spacecraft,"Solar design margin, %",20,S3,
+EL-048,peff,number,Spacecraft,"Power conversion efficiency, %",92,S3,
+EL-049,chargeeff,number,Spacecraft,"Battery charge efficiency, %",90,S3,
+EL-050,battkwhrack,number,Spacecraft,"Fixed usable battery, kWh per rack",40,"S3,S11",used when battMode=perrack
+EL-051,dod,number,Spacecraft,"Battery usable depth of discharge, %",35,S3,
+EL-052,bwh,number,Spacecraft,"Battery specific energy, Wh/kg (pack level)",130,S3,
+EL-053,bres,number,Spacecraft,"Battery reserve beyond eclipse, min",15,S3,
+EL-054,tRad,number,Spacecraft,"Radiator mean surface temperature, K",305,S3,
+EL-055,emis,number,Spacecraft,Radiator emissivity,0.88,S3,
+EL-056,sides,number,Spacecraft,Radiating sides,2,S3,
+EL-057,envflux,number,Spacecraft,"Absorbed environmental flux per side, W/m^2",120,S3,
+EL-058,fineff,number,Spacecraft,Fin / flow effectiveness,0.85,S3,
+EL-059,degr,number,Spacecraft,"Coating degradation margin, %",10,S3,
+EL-060,tInlet,number,Spacecraft,"GPU coolant inlet limit, K",318,S3,
+EL-061,rflux,number,Spacecraft,"Radiator net rejection, W/m^2",477,"S3,S11",thermMode=derived
+EL-062,rkg,number,Spacecraft,"Radiator areal density, kg/m^2",8,S3,
+EL-063,httkg,number,Spacecraft,"Heat transport, kg/kW",3,S3,
+EL-064,struct,number,Spacecraft,"Structure/deployment, % of subsystem dry mass",15,S3,
+EL-065,isp,number,Spacecraft,"Electric propulsion Isp, s",1900,S3,
+EL-066,contdv,number,Spacecraft,"Relocation/contingency dv reserve, m/s",100,S3,
+EL-067,fairing,number,Spacecraft,"Max deployed characteristic span, m",60,S3,
+EL-068,slewlim,number,Spacecraft,"Area-to-mass agility limit, m^2/kg",0.25,S3,
+EL-069,demise,number,Spacecraft,"Demisability mass threshold, kg",800,S3,
+EL-070,crhw,number,Spacecraft,"Controlled re-entry stage hardware, kg",150,"S3,S11",
+EL-071,crperi,number,Spacecraft,"Controlled re-entry target perigee, km",50,"S3,S11",
+EL-072,crisp,number,Spacecraft,"Chemical stage Isp, s",230,"S3,S11",
+EL-073,dispsucc,number,Spacecraft,"Planned-retirement disposal success, %",95,S3,
+EL-074,dispsuccFail,number,Spacecraft,"Failed-satellite disposal success, %",60,S3,
+EL-075,adrc,number,Spacecraft,"Active debris removal cost / object, $M",20,"S3,S11",used when dispfail=adr
+EL-076,dispops,number,Spacecraft,"Disposal operations cost / event, $M",0.3,S3,
+EL-077,life,number,Spacecraft,"Mission design life, years",5,S3,
+EL-078,avail,number,Spacecraft,"Base availability excl. maneuvers/radiation, %",98,S3,
+EL-079,fail,number,Spacecraft,"Annual spacecraft failure probability, %",3,S3,
+EL-080,radfail,number,Spacecraft,Radiation failure multiplier,1.25,S3,
+EL-081,raddown,number,Spacecraft,"Radiation-related availability loss, %",0.2,S3,
+EL-082,radlife,number,Spacecraft,"COTS compute assumed qualified life, years",5,S3,
+EL-083,busc,number,Costs & launch,"Bus/control manufacturing / satellite, $M",15,"S3,S11",editable when costPreset=custom
+EL-084,solc,number,Costs & launch,"Solar subsystem manufacturing, $/kg",20000,"S3,S11",
+EL-085,thermc,number,Costs & launch,"Thermal subsystem manufacturing, $/kg",10000,"S3,S11",
+EL-086,otherc,number,Costs & launch,"Other spacecraft hardware, $/kg",15000,"S3,S11",
+EL-087,intc,number,Costs & launch,"Integration/qualification / satellite, $M",5,"S3,S11",
+EL-088,nref,number,Costs & launch,Preset reference cumulative unit,5,"S3,S11",
+EL-089,learn,number,Costs & launch,"Learning rate, % cost per doubling (all)",85,S3,
+EL-090,learnStruct,number,Costs & launch,Structure/mechanical LR %,82,"S3,S11",used when learnMode=split
+EL-091,learnBus,number,Costs & launch,Avionics/bus LR %,90,"S3,S11",used when learnMode=split
+EL-092,learnInt,number,Costs & launch,Integration/qualification LR %,88,"S3,S11",used when learnMode=split
+EL-093,nre,number,Costs & launch,"Spacecraft development / qualification NRE, $M",500,S3,
+EL-094,lmission,number,Costs & launch,"Mission price, $M (list, launch #1)",74,"S3,S11",used when lmode=mission
+EL-095,launchDisc,number,Costs & launch,"Launch volume discount, % per doubling",5,S3,
+EL-096,launchFloor,number,Costs & launch,"Launch price floor, % of list",60,S3,
+EL-097,lcap,number,Costs & launch,"Usable payload to selected orbit, kg",13500,"S3,S11",
+EL-098,lsat,number,Costs & launch,Satellites per launch (volume),2,S3,
+EL-099,modlsat,number,Costs & launch,Max compute modules per refresh launch,6,S3,
+EL-100,lkg,number,Costs & launch,"Bulk launch price, $/kg",1500,"S3,S11",used when lmode=kg
+EL-101,ridekg,number,Costs & launch,"Rideshare price, $/kg",7000,"S3,S11",used when lmode=ride
+EL-102,ridelim,number,Costs & launch,"Rideshare max mass / port, kg",831,"S3,S11",
+EL-103,opsy,number,Costs & launch,"Mission operations / satellite / year, $M",1,S3,
+EL-104,nety,number,Costs & launch,"Relay capacity lease / satellite / year, $M",0.5,"S3,S11",used when relayMode=flat
+EL-105,relaygbps,number,Costs & launch,"Relay lease, $ / Gbit/s / month",500,"S3,S11",used when relayMode=gbps
+EL-106,relayc,number,Costs & launch,"Relay terminal hardware cost / satellite, $M",0.8,S3,
+EL-107,ins,number,Costs & launch,"Insurance/risk reserve, % CAPEX/year",2,S3,
+EL-108,years,number,Costs & launch,"Analysis horizon, years",10,S3,
+EL-109,disc,number,Costs & launch,"Discount rate, %",8,S3,
+EL-110,refresh,number,Costs & launch,"Compute economic refresh interval, years",3,S3,
+EL-111,serv,number,Costs & launch,"Robotic service cost / satellite refresh, $M",2,"S3,S11",used when replace=yes
+EL-112,tpsmw,number,Inference,"Inference throughput, tokens/s/productive MW",2800000,S3,
+EL-113,util,number,Inference,"Compute utilization, %",75,S3,
+EL-114,tpsu,number,Inference,"Benchmark interactivity, tokens/s/user",116,S3,
+EL-115,earthtok,number,Inference,Published terrestrial $ / 1M tokens,0.123,"S3,S11",benchmark when benchMode=published
+EL-116,tFac,number,Inference,"Terrestrial facility capex, $M / MW IT",12,"S3,S11",
+EL-117,tFacLife,number,Inference,"Facility economic life, years",15,"S3,S11",
+EL-118,tPue,number,Inference,PUE,1.3,"S3,S11",
+EL-119,tPower,number,Inference,"Electricity, $ / MWh",80,"S3,S11",
+EL-120,tAvail,number,Inference,"Terrestrial availability, %",99.5,"S3,S11",
+EL-121,tOpex,number,Inference,"Facility opex, % facility capex",4,"S3,S11",
+EL-122,route,number,Inference,Space-segment slant/route factor,1.5,S3,
+EL-123,gndms,number,Inference,"User-to-gateway latency, ms",20,S3,
+EL-124,routems,number,Inference,"Additional routing/switching, ms",5,S3,
+EL-125,procms,number,Inference,"Queue + processing TTFT, ms",100,S3,
+EL-126,hops,number,Inference,ISL hops/request,1,S3,
+EL-127,islkm,number,Inference,"Mean ISL separation, km",200,S3,
+EL-128,islms,number,Inference,"ISL switching / hop, ms",0.1,S3,
+EL-129,tbday,number,Inference,"Input/downlink traffic, TB/day/productive MW",1,S3,
+EL-130,gbps,number,Inference,"Usable leased relay ISL capacity / compute sat, Gbit/s",100,S3,
+EL-131,duty,number,Inference,"Relay link duty cycle, %",80,S3,
+EL-132,dev,number,Timeline,"Spacecraft development/qualification lead, months",30,S3,
+EL-133,prod,number,Timeline,"Production ramp/first batch, months",12,S3,
+EL-134,queue,number,Timeline,"Launch queue/integration delay, months",6,S3,
+EL-135,cad,number,Timeline,"Available launch cadence, launches/month",1,S3,
+EL-136,comm,number,Timeline,"Commissioning/formation integration, days/batch",14,S3,
+EL-137,repldays,number,Timeline,"Failure replacement logistics, days",120,S3,
+EL-138,earthlead,number,Timeline,"Terrestrial time-to-power comparator, months",36,S3,
+EL-139,mode,select,Architecture,Architecture visualization,individual,"S4,S11",individual|module|platform
+EL-140,op,select,Orbit & traffic,Orbit preset,650,"S4,S11",400|550|650|800|1200|custom
+EL-141,illumMode,select,Orbit & traffic,Illumination basis,geom,"S4,S11",geom|preset
+EL-142,clusterDesign,select,Orbit & traffic,Cluster orbital design,rect,"S4,S11",rect|hex|3d
+EL-143,closOn,select,Orbit & traffic,ISL fabric,yes,"S4,S11",yes|no
+EL-144,battMode,select,Spacecraft,Battery sizing basis,eclipse,"S4,S11",eclipse|perrack
+EL-145,battPower,select,Spacecraft,Battery power basis during eclipse,tdp,"S4,S11",tdp|peak
+EL-146,thermMode,select,Spacecraft,Radiator rejection model,derived,"S4,S11",derived|manual
+EL-147,deorbitMode,select,Spacecraft,Deorbit propulsion model,spiral,"S4,S11",spiral|impulsive
+EL-148,disposal,select,Spacecraft,End-of-life disposal method,auto,"S4,S11",auto|controlled|uncontrolled
+EL-149,dispfail,select,Spacecraft,Failed disposal handling,adr,"S4,S11",adr|pop
+EL-150,costPreset,select,Costs & launch,Manufacturing cost regime,traditional,"S4,S11",traditional|mid|constellation|custom
+EL-151,learnMode,select,Costs & launch,Per-subsystem learning override,single,"S4,S11",single|split
+EL-152,launchPreset,select,Costs & launch,Launch vehicle/performance preset,f9sso,"S4,S11",f9sso|f9max|heavy100|custom
+EL-153,lmode,select,Costs & launch,Launch pricing model,mission,"S4,S11",mission|kg|ride
+EL-154,relayMode,select,Costs & launch,Relay lease basis,flat,"S4,S11",flat|gbps
+EL-155,replace,select,Costs & launch,Replaceable compute modules?,no,"S4,S11",no|yes
+EL-156,benchMode,select,Inference,Terrestrial benchmark basis,stack,"S4,S11",stack|published
+EL-157,beTarget,select,break-even modal,Break-even: solve for,util,S7,lmission|lkg|solc|otherc|busc|rcost|util|tpsmw
+EL-158,beGoal,select,break-even modal,Break-even: parity goal,mult2,S7,terr|mult2|mult5
+EL-159,t3sun,checkbox,Shells 3D view,Sun & sunlight,True,S5,
+EL-160,t3term,checkbox,Shells 3D view,Terminator,True,S5,
+EL-161,t3coast,checkbox,Shells 3D view,Coastlines,True,S5,
+EL-162,t3grat,checkbox,Shells 3D view,Graticule,True,S5,
+EL-163,t3paths,checkbox,Shells 3D view,Orbit paths,False,S5,
+EL-164,t3live,checkbox,Shells 3D view,Live catalog,False,S5,
+EL-165,t3ecc,checkbox,Shells 3D view,Include eccentric / beyond-LEO objects,False,S5,
+EL-166,t3synth,checkbox,Shells 3D view,Synthetic shell density,True,S5,
+EL-167,t3rings,checkbox,Shells 3D view,Altitude guide rings,True,S5,
+EL-168,calc,button,top bar,Recalculate,,S8.1,Recomputes all outputs from current inputs.
+EL-169,reset,button,top bar,Reset base scenario,,S8.2,Restores all inputs to defaults listed in this registry.
+EL-170,download,button,top bar,Download scenario JSON,,S8.3,Downloads current scenario as JSON (side-effect: file download).
+EL-171,breakeven,button,top bar,Break-even solver,,S7.4,Opens break-even modal.
+EL-172,runtests,button,top bar,Run self-tests,,S7.8,Opens self-test modal and runs in-file assertions.
+EL-173,openSpec,button,top bar,Specification,,S7.1,"Opens spec modal (fetches sibling .md, renders markdown)."
+EL-174,Single satellite,button,viz view bar,Single satellite,,S6.1,main_view
+EL-175,Cluster,button,viz view bar,Cluster,,S6.1,main_view
+EL-176,System overview,button,viz view bar,System overview,,S6.1,main_view
+EL-177,Orbital shells,button,viz view bar,Orbital shells,,S6.1,main_view
+EL-178,Shells 3D,button,viz view bar,Shells 3D,,S6.1,main_view
+EL-179,Both styles,button,viz view bar,Both styles,,S6.2,style
+EL-180,Concept,button,viz view bar,Concept,,S6.2,style
+EL-181,Technical,button,viz view bar,Technical,,S6.2,style
+EL-182,specWindow,button,spec modal,Open in its own window,,S6.3,
+EL-183,⧉ Concept,button,viz bar,⧉ Concept,,S6.3,
+EL-184,⧉ Engineering sheet,button,viz bar,⧉ Engineering sheet,,S6.3,
+EL-185,⧉ Cluster,button,viz bar,⧉ Cluster,,S6.3,
+EL-186,⧉ Orbital shells,button,viz bar,⧉ Orbital shells,,S6.3,
+EL-187,⧉ Shells 3D,button,viz bar,⧉ Shells 3D,,S6.3,
+EL-188,scaleTrue,button,Shells 3D controls,True scale (zoom out to the Moon),,S6.5,
+EL-189,scaleLeo,button,Shells 3D controls,LEO exaggerated x4,,S6.5,
+EL-190,scaleGeo,button,Shells 3D controls,Log compressed,,S6.5,
+EL-191,resetView,button,Shells 3D controls,Reset view,,S6.5,
+EL-192,t3now,button,Shells 3D controls,Now,,S6.6,
+EL-193,t3play,button,Shells 3D controls,Play,,S6.6,
+EL-194,t3s1,button,Shells 3D controls,1x speed,,S6.6,
+EL-195,t3s60,button,Shells 3D controls,60x speed,,S6.6,
+EL-196,t3s600,button,Shells 3D controls,600x speed,,S6.6,
+EL-197,epoch,date,Shells 3D controls,Epoch date,,S6.6,
+EL-198,t3time,range,Shells 3D controls,UTC time scrubber,,S6.6,
+EL-199,liveLoad,button,Shells 3D controls,Load live catalog (CelesTrak),,S10.1,network fetch
+EL-200,liveClear,button,Shells 3D controls,Clear cache,,S10.3,
+EL-201,liveFile,file,Shells 3D controls,Live catalog file loader,,S10.2,
+EL-202,exportModeled,button,Shells 3D controls,Export modeled fleet (GP JSON),,S8.4,file download
+EL-203,loadShell,button,Orbital shells view,Load tracked count for this altitude band (into pop),,S6.8,
+EL-204,loadShellPlanned,button,Orbital shells view,Load tracked + announced (into pop),,S6.8,
+EL-205,openSpec,button,spec modal,Specification (open),,S7.1-S7.3,
+EL-206,specWindow,button,spec modal,Open in its own window,,S7.1-S7.3,
+EL-207,specClose,button,spec modal,Close,,S7.1-S7.3,
+EL-208,specFile,file,spec modal,Spec markdown file loader (fallback when fetch blocked),,S7.1-S7.3,
+EL-209,breakeven,button,break-even modal,Open break-even solver,,S7.4-S7.7,
+EL-210,beResult,output,break-even modal,Solver result text,,S7.4-S7.7,
+EL-211,beClose,button,break-even modal,Close,,S7.4-S7.7,
+EL-212,runtests,button,self-test modal,Run self-tests,,S7.8,
+EL-213,testClose,button,self-test modal,Close,,S7.8,
+EL-214,conceptSvg,svg,concept,Render surface: concept,,S6.7 (zoom/pan/fit),
+EL-215,technicalSvg,svg,engineering sheet,Render surface: engineering sheet,,S6.7 (zoom/pan/fit),
+EL-216,sweepSvg,svg,dawn-dusk altitude sweep,Render surface: dawn-dusk altitude sweep,,S6.7 (zoom/pan/fit),
+EL-217,tornado,svg,sensitivity tornado,Render surface: sensitivity tornado,,S6.7 (zoom/pan/fit),
+EL-218,orbitCanvas,canvas,orbit/cluster/shells 2D,Render surface: orbit/cluster/shells 2D,,S6.7 (zoom/pan/fit),
+EL-219,threeCanvas,canvas,Shells 3D,Render surface: Shells 3D,,S6.7 (zoom/pan/fit),
