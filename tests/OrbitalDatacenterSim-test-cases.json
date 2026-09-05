@@ -3,8 +3,8 @@
   "meta": {
     "target": "Orbital AI Data Center Economics Model",
     "url": "https://lballaty.github.io/OrbitalDatacenterSim/",
-    "app_version_at_authoring": "v5.4",
-    "catalog_version": "1.2.0",
+    "app_version_at_authoring": "v5.5",
+    "catalog_version": "1.3.0",
     "authored": "2026-09-05",
     "author": "Test plan generated for Libor Ballaty (Arion Networks s.r.o.)",
     "status": "Ready for Review",
@@ -13,7 +13,8 @@
     "notes": [
       "The app is a single-file client-side HTML calculator. There is no server round-trip; every input change should be reflected after Recalculate (or on-change where the app auto-recalcs).",
       "Control IDs below are stable DOM element ids. If an id is not found at runtime, the agent MUST re-enumerate the DOM (see runner_protocol.self_heal) and report drift rather than silently skipping.",
-      "Derived/computed fields are read-only in their default mode and only become editable in an alternate mode (see mode_gated_inputs)."
+      "Derived/computed fields are read-only in their default mode and only become editable in an alternate mode (see mode_gated_inputs).",
+      "v1.3.0 (app v5.5): added Compute stack and Served model tabs; 14 numeric inputs, 8 selects, 13 readouts; stack x model throughput matrix; interactivity scaling; price-source selector; node-level sparing; radiation sensitivity strip. tpsmw min changed 1->0 and it is now matrix-driven unless manually overridden."
     ],
     "changelog": [
       "1.2.0: designated as canonical manifest; added tag_contract (in-page data-test-* attribute schema) + reconciliation workflow. Companion: OrbitalDatacenterSim-reconcile.js, OrbitalDatacenterSim-tagging-convention.md.",
@@ -103,6 +104,16 @@
         "expected_visible_controls": 12
       },
       {
+        "key": "stack",
+        "label": "Compute stack",
+        "expected_visible_controls": 9
+      },
+      {
+        "key": "model",
+        "label": "Served model",
+        "expected_visible_controls": 12
+      },
+      {
         "key": "orbit",
         "label": "Orbit & traffic",
         "expected_visible_controls": 27
@@ -120,7 +131,7 @@
       {
         "key": "infer",
         "label": "Inference",
-        "expected_visible_controls": 20
+        "expected_visible_controls": 23
       },
       {
         "key": "time",
@@ -1057,8 +1068,9 @@
         "id": "tpsmw",
         "label": "Inference throughput, tokens/s/productive MW",
         "default": 2800000,
-        "min": 1,
-        "unit": "tok/s/MW"
+        "min": 0,
+        "unit": "tok/s/MW",
+        "note": "matrix-driven from stackPreset x mclass; manual edit sets tpsSrc=custom and holds until next preset change"
       },
       {
         "tab": "infer",
@@ -1076,6 +1088,25 @@
         "default": 116,
         "min": 1,
         "unit": "tok/s/user"
+      },
+      {
+        "tab": "infer",
+        "id": "tpsuRef",
+        "label": "Cell reference interactivity, tokens/s/user",
+        "default": 116,
+        "min": 1,
+        "unit": "tok/s/user"
+      },
+      {
+        "tab": "infer",
+        "id": "interAlpha",
+        "label": "Interactivity exponent alpha",
+        "default": 0.9,
+        "min": 0,
+        "max": 2,
+        "step": 0.05,
+        "unit": "exp",
+        "note": "scenario; InferenceX GB300 ~2x loss 70->150 tok/s/user"
       },
       {
         "tab": "infer",
@@ -1278,6 +1309,115 @@
         "default": 36,
         "min": 0,
         "unit": "mo"
+      },
+      {
+        "tab": "stack",
+        "id": "nodes",
+        "label": "Nodes (trays/servers) per rack",
+        "default": 18,
+        "min": 1,
+        "step": 1,
+        "unit": "count"
+      },
+      {
+        "tab": "stack",
+        "id": "hotspare",
+        "label": "Hot-spare nodes, % of rack",
+        "default": 0,
+        "min": 0,
+        "max": 90,
+        "unit": "%"
+      },
+      {
+        "tab": "stack",
+        "id": "nodefail",
+        "label": "Node annual failure probability, %",
+        "default": 2,
+        "min": 0,
+        "step": 0.1,
+        "unit": "%/yr",
+        "note": "assumption; drives node degradation"
+      },
+      {
+        "tab": "stack",
+        "id": "stackrad",
+        "label": "Stack radiation failure multiplier",
+        "default": 1.25,
+        "min": 0.1,
+        "step": 0.05,
+        "unit": "x",
+        "note": "scenario; overwrites radfail on the Spacecraft tab"
+      },
+      {
+        "tab": "model",
+        "id": "mparams",
+        "label": "Total parameters, B",
+        "default": 1600,
+        "min": 1,
+        "unit": "B"
+      },
+      {
+        "tab": "model",
+        "id": "mactive",
+        "label": "Active parameters, B",
+        "default": 49,
+        "min": 1,
+        "unit": "B"
+      },
+      {
+        "tab": "model",
+        "id": "mpricein",
+        "label": "Market price, input $/1M tokens",
+        "default": 0.435,
+        "min": 0,
+        "step": 0.01,
+        "unit": "$/1M",
+        "note": "scenario; set by preset+priceSrc"
+      },
+      {
+        "tab": "model",
+        "id": "mpriceout",
+        "label": "Market price, output $/1M tokens",
+        "default": 0.87,
+        "min": 0,
+        "step": 0.01,
+        "unit": "$/1M",
+        "note": "scenario; set by preset+priceSrc"
+      },
+      {
+        "tab": "model",
+        "id": "outfrac",
+        "label": "Output share of billed tokens, %",
+        "default": 25,
+        "min": 1,
+        "max": 99,
+        "unit": "%"
+      },
+      {
+        "tab": "model",
+        "id": "mlic",
+        "label": "Licence / royalty, $/1M blended tokens",
+        "default": 0,
+        "min": 0,
+        "step": 0.01,
+        "unit": "$/1M"
+      },
+      {
+        "tab": "model",
+        "id": "tokbytes",
+        "label": "Bytes per token",
+        "default": 4,
+        "min": 1,
+        "unit": "bytes"
+      },
+      {
+        "tab": "model",
+        "id": "inlink",
+        "label": "Input tokens actually transmitted, % (prefix cache)",
+        "default": 20,
+        "min": 0,
+        "max": 100,
+        "unit": "%"
       }
     ],
     "selects": [
@@ -1489,6 +1629,110 @@
         ],
         "default": "stack",
         "effect": "stack computes terrestrial TCO; published uses earthtok."
+      },
+      {
+        "tab": "stack",
+        "id": "stackPreset",
+        "label": "Compute stack preset",
+        "options": [
+          "gb300",
+          "rubin",
+          "mi455x",
+          "tpu7",
+          "groq3",
+          "cs4",
+          "trn3",
+          "custom"
+        ],
+        "default": "gb300",
+        "effect": "Writes rkw/rpk/rm/gpu/rcost (arch), nodes/stackrad/memtype/procurable (stack), radfail (craft), tpsmw (via matrix), stackNote, tpsSrc. Any manual edit of a written field flips this to custom."
+      },
+      {
+        "tab": "stack",
+        "id": "memtype",
+        "label": "Memory architecture",
+        "options": [
+          "hbm",
+          "sram",
+          "wafer"
+        ],
+        "default": "hbm",
+        "effect": "Documents the memory class behind the radiation multiplier; no direct numeric effect."
+      },
+      {
+        "tab": "stack",
+        "id": "procurable",
+        "label": "Procurable by a third-party operator?",
+        "options": [
+          "yes",
+          "limited",
+          "no"
+        ],
+        "default": "yes",
+        "effect": "no => warning that the stack is captive to one cloud. Comparison only; does not change economics."
+      },
+      {
+        "tab": "model",
+        "id": "modelPreset",
+        "label": "Served model preset",
+        "options": [
+          "dsv4pro",
+          "dsv4flash",
+          "kimik26",
+          "glm52",
+          "gptoss120",
+          "llama70",
+          "frontier",
+          "custom"
+        ],
+        "default": "dsv4pro",
+        "effect": "Writes mclass/mparams/mactive/mlic/latclass and mpricein/mpriceout (per priceSrc), tpsmw (via matrix), modelNote, tpsSrc. Manual edit of a written field flips this to custom."
+      },
+      {
+        "tab": "model",
+        "id": "mclass",
+        "label": "Model size class",
+        "options": [
+          "small",
+          "mid",
+          "large"
+        ],
+        "default": "large",
+        "effect": "Selects the throughput cell from the stack x model matrix; changing it flips modelPreset to custom and clears any manual tpsmw override."
+      },
+      {
+        "tab": "model",
+        "id": "priceSrc",
+        "label": "Price source",
+        "options": [
+          "fp",
+          "nh"
+        ],
+        "default": "fp",
+        "effect": "fp=first-party API, nh=neutral host. Revenue side only: never changes tokc, nsat or mass. Falls back to the other source with a note when one is unpublished."
+      },
+      {
+        "tab": "model",
+        "id": "latclass",
+        "label": "Latency class",
+        "options": [
+          "batch",
+          "agentic",
+          "interactive"
+        ],
+        "default": "agentic",
+        "effect": "Sets a TTFT ceiling (batch inf, agentic 500 ms, interactive 250 ms) checked against ttft; exceeding it warns."
+      },
+      {
+        "tab": "infer",
+        "id": "interMode",
+        "label": "Interactivity scaling of the throughput cell",
+        "options": [
+          "on",
+          "off"
+        ],
+        "default": "on",
+        "effect": "on => tpsmw scaled by (tpsuRef/tpsu)^alpha, clamped 0.2-3, applied to orbital and terrestrial alike; off => cell used as-is."
       }
     ],
     "modal_selects": [
@@ -2476,6 +2720,110 @@
         "baseline": "(PASS/FAIL rows)",
         "check": "All app self-tests PASS",
         "rules": "R3"
+      },
+      {
+        "id": "stackNote",
+        "region": "Compute stack tab",
+        "shows": "Selected stack preset provenance note",
+        "baseline": "Lenovo GB300 NVL72... measured InferenceX cell",
+        "check": "Non-empty for a preset; says \"Custom stack\" for custom",
+        "rules": "R23"
+      },
+      {
+        "id": "modelNote",
+        "region": "Served model tab",
+        "shows": "Selected model preset provenance/price note",
+        "baseline": "First-party API $0.435/$0.87...",
+        "check": "Non-empty; appends fallback sentence when priceSrc source missing",
+        "rules": "R30"
+      },
+      {
+        "id": "tpsSrc",
+        "region": "Inference tab (badge on tpsmw)",
+        "shows": "Throughput cell source badge",
+        "baseline": "measured",
+        "check": "One of measured|estimate|n/a|custom; matches stack x mclass matrix",
+        "rules": "R28,R33"
+      },
+      {
+        "id": "smName",
+        "region": "Stack x model economics",
+        "shows": "Stack . model . size class line",
+        "baseline": "NVIDIA GB300 NVL72 . DeepSeek V4 Pro (large)",
+        "check": "Tracks stackPreset+modelPreset+mclass",
+        "rules": "R28"
+      },
+      {
+        "id": "smTps",
+        "region": "Stack x model economics",
+        "shows": "Throughput cell used + source (+interactivity factor)",
+        "baseline": "2,800,000 . measured",
+        "check": "\"not servable...\" when n/a; shows x-factor when interactivity != 1",
+        "rules": "R28,R33,R34"
+      },
+      {
+        "id": "smPrice",
+        "region": "Stack x model economics",
+        "shows": "Blended market price / licence",
+        "baseline": "$0.544 / $0.00 (25% output)",
+        "check": "blended=(1-outfrac)*in+outfrac*out; licence from mlic",
+        "rules": "R29"
+      },
+      {
+        "id": "smMargin",
+        "region": "Stack x model economics",
+        "shows": "Operator margin $/1M",
+        "baseline": "-$14.163",
+        "check": "= blended - licence - tokc (+-$0.01); dash when no tokens",
+        "rules": "R29"
+      },
+      {
+        "id": "smMwYear",
+        "region": "Stack x model economics",
+        "shows": "Revenue / margin per productive MW-year",
+        "baseline": "$33.06M / -$861.09M",
+        "check": "Scales with delivered tokens/year",
+        "rules": "R28"
+      },
+      {
+        "id": "smNode",
+        "region": "Stack x model economics",
+        "shows": "Node degradation expected / floor",
+        "baseline": "95% / 95% (0% hot spare, 5% expected failed over life)",
+        "check": "expected never rises when hotspare rises",
+        "rules": "R23,R35"
+      },
+      {
+        "id": "smTraffic",
+        "region": "Stack x model economics",
+        "shows": "Token-derived link traffic TB/day/MW",
+        "baseline": "1.1 TB/day (out 0.7, in 0.4)",
+        "check": "out = tps*86400*tokbytes/1e12/MW (+-2%); scales with tokens",
+        "rules": "R32"
+      },
+      {
+        "id": "smLat",
+        "region": "Stack x model economics",
+        "shows": "TTFT vs latency class check",
+        "baseline": "TTFT 133 ms within Agentic...",
+        "check": "good when ttft<=class limit else bad + warning",
+        "rules": "R36"
+      },
+      {
+        "id": "smRad",
+        "region": "Stack x model economics",
+        "shows": "Radiation multiplier sensitivity $/1M at x1.25/x2.5/x5",
+        "baseline": "$14.71 / $15.85 / $18.19 (current x1.25 -> $14.71)",
+        "check": "three values monotone non-decreasing; fixed vs radfail; dash when no tokens",
+        "rules": "R24,R28"
+      },
+      {
+        "id": "tokcmp",
+        "region": "Scenario result (existing, format changed)",
+        "shows": "Multiple vs terrestrial AND vs market price",
+        "baseline": "59.5x modeled terrestrial stack ($0.247) . 27x market price",
+        "check": "ends with \"N x market price\"; \"no tokens delivered\" when n/a",
+        "rules": "R27,R28"
       }
     ]
   },
@@ -2599,6 +2947,25 @@
         "switchCostFrac"
       ],
       "active_when": "closOn=yes"
+    },
+    {
+      "input": "tpsmw",
+      "editable_when": "always (manual edit sets tpsSrc=custom)",
+      "else": "matrix-driven from stackPreset x mclass"
+    },
+    {
+      "input": [
+        "tpsuRef",
+        "interAlpha"
+      ],
+      "active_when": "interMode=on"
+    },
+    {
+      "input": [
+        "mpricein",
+        "mpriceout"
+      ],
+      "note": "set by modelPreset x priceSrc; editable, and editing flips modelPreset to custom"
     }
   ],
   "test_suites": [
@@ -2926,6 +3293,254 @@
           "expect": "e.g. satsOut==nsat; mt % column sums ~100%; ct category rows sum to total; tokcmp==tokc/terrTok."
         }
       ]
+    },
+    {
+      "id": "S13",
+      "name": "Compute stack presets",
+      "cases": [
+        {
+          "id": "S13.1",
+          "step": "#reset; #calc; read smName, tpsSrc, tokc, nsat.",
+          "expect": "smName='NVIDIA GB300 NVL72 . DeepSeek V4 Pro (large)'; tpsSrc='measured'; tokc='$14.706'; nsat=9."
+        },
+        {
+          "id": "S13.2",
+          "step": "For each stackPreset in [gb300,rubin,mi455x,tpu7,groq3,cs4,trn3]: #reset, select it, read rkw/rpk/rm/gpu/rcost/nodes/stackrad/memtype/procurable and radfail.",
+          "expect": "Each equals its row in spec 4a; stackNote non-empty; radfail (craft) == stackrad (stack) [R31]."
+        },
+        {
+          "id": "S13.3",
+          "step": "Select mi455x with modelPreset=dsv4pro.",
+          "expect": "nsat=6; tokc='$7.239'; tpsSrc='estimate'; warning 'estimate, not a measured benchmark' present."
+        },
+        {
+          "id": "S13.4",
+          "step": "Select tpu7, then trn3.",
+          "expect": "Warning 'captive to a single cloud' present. Absent for gb300 and mi455x."
+        },
+        {
+          "id": "S13.5",
+          "step": "Select stackPreset=custom.",
+          "expect": "No arch/stack fields overwritten; stackNote says 'Custom stack...'; tpsSrc badge='custom'."
+        }
+      ]
+    },
+    {
+      "id": "S14",
+      "name": "Served model presets & price source",
+      "cases": [
+        {
+          "id": "S14.1",
+          "step": "#reset; read smPrice.",
+          "expect": "smPrice='$0.544 / $0.00 (25% output)'."
+        },
+        {
+          "id": "S14.2",
+          "step": "For each modelPreset in [dsv4pro,dsv4flash,kimik26,glm52,gptoss120,llama70,frontier]: select; read mclass/mparams/mactive/mlic/latclass and modelNote.",
+          "expect": "Fields match spec 17a; modelNote non-empty; frontier shows mlic=4 and smPrice '/ $4.00'."
+        },
+        {
+          "id": "S14.3",
+          "step": "With dsv4pro, set priceSrc=nh then back to fp.",
+          "expect": "nh: mpricein=2.1, mpriceout=4.4, smMargin='-$12.031'. fp: smMargin='-$14.163'. tokc/nsat/mass unchanged [R30]."
+        },
+        {
+          "id": "S14.4",
+          "step": "priceSrc=fp with gptoss120 (no first-party price).",
+          "expect": "mpricein/out stay 0.15/0.60; modelNote ends '...the other source is used.'"
+        },
+        {
+          "id": "S14.5",
+          "step": "Edit mpricein by hand.",
+          "expect": "modelPreset flips to 'custom'."
+        }
+      ]
+    },
+    {
+      "id": "S15",
+      "name": "Stack x model matrix & override",
+      "cases": [
+        {
+          "id": "S15.1",
+          "step": "#reset.",
+          "expect": "tpsmw=2800000; badge 'measured'."
+        },
+        {
+          "id": "S15.2",
+          "step": "modelPreset=gptoss120.",
+          "expect": "tpsmw=20000000; badge 'estimate'; tokc='$2.059'; tokcmp ends '7.8x market price'."
+        },
+        {
+          "id": "S15.3",
+          "step": "stackPreset=groq3 (model gptoss120).",
+          "expect": "tpsmw=30000000; tokc='$1.436'; nsat=10."
+        },
+        {
+          "id": "S15.4",
+          "step": "modelPreset=dsv4pro (stack groq3).",
+          "expect": "tpsmw=0; badge 'n/a'; smTps='not servable on this stack within a rack'; tokc dash; tokcmp='no tokens delivered'; smMargin dash; 'not servable' warning; NO NaN/Infinity in results column [R28]."
+        },
+        {
+          "id": "S15.5",
+          "step": "#reset; type 5000000 into tpsmw (badge->custom); then change mclass to small.",
+          "expect": "EXPECTED (current build): mclass change clears the override, tpsmw=20000000. Record actual; flag if override survives."
+        },
+        {
+          "id": "S15.6",
+          "step": "After an override, change stackPreset.",
+          "expect": "Override cleared; matrix value restored for the new stack x mclass cell [R33]."
+        }
+      ]
+    },
+    {
+      "id": "S16",
+      "name": "Node sparing",
+      "cases": [
+        {
+          "id": "S16.1",
+          "step": "#reset; read smNode.",
+          "expect": "'95% / 95% (0% hot spare, 5% expected failed over life)'."
+        },
+        {
+          "id": "S16.2",
+          "step": "hotspare=10.",
+          "expect": "smNode='90% / 90% (10% hot spare, 5% expected failed over life)'; tokc rises (~$15.5); expected tps not higher than at hotspare=0 [R23]."
+        },
+        {
+          "id": "S16.3",
+          "step": "nodefail=0 (hotspare=0).",
+          "expect": "smNode first figure 100%; tokc='$13.971' (v5.4 base)."
+        },
+        {
+          "id": "S16.4",
+          "step": "nodefail=50, life=5.",
+          "expect": "expected-failed caps at 100%; smNode first figure 0%; tokc dash or very large; no console error [R28,R35]."
+        }
+      ]
+    },
+    {
+      "id": "S17",
+      "name": "Interactivity scaling",
+      "cases": [
+        {
+          "id": "S17.1",
+          "step": "#reset.",
+          "expect": "smTps has no 'x' factor suffix (factor=1 at tpsu=116) [R26]."
+        },
+        {
+          "id": "S17.2",
+          "step": "tpsu=150.",
+          "expect": "smTps ends '. x0.79 at 150 tok/s/user -> 2,221,714'; tokc='$18.534'; terrTok also rises; tokcmp vs modeled stack stays 59.5x [R27]."
+        },
+        {
+          "id": "S17.3",
+          "step": "tpsu=50.",
+          "expect": "factor>1 (~2.13); tokc falls below baseline."
+        },
+        {
+          "id": "S17.4",
+          "step": "interMode=off.",
+          "expect": "suffix gone; tokc back to '$14.706' for any tpsu [R25]."
+        },
+        {
+          "id": "S17.5",
+          "step": "interAlpha=0 (any tpsu); then interAlpha=2, tpsu=1000.",
+          "expect": "alpha=0 => factor 1. alpha=2,tpsu=1000 => factor clamps at 0.2, not lower [R34]."
+        }
+      ]
+    },
+    {
+      "id": "S18",
+      "name": "Radiation sensitivity strip",
+      "cases": [
+        {
+          "id": "S18.1",
+          "step": "#reset; read smRad.",
+          "expect": "'$14.71 / $15.85 / $18.19 (current x1.25 -> $14.71)' [R24]."
+        },
+        {
+          "id": "S18.2",
+          "step": "radfail=2.5.",
+          "expect": "The three strip values are UNCHANGED (fixed multipliers); only the 'current' text updates and its value equals tokc."
+        },
+        {
+          "id": "S18.3",
+          "step": "groq3 x dsv4pro (no tokens).",
+          "expect": "smRad='-'."
+        },
+        {
+          "id": "S18.4",
+          "step": "Type quickly in any numeric field for 5s (strip runs 3 silent evals/recalc).",
+          "expect": "UI stays responsive; console clean; no re-entrancy error."
+        }
+      ]
+    },
+    {
+      "id": "S19",
+      "name": "Token-derived link traffic",
+      "cases": [
+        {
+          "id": "S19.1",
+          "step": "#reset.",
+          "expect": "smTraffic='1.1 TB/day (out 0.7, in 0.4)'; linku='0.03%'."
+        },
+        {
+          "id": "S19.2",
+          "step": "modelPreset=gptoss120.",
+          "expect": "smTraffic ~ '7.6 TB/day'; linku ~ '0.12%'; scales with delivered tokens [R32]."
+        },
+        {
+          "id": "S19.3",
+          "step": "inlink=100.",
+          "expect": "'in' figure ~4x the step-1 value (verify (1-outfrac)/outfrac * inlink)."
+        },
+        {
+          "id": "S19.4",
+          "step": "outfrac=90; then outfrac=1.",
+          "expect": "'in' falls sharply; outfrac=1 clamps, no error."
+        },
+        {
+          "id": "S19.5",
+          "step": "gbps=0.1 with gptoss120.",
+          "expect": "linku>100% => warning 'Leased relay throughput is constraining useful inference.' present; tokc rises."
+        }
+      ]
+    },
+    {
+      "id": "S20",
+      "name": "Reset, download & cross-tab consistency (v5.5)",
+      "cases": [
+        {
+          "id": "S20.1",
+          "step": "Set cs4/llama70/priceSrc=nh/hotspare=20/tpsu=300; press #reset.",
+          "expect": "All new controls return to defaults; smName back to S13.1 string; tokc='$14.706'; stackNote & modelNote repopulated (not '-')."
+        },
+        {
+          "id": "S20.2",
+          "step": "Download scenario JSON.",
+          "expect": "Contains every new id (nodes,hotspare,nodefail,stackrad,mparams,mactive,mpricein,mpriceout,outfrac,mlic,tokbytes,inlink,tpsuRef,interAlpha,stackPreset,memtype,procurable,modelPreset,mclass,priceSrc,latclass,interMode) with current values [R22]."
+        },
+        {
+          "id": "S20.3",
+          "step": "Break-even solver, target tpsmw, after selecting groq3 x dsv4pro.",
+          "expect": "Does not crash; report whatever it returns (may be 'no parity' or 'no tokens')."
+        },
+        {
+          "id": "S20.4",
+          "step": "Sensitivity tornado at defaults.",
+          "expect": "Renders; tokens/s/MW still top bar [R16]."
+        },
+        {
+          "id": "S20.5",
+          "step": "Open Spec modal; scroll to section 17.",
+          "expect": "The stack x model matrix renders AS A TABLE with 8 rows; header cell reads 'Stack \\\\ model class' (single backslash). If it shows literal '\\\\' or collapses to text, FAIL + screenshot."
+        },
+        {
+          "id": "S20.6",
+          "step": "Pop-out a visualization; change stackPreset in the main window.",
+          "expect": "Pop-out rack-kW caption follows the new stack."
+        }
+      ]
     }
   ],
   "reasonableness_rules": [
@@ -3060,14 +3675,98 @@
       "name": "Download round-trip fidelity",
       "check": "Downloaded scenario JSON re-imports/reflects the exact current inputs; no field silently dropped.",
       "severity": "medium"
+    },
+    {
+      "id": "R23",
+      "name": "Hot spares never raise throughput",
+      "check": "Increasing hotspare never increases delivered tps; it raises only the guaranteed floor in smNode.",
+      "severity": "critical"
+    },
+    {
+      "id": "R24",
+      "name": "Radiation strip monotone",
+      "check": "The three smRad values are non-decreasing left to right.",
+      "severity": "normal"
+    },
+    {
+      "id": "R25",
+      "name": "Interactivity off is tpsu-invariant",
+      "check": "With interMode=off, tokc is independent of tpsu.",
+      "severity": "normal"
+    },
+    {
+      "id": "R26",
+      "name": "Interactivity identity at reference",
+      "check": "With interMode=on and tpsu=tpsuRef, tokc equals the interMode=off value.",
+      "severity": "normal"
+    },
+    {
+      "id": "R27",
+      "name": "Terrestrial ratio invariant to interactivity",
+      "check": "tokcmp multiple vs the modeled terrestrial stack is unchanged by tpsu (both sides scale).",
+      "severity": "normal"
+    },
+    {
+      "id": "R28",
+      "name": "Not-servable is clean",
+      "check": "An n/a matrix cell gives tps=0, tokc dash, no NaN/Infinity/$NaN anywhere in the results column; a warning is present.",
+      "severity": "critical"
+    },
+    {
+      "id": "R29",
+      "name": "Margin identity",
+      "check": "smMargin = blended price (smPrice) - licence - tokc, within +-$0.01.",
+      "severity": "normal"
+    },
+    {
+      "id": "R30",
+      "name": "Price source is revenue-only",
+      "check": "Changing priceSrc never changes tokc, nsat or any mass figure.",
+      "severity": "critical"
+    },
+    {
+      "id": "R31",
+      "name": "Stack preset writes radfail",
+      "check": "After selecting a stack preset, radfail (craft) equals stackrad (stack).",
+      "severity": "normal"
+    },
+    {
+      "id": "R32",
+      "name": "Token traffic identity",
+      "check": "smTraffic out = tps*86400*tokbytes/1e12 per productive MW, within +-2%.",
+      "severity": "normal"
+    },
+    {
+      "id": "R33",
+      "name": "Cell source badge truthful",
+      "check": "tpsSrc/smTps source equals the stack x mclass matrix cell (measured only for gb300 x large); manual tpsmw edit => custom.",
+      "severity": "normal"
+    },
+    {
+      "id": "R34",
+      "name": "Interactivity factor bounds",
+      "check": "Displayed interactivity factor is clamped to [0.2,3]; equals 1 at tpsu=tpsuRef or interAlpha=0.",
+      "severity": "normal"
+    },
+    {
+      "id": "R35",
+      "name": "Node degradation bounded",
+      "check": "smNode expected and floor are within [0%,100%]; expected<=floor is false only is not allowed (expected<=floor always).",
+      "severity": "normal"
+    },
+    {
+      "id": "R36",
+      "name": "Latency class honoured",
+      "check": "smLat is good iff ttft <= class limit (batch inf / agentic 500 / interactive 250 ms); bad state raises the TTFT warning.",
+      "severity": "normal"
     }
   ],
   "oracle": {
     "baseline_kpis": {
-      "as_of": "v5.4 defaults after Reset",
-      "tokc": "$13.971 / 1M tokens",
+      "as_of": "v5.5 defaults after Reset (node degradation 2%/yr x 5yr)",
+      "tokc": "$14.706 / 1M tokens",
       "terrTok": "$0.247 / 1M tokens",
-      "tokcmp": "56.5x terrestrial",
+      "tokcmp": "59.5x terrestrial . 27x market price",
       "capex": "$2.61B / productive MW",
       "tco": "$6B / productive MW",
       "massmw": "114.7 t / productive MW",
@@ -3075,7 +3774,8 @@
       "nlaunch": 9,
       "ttft": "133 ms",
       "eavail": "96.57%",
-      "tolerance": "+/-2% numeric; sign/structure must match exactly"
+      "tolerance": "+/-2% numeric; sign/structure must match exactly",
+      "note_v54": "v5.4 was $13.971; the rise is node degradation (intended, not a regression)."
     },
     "known_model_cautions_at_baseline": [
       "A single launch unit exceeds the configured payload-to-orbit capacity.",
@@ -3083,7 +3783,28 @@
       "Auto disposal selected a controlled re-entry stage: dry mass exceeds the 800 kg demisability threshold.",
       "Expected ~2.9 derelict satellites over the analysis horizon from failed disposals.",
       "GB300/HBM is not space-qualified; radiation survival remains a scenario risk."
-    ]
+    ],
+    "stack_model_baseline": {
+      "as_of": "v5.5 defaults, gb300 x dsv4pro (large), priceSrc=fp, interMode=on at tpsu=116",
+      "smName": "NVIDIA GB300 NVL72 . DeepSeek V4 Pro (large)",
+      "tpsSrc": "measured",
+      "smTps": "2,800,000 . measured",
+      "smPrice": "$0.544 / $0.00 (25% output)",
+      "smMargin": "-$14.163",
+      "smNode": "95% / 95% (0% hot spare, 5% expected failed over life)",
+      "smTraffic": "1.1 TB/day (out 0.7, in 0.4)",
+      "smRad": "$14.71 / $15.85 / $18.19 (current x1.25 -> $14.71)",
+      "key_variants": {
+        "gb300_x_gptoss120": "tokc $2.059, tpsmw 20,000,000 estimate, 7.8x market",
+        "groq3_x_gptoss120": "tokc $1.436, tpsmw 30,000,000 estimate, nsat 10",
+        "groq3_x_dsv4pro": "not servable: tpsmw 0, tokc dash, smMargin dash, warning present",
+        "mi455x_x_dsv4pro": "tokc $7.239, 5,500,000 estimate, nsat 6",
+        "priceSrc_nh_dsv4pro": "smMargin -$12.031",
+        "tpsu_150": "tokc $18.534, smTps ... x0.79 -> 2,221,714",
+        "nodefail_0": "tokc $13.971 (v5.4 base)"
+      },
+      "tolerance": "+/-0.5% on $ figures; text must match exactly"
+    }
   },
   "report_schema": {
     "run": {

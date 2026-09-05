@@ -1,9 +1,9 @@
 # Test Plan — Orbital AI Data Center Economics Model
 
-**Target:** https://lballaty.github.io/OrbitalDatacenterSim/ (app v5.4 at authoring)
-**Plan version:** 1.0.0 · **Authored:** 2026-09-05 · **Status:** Ready for Review
+**Target:** https://lballaty.github.io/OrbitalDatacenterSim/ (app v5.5 at authoring)
+**Plan version:** 1.1.0 · **Authored:** 2026-09-05 · **Status:** Ready for Review
 **Machine-readable companion:** `OrbitalDatacenterSim-test-cases.json` (the executable catalog this document wraps)
-**Flat reference indexes:** `OrbitalDatacenterSim-element-index.csv` (219 interactive elements) · `OrbitalDatacenterSim-display-index.csv` (81 read-only readouts/warnings)
+**Flat reference indexes:** `OrbitalDatacenterSim-element-index.csv` (243 interactive elements) · `OrbitalDatacenterSim-display-index.csv` (93 read-only readouts/warnings)
 **Owner:** Libor Ballaty · Arion Networks s.r.o.
 
 > This plan is written for an **LLM browser agent** to execute autonomously and repeatably, and for a human to audit. The Markdown here is the *methodology, protocol and acceptance criteria*; the JSON companion is the *executable spec* (full control registry + parametric test cases + reasonableness oracle). Run them together.
@@ -18,20 +18,20 @@ Two orthogonal goals, tested on every surface:
 
 | Axis | Question | How it is tested |
 |---|---|---|
-| **Functional ("does it work")** | Does every button, dropdown, input, checkbox, modal, view and pop-out respond without error? | Suites S1–S8, S10–S11 |
-| **Validity ("is the result usable")** | Are the numbers physically and economically reasonable, and is the text meaningful (no `NaN`, no empty derived fields, correct directional behavior)? | Suite S9 + the 22 `reasonableness_rules` |
+| **Functional ("does it work")** | Does every button, dropdown, input, checkbox, modal, view and pop-out respond without error? | Suites S1–S8, S10–S11, S13–S20 |
+| **Validity ("is the result usable")** | Are the numbers physically and economically reasonable, and is the text meaningful (no `NaN`, no empty derived fields, correct directional behavior)? | Suite S9 + the 36 `reasonableness_rules` |
 
 **Coverage target: 100%** of interactive controls and displayed derived text. The JSON catalog enumerates the exact inventory so coverage is measurable, not aspirational:
 
-- **132** numeric inputs across 6 tabs
-- **20** dropdowns (18 in the main tabs + 2 in the break-even modal)
+- **146** numeric inputs across 8 tabs (v5.5: Compute stack +4, Served model +8, Inference +2)
+- **26** dropdowns (24 in the main tabs + 2 in the break-even modal)
 - **9** checkboxes (3D view layer toggles)
 - **~30** action/navigation/view buttons
 - **3** modals (Specification, Break-even solver, Self-tests)
 - **5** main visualization views + 2 drawing styles + 5 pop-out variants
 - **6** render surfaces (`conceptSvg`, `technicalSvg`, `sweepSvg`, `tornado`, `orbitCanvas`, `threeCanvas`)
 - **2** file loaders, **1** date picker, **1** time scrubber, live-catalog + export data flows
-- **81** non-interactive **display readouts** the user *reads* — derived values, headline KPIs, the mass-stack and cost-stack tables, cluster/orbit/inference result blocks, the dynamic **Model cautions** warnings, and view captions/legends (indexed in `display_registry` / `display-index.csv`, tested by suite **S12**)
+- **94** non-interactive **display readouts** the user *reads* — derived values, headline KPIs, the mass-stack and cost-stack tables, cluster/orbit/inference result blocks, the dynamic **Model cautions** warnings, and view captions/legends (indexed in `display_registry` / `display-index.csv`, tested by suite **S12**)
 
 ### Out of scope
 Server-side pieces that are not part of the page: the GitHub Actions catalog build (`scripts/compact_gp.py`, `.github/workflows/pages.yml`), CelesTrak's own uptime, and browser-vendor rendering bugs. Latency/perf benchmarking is out of scope except the smoke-level "recalc returns promptly."
@@ -90,16 +90,17 @@ Key result KPIs to read after recalc (full list in JSON `control_registry.result
 
 1. **Load & smoke (S1).** Open URL, assert title, assert baseline KPIs render, capture console errors.
 2. **Establish baseline.** `#reset` → `#calc` → snapshot the KPI vector; compare to oracle (§6).
-3. **Navigate (S2).** Visit each of the 6 tabs; assert its registered controls become visible.
+3. **Navigate (S2).** Visit each of the 8 tabs; assert its registered controls become visible.
 4. **Functional sweep.**
-   - **S3 numerics** — for every one of the 132 inputs: nominal, low (min), high, invalid-negative, invalid-text, restore. *Mode-gated inputs:* enable the governing mode first (see JSON `mode_gated_inputs`); if a field is correctly locked, that is a PASS for gating and value tests are skipped.
-   - **S4 dropdowns** — select **every option** of all 20 selects; confirm the documented `effect` and any field unlock/lock.
+   - **S3 numerics** — for every one of the 146 inputs: nominal, low (min), high, invalid-negative, invalid-text, restore. *Mode-gated inputs:* enable the governing mode first (see JSON `mode_gated_inputs`); if a field is correctly locked, that is a PASS for gating and value tests are skipped.
+   - **S4 dropdowns** — select **every option** of all 26 selects; confirm the documented `effect` and any field unlock/lock.
    - **S5 checkboxes** — on Shells 3D, toggle each of the 9 layers off/on.
    - **S6 views/pop-outs/render** — every main view, both styles, all 5 pop-outs, 3D scale modes, time scrubber/playback, canvas zoom/pan/fit, shells "load count" buttons.
    - **S7 modals** — Specification (+ own-window + file fallback), Break-even (**every `beTarget` × `beGoal`**), Self-tests.
    - **S8 actions** — Recalculate, Reset (returns to baseline), Download JSON (round-trip), Export GP JSON.
    - **S10 data ingest** — live catalog load/clear/file, eccentric toggle (permission/network gated).
-5. **Validity sweep (S9).** Run all 22 `reasonableness_rules` on baseline and on their stated perturbations.
+5. **Validity sweep (S9).** Run all 36 `reasonableness_rules` on baseline and on their stated perturbations.
+5a. **v5.5 stack/model sweep (S13–S20).** Compute-stack presets, served-model presets & price source, the stack × model matrix (incl. the not-servable path), node sparing, interactivity scaling, the radiation strip, token-derived link traffic, reset/download/cross-tab. Baselines in JSON `oracle.stack_model_baseline`.
 6. **Cross-field (S11).** Walk every `mode_gated_inputs` entry; verify presets populate/lock fields.
 7. **Report.** Emit per `report_schema`; reset to baseline between destructive suites.
 
@@ -125,19 +126,27 @@ Key result KPIs to read after recalc (full list in JSON `control_registry.result
 | **S9** | Reasonableness | 22 physics/economics/text sanity rules | **Validity** |
 | **S10** | Live catalog ingest | Fetch/file/clear, eccentric objects | Functional (network-gated) |
 | **S11** | Cross-field & mode gating | Presets & mode selects lock/unlock the right fields | Functional + Validity |
-| **S12** | Display / output completeness | All 81 readouts render meaningful values, respond to inputs, and stay mutually consistent (e.g. table columns sum, paired readouts agree) | **Validity** |
+| **S12** | Display / output completeness | All 94 readouts render meaningful values, respond to inputs, and stay mutually consistent | **Validity** |
+| **S13** | Compute stack presets | 7 stack presets write rack/node/radiation fields; captive + estimate warnings fire | Functional + Validity |
+| **S14** | Served model & price source | 7 model presets; first-party vs neutral-host price; margin/latency readouts | Functional + Validity |
+| **S15** | Stack × model matrix | Cell source badge; not-servable path drives tps=0 with no NaN; override behaviour | Functional + Validity |
+| **S16** | Node sparing | Hot-spare floor vs expected; node failure over life; bounds | **Validity** |
+| **S17** | Interactivity scaling | Power-law factor, off-switch, clamp, terrestrial-ratio invariance | **Validity** |
+| **S18** | Radiation sensitivity strip | Fixed ×1.25/×2.5/×5 strip; monotone; responsiveness under repeated silent evals | **Validity** |
+| **S19** | Token-derived link traffic | Traffic scales with delivered tokens; prefix-cache & output-share effects; link limiting | **Validity** |
+| **S20** | Reset / download / cross-tab (v5.5) | New controls reset & export; spec-modal §17 matrix renders; pop-out follows stack | Functional + Validity |
 
 ---
 
 ## 6. Oracle — the reasonableness baseline
 
-Reset defaults (v5.4) must reproduce, within **±2%** (sign and structure must match **exactly**):
+Reset defaults (v5.5) must reproduce, within **±2%** (sign and structure must match **exactly**):
 
 | KPI | Expected |
 |---|---|
-| Delivered $/1M tokens (`tokc`) | **$13.971** |
+| Delivered $/1M tokens (`tokc`) | **$14.706** (v5.4 $13.971; node degradation, intended) |
 | Terrestrial $/1M tokens (`terrTok`) | **$0.247** |
-| Multiple vs terrestrial (`tokcmp`) | **56.5×** |
+| Multiple vs terrestrial (`tokcmp`) | **59.5×** terrestrial · **27×** market |
 | Initial CAPEX / productive MW (`capex`) | **$2.61B** |
 | Discounted lifecycle TCO / productive MW (`tco`) | **$6B** |
 | Wet mass / productive MW (`massmw`) | **114.7 t** |
@@ -149,7 +158,7 @@ Expected baseline **Model cautions** (payload-capacity, mandatory disposal, cont
 
 **Drift vs defect:** a value 1–2% off after a legitimate model tweak is `INFO`/flag. A **sign flip**, a **≥10× jump**, a **blank/NaN**, or a **broken derivation** (e.g. `nsat` no longer = `ceil(MW/rack)+spares`) is a `FAIL`.
 
-### The 22 reasonableness rules (validity core — where "usable information" is judged)
+### The 36 reasonableness rules (validity core — where "usable information" is judged)
 
 These are the heart of the "are the results reasonable?" requirement. Highlights (full text in JSON `reasonableness_rules`):
 
@@ -167,6 +176,7 @@ These are the heart of the "are the results reasonable?" requirement. Highlights
 - **R17 — Availability bounds:** `0 ≤ eavail ≤ base avail`.
 - **R20 — Architecture selector is drawing-only:** changing `mode` must **not** change `capex/tco/tokc` (documented invariant — a strong regression guard).
 - **R22 — Download fidelity:** exported scenario JSON round-trips the live inputs with no dropped field.
+- **R23–R36 (v5.5 stack/model layer):** R23 hot spares never raise throughput; R24 radiation strip monotone; R25 interactivity-off is tpsu-invariant; R26 factor=1 at the reference; R27 terrestrial ratio invariant to interactivity; R28 a not-servable cell gives tps=0 with no NaN; R29 margin = blended − licence − tokc; R30 price source is revenue-only; R31 stack preset writes radfail; R32 token-traffic identity; R33 cell-source badge truthful; R34 interactivity factor clamped [0.2,3]; R35 node degradation bounded; R36 latency class honoured.
 
 ---
 
@@ -189,18 +199,18 @@ Emit one JSON report per run following `report_schema` in the catalog: a `run` h
 **Coverage is reported as a fraction of the registry**, so "100%" is a checkable claim, e.g.:
 
 ```
-numeric_inputs_tested: 132/132   selects_tested: 20/20   checkboxes: 9/9
-modals: 3/3   views: 5 main + 2 styles   display_readouts: 81/81
-rules_run: 22/22   coverage_pct: 100.0
+numeric_inputs_tested: 146/146   selects_tested: 26/26   checkboxes: 9/9
+modals: 3/3   views: 5 main + 2 styles   display_readouts: 94/94
+rules_run: 36/36   suites_run: 20/20   coverage_pct: 100.0
 ```
 
 ---
 
 ## 9. Completeness checklist
 
-- [ ] All 6 tabs navigated (S2)
-- [ ] All 132 numeric inputs: nominal + boundary + invalid (S3)
-- [ ] All 20 dropdowns: every option exercised (S4)
+- [ ] All 8 tabs navigated (S2)
+- [ ] All 146 numeric inputs: nominal + boundary + invalid (S3)
+- [ ] All 26 dropdowns: every option exercised (S4)
 - [ ] All 9 3D checkboxes toggled (S5)
 - [ ] All 5 views + 2 styles rendered; all 5 pop-outs opened & follow live (S6)
 - [ ] 3D scale modes, scrubber, playback, canvas zoom/pan/fit (S6)
@@ -211,9 +221,10 @@ rules_run: 22/22   coverage_pct: 100.0
 - [ ] Recalculate / Reset→baseline / Download round-trip / Export (S8)
 - [ ] Live catalog load/clear/file + eccentric toggle (S10, or BLOCKED w/ reason)
 - [ ] All `mode_gated_inputs` lock/unlock verified (S11)
-- [ ] All 81 display readouts render + respond + stay consistent (S12)
+- [ ] All 94 display readouts render + respond + stay consistent (S12)
 - [ ] Model cautions list fires/clears correctly (S12 / R14, R15)
-- [ ] All 22 reasonableness rules run (S9)
+- [ ] All 36 reasonableness rules run (S9)
+- [ ] v5.5 stack/model suites S13–S20 run (presets, matrix, sparing, interactivity, radiation strip, traffic, reset/spec-modal)
 - [ ] Oracle baseline compared (S8.2 / §6)
 - [ ] Report emitted with coverage manifest (§8)
 
@@ -231,5 +242,8 @@ rules_run: 22/22   coverage_pct: 100.0
 6. **Numeric tolerance (±2%).** Chosen to absorb legitimate model iteration. Tighten to the self-test's own tolerance if you want the plan to catch smaller regressions.
 
 ---
+
+7. **v5.5 tagging not yet applied.** The `data-test-*` attributes are not present in `index.html` yet, so `reconcile.js` reports every control as `untagged` until tagging is done; the JSON registry is the interim source of truth. Tag the app and wire `reconcile(MANIFEST).pass` into Run self-tests to make the 100% claim self-checking. *(Review flag.)*
+8. **Spec-modal matrix render (S20.5).** The new §17 stack × model table is the one item not verifiable headlessly; confirm it renders as a table, not raw markdown, in a real browser.
 
 *Filenames are intentionally version-free (`OrbitalDatacenterSim-test-plan.md`, `OrbitalDatacenterSim-test-cases.json`) so re-uploads overwrite cleanly; version is tracked inside each file's header.*

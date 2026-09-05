@@ -1,6 +1,6 @@
 # UI Testability Convention — `data-test-*` tags + manifest + reconciliation
 
-**Version:** 1.0.0 · **Status:** Ready for Review
+**Version:** 1.1.0 · **Status:** Ready for Review
 **Applies to:** Orbital AI Data Center Economics Model (worked example below) — and intended as a **reusable house standard for any future single-file UI** (Drafting Grid, Terrestrial Datacenter Model, Intendit, ArionComply).
 **Companions:** `OrbitalDatacenterSim-test-cases.json` (the manifest) · `OrbitalDatacenterSim-reconcile.js` (the drift check)
 
@@ -28,7 +28,7 @@ The app already gives most elements an `id`. An `id` tells you *which* element, 
 |---|---|---|---|
 | `data-test-id` | ✅ | Mirrors the DOM `id` | `data-test-id="alt"` |
 | `data-test-kind` | ✅ | `input · select · checkbox · button · tab · file · date · range · view · popout` | `data-test-kind="input"` |
-| `data-test-tab` | ✅ | Where it lives: `arch · orbit · craft · cost · infer · time · global · view3d · shells · modal:breakeven · modal:spec · modal:test` | `data-test-tab="orbit"` |
+| `data-test-tab` | ✅ | Where it lives: `arch · stack · model · orbit · craft · cost · infer · time · global · view3d · shells · modal:breakeven · modal:spec · modal:test` | `data-test-tab="orbit"` |
 | `data-test-label` | ✅ | Short human name (matches the visible label) | `data-test-label="Altitude, km"` |
 | `data-test-gated-by` | optional | `id` of the select that unlocks/locks this input | `data-test-gated-by="op"` |
 | `data-test-dir` | optional | Expected-direction hint | `data-test-dir="util-up->tokc-down"` |
@@ -152,3 +152,16 @@ The schema in §3 is deliberately app-agnostic — only the `data-test-tab` voca
 4. Add the `reconcile(...).pass` assertion to that app's self-tests from day one.
 
 **Review flags.** (1) Decide whether `data-test-label` must match the visible label exactly or may be a short form — the reconciler treats label differences as warnings either way. (2) Decide the canonical direction of sync — recommended: **the page is source of truth**, manifest regenerated/reconciled from it. (3) For text-only buttons that currently have no `id` (e.g. the view-selector buttons), assign a `data-test-id` when tagging and add a matching manifest entry; the reconciler's `dom_only` list will prompt you.
+
+---
+
+## 8. v5.5 addendum (app v5.5, manifest 1.3.0)
+
+Tool v5.5 added two tabs and their controls. The tag vocabulary and reconciler are unchanged; only the inventory grew.
+
+- **New `data-test-tab` values:** `stack` (Compute stack) and `model` (Served model). Add both to the tabs vocabulary in §3 when tagging (already reflected above).
+- **New interactive elements to tag (22):** stack tab — `stackPreset` (select), `memtype` (select), `procurable` (select), `nodes`, `hotspare`, `nodefail`, `stackrad` (inputs); model tab — `modelPreset` (select), `mclass` (select), `priceSrc` (select), `latclass` (select), `mparams`, `mactive`, `mpricein`, `mpriceout`, `outfrac`, `mlic`, `tokbytes`, `inlink` (inputs); inference tab — `interMode` (select), `tpsuRef`, `interAlpha` (inputs).
+- **New readouts to tag (13):** `stackNote`, `modelNote`, `tpsSrc` (badge on `tpsmw`), and the Stack × model economics panel — `smName`, `smTps`, `smPrice`, `smMargin`, `smMwYear`, `smNode`, `smTraffic`, `smLat`, `smRad`. The existing `tokcmp` readout changed format (now also shows "× market price") but keeps its tag.
+- **`tpsmw` note:** it is now matrix-driven and its `min` changed from 1 to 0; when tagging, give it `data-test-dir="tpsmw-up->tokc-down"` as before and rely on the manifest for the matrix/override behaviour.
+
+**Status of tagging.** As of manifest 1.3.0 the app's `index.html` is **not yet tagged** — `reconcile.js` will report every control in `untagged` until the `data-test-*` attributes are added. The manifest registry is the interim source of truth and has been verified id-for-id against the v5.5 DOM (every registered id exists; no uncatalogued control). The recommended next step is a single tagging pass over `index.html` using the registry, then wiring `reconcile(MANIFEST).pass` into Run self-tests so the two can never drift again.

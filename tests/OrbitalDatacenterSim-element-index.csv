@@ -110,7 +110,7 @@ EL-108,years,number,Costs & launch,"Analysis horizon, years",10,S3,
 EL-109,disc,number,Costs & launch,"Discount rate, %",8,S3,
 EL-110,refresh,number,Costs & launch,"Compute economic refresh interval, years",3,S3,
 EL-111,serv,number,Costs & launch,"Robotic service cost / satellite refresh, $M",2,"S3,S11",used when replace=yes
-EL-112,tpsmw,number,Inference,"Inference throughput, tokens/s/productive MW",2800000,S3,
+EL-112,tpsmw,number,Inference,"Inference throughput, tokens/s/productive MW",2800000,"S3,S15","v5.5: matrix-driven, badge tpsSrc, manual edit=custom, min 1->0"
 EL-113,util,number,Inference,"Compute utilization, %",75,S3,
 EL-114,tpsu,number,Inference,"Benchmark interactivity, tokens/s/user",116,S3,
 EL-115,earthtok,number,Inference,Published terrestrial $ / 1M tokens,0.123,"S3,S11",benchmark when benchMode=published
@@ -218,3 +218,27 @@ EL-216,sweepSvg,svg,dawn-dusk altitude sweep,Render surface: dawn-dusk altitude 
 EL-217,tornado,svg,sensitivity tornado,Render surface: sensitivity tornado,,S6.7 (zoom/pan/fit),
 EL-218,orbitCanvas,canvas,orbit/cluster/shells 2D,Render surface: orbit/cluster/shells 2D,,S6.7 (zoom/pan/fit),
 EL-219,threeCanvas,canvas,Shells 3D,Render surface: Shells 3D,,S6.7 (zoom/pan/fit),
+EL-220,Compute stack,tab,top bar,Tab: Compute stack,,S2,expects 9 controls (v5.5)
+EL-221,Served model,tab,top bar,Tab: Served model,,S2,expects 12 controls (v5.5)
+EL-222,nodes,number,Compute stack,Nodes (trays/servers) per rack,18,S3,
+EL-223,hotspare,number,Compute stack,"Hot-spare nodes, % of rack",0,"S3,S16",
+EL-224,nodefail,number,Compute stack,"Node annual failure probability, %",2,"S3,S16",drives node degradation
+EL-225,stackrad,number,Compute stack,Stack radiation failure multiplier,1.25,"S3,S13",overwrites radfail
+EL-226,mparams,number,Served model,"Total parameters, B",1600,S3,
+EL-227,mactive,number,Served model,"Active parameters, B",49,S3,
+EL-228,mpricein,number,Served model,"Market price, input $/1M tokens",0.435,"S3,S14",set by preset x priceSrc
+EL-229,mpriceout,number,Served model,"Market price, output $/1M tokens",0.87,"S3,S14",set by preset x priceSrc
+EL-230,outfrac,number,Served model,"Output share of billed tokens, %",25,"S3,S19",
+EL-231,mlic,number,Served model,"Licence / royalty, $/1M blended tokens",0,S3,
+EL-232,tokbytes,number,Served model,Bytes per token,4,"S3,S19",
+EL-233,inlink,number,Served model,"Input tokens transmitted, % (prefix cache)",20,"S3,S19",
+EL-234,tpsuRef,number,Inference,"Cell reference interactivity, tokens/s/user",116,"S3,S17",active when interMode=on
+EL-235,interAlpha,number,Inference,Interactivity exponent alpha,0.9,"S3,S17",active when interMode=on
+EL-236,stackPreset,select,Compute stack,Compute stack preset,gb300,"S4,S13",gb300|rubin|mi455x|tpu7|groq3|cs4|trn3|custom
+EL-237,memtype,select,Compute stack,Memory architecture,hbm,S4,hbm|sram|wafer
+EL-238,procurable,select,Compute stack,Procurable by third-party operator?,yes,"S4,S13",yes|limited|no
+EL-239,modelPreset,select,Served model,Served model preset,dsv4pro,"S4,S14",dsv4pro|dsv4flash|kimik26|glm52|gptoss120|llama70|frontier|custom
+EL-240,mclass,select,Served model,Model size class,large,"S4,S15",small|mid|large
+EL-241,priceSrc,select,Served model,Price source,fp,"S4,S14",fp|nh
+EL-242,latclass,select,Served model,Latency class,agentic,S4,batch|agentic|interactive
+EL-243,interMode,select,Inference,Interactivity scaling of throughput cell,on,"S4,S17",on|off
