@@ -4,7 +4,7 @@
     "target": "Orbital AI Data Center Economics Model",
     "url": "https://lballaty.github.io/OrbitalDatacenterSim/",
     "app_version_at_authoring": "v5.5",
-    "catalog_version": "1.3.0",
+    "catalog_version": "1.3.1",
     "authored": "2026-09-05",
     "author": "Test plan generated for Libor Ballaty (Arion Networks s.r.o.)",
     "status": "Ready for Review",
@@ -14,7 +14,9 @@
       "The app is a single-file client-side HTML calculator. There is no server round-trip; every input change should be reflected after Recalculate (or on-change where the app auto-recalcs).",
       "Control IDs below are stable DOM element ids. If an id is not found at runtime, the agent MUST re-enumerate the DOM (see runner_protocol.self_heal) and report drift rather than silently skipping.",
       "Derived/computed fields are read-only in their default mode and only become editable in an alternate mode (see mode_gated_inputs).",
-      "v1.3.0 (app v5.5): added Compute stack and Served model tabs; 14 numeric inputs, 8 selects, 13 readouts; stack x model throughput matrix; interactivity scaling; price-source selector; node-level sparing; radiation sensitivity strip. tpsmw min changed 1->0 and it is now matrix-driven unless manually overridden."
+      "v1.3.0 (app v5.5): added Compute stack and Served model tabs; 14 numeric inputs, 8 selects, 13 readouts; stack x model throughput matrix; interactivity scaling; price-source selector; node-level sparing; radiation sensitivity strip. tpsmw min changed 1->0 and it is now matrix-driven unless manually overridden.",
+      "v1.3.1: tab/view/style/pop-out buttons given real DOM ids and declared (tab_buttons, view_style_buttons, popout_buttons) so reconcile.js covers them; reconcile.js updated to consume tab_buttons and view_style_buttons.",
+      "v1.3.1 tagging complete: index.html carries data-test-* on all 325 elements; reconcile(MANIFEST).pass wired into Run self-tests (9/9 on served origin). tag_contract.tabs vocabulary now includes 'stack' and 'model'."
     ],
     "changelog": [
       "1.2.0: designated as canonical manifest; added tag_contract (in-page data-test-* attribute schema) + reconciliation workflow. Companion: OrbitalDatacenterSim-reconcile.js, OrbitalDatacenterSim-tagging-convention.md.",
@@ -1852,24 +1854,29 @@
         "context": "spec modal"
       },
       {
-        "text": "⧉ Concept",
-        "context": "viz bar"
+        "id": "pop-single-concept",
+        "kind": "popout",
+        "text": "Concept"
       },
       {
-        "text": "⧉ Engineering sheet",
-        "context": "viz bar"
+        "id": "pop-single-technical",
+        "kind": "popout",
+        "text": "Engineering sheet"
       },
       {
-        "text": "⧉ Cluster",
-        "context": "viz bar"
+        "id": "pop-cluster-concept",
+        "kind": "popout",
+        "text": "Cluster"
       },
       {
-        "text": "⧉ Orbital shells",
-        "context": "viz bar"
+        "id": "pop-shells-concept",
+        "kind": "popout",
+        "text": "Orbital shells"
       },
       {
-        "text": "⧉ Shells 3D",
-        "context": "viz bar"
+        "id": "pop-shells3d-concept",
+        "kind": "popout",
+        "text": "Shells 3D"
       }
     ],
     "three_d_controls": [
@@ -2824,6 +2831,82 @@
         "baseline": "59.5x modeled terrestrial stack ($0.247) . 27x market price",
         "check": "ends with \"N x market price\"; \"no tokens delivered\" when n/a",
         "rules": "R27,R28"
+      }
+    ],
+    "tab_buttons": [
+      {
+        "id": "tab-arch",
+        "label": "Architecture"
+      },
+      {
+        "id": "tab-stack",
+        "label": "Compute stack"
+      },
+      {
+        "id": "tab-model",
+        "label": "Served model"
+      },
+      {
+        "id": "tab-orbit",
+        "label": "Orbit & traffic"
+      },
+      {
+        "id": "tab-craft",
+        "label": "Spacecraft"
+      },
+      {
+        "id": "tab-cost",
+        "label": "Costs & launch"
+      },
+      {
+        "id": "tab-infer",
+        "label": "Inference"
+      },
+      {
+        "id": "tab-time",
+        "label": "Timeline"
+      }
+    ],
+    "view_style_buttons": [
+      {
+        "id": "view-single",
+        "kind": "view",
+        "label": "Single satellite"
+      },
+      {
+        "id": "view-cluster",
+        "kind": "view",
+        "label": "Cluster"
+      },
+      {
+        "id": "view-system",
+        "kind": "view",
+        "label": "System overview"
+      },
+      {
+        "id": "view-shells",
+        "kind": "view",
+        "label": "Orbital shells"
+      },
+      {
+        "id": "view-shells3d",
+        "kind": "view",
+        "label": "Shells 3D"
+      },
+      {
+        "id": "style-both",
+        "kind": "view",
+        "label": "Both styles"
+      },
+      {
+        "id": "style-concept",
+        "kind": "view",
+        "label": "Concept"
+      },
+      {
+        "id": "style-technical",
+        "kind": "view",
+        "label": "Technical"
       }
     ]
   },
@@ -3892,6 +3975,8 @@
     ],
     "tabs": [
       "arch",
+      "stack",
+      "model",
       "orbit",
       "craft",
       "cost",

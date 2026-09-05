@@ -1,7 +1,7 @@
 # Test Plan — Orbital AI Data Center Economics Model
 
 **Target:** https://lballaty.github.io/OrbitalDatacenterSim/ (app v5.5 at authoring)
-**Plan version:** 1.1.0 · **Authored:** 2026-09-05 · **Status:** Ready for Review
+**Plan version:** 1.2.0 · **Authored:** 2026-09-05 · **Status:** Ready for Review
 **Machine-readable companion:** `OrbitalDatacenterSim-test-cases.json` (the executable catalog this document wraps)
 **Flat reference indexes:** `OrbitalDatacenterSim-element-index.csv` (243 interactive elements) · `OrbitalDatacenterSim-display-index.csv` (93 read-only readouts/warnings)
 **Owner:** Libor Ballaty · Arion Networks s.r.o.
@@ -243,7 +243,7 @@ rules_run: 36/36   suites_run: 20/20   coverage_pct: 100.0
 
 ---
 
-7. **v5.5 tagging not yet applied.** The `data-test-*` attributes are not present in `index.html` yet, so `reconcile.js` reports every control as `untagged` until tagging is done; the JSON registry is the interim source of truth. Tag the app and wire `reconcile(MANIFEST).pass` into Run self-tests to make the 100% claim self-checking. *(Review flag.)*
+7. **v5.5 tagging applied.** `index.html` is fully tagged with `data-test-*`; `reconcile.js` returns `pass: true` (325/325, zero drift) and the check is wired into Run self-tests (now 9/9 on a served origin; "skipped" from `file://`). Tab/view/style/pop-out buttons were given stable ids and declared in the manifest (`tab_buttons`, `view_style_buttons`, real-id `popout_buttons`); `reconcile.js` bumped to 1.1.0 to consume them. *(No longer a blocker.)*
 8. **Spec-modal matrix render (S20.5).** The new §17 stack × model table is the one item not verifiable headlessly; confirm it renders as a table, not raw markdown, in a real browser.
 
 *Filenames are intentionally version-free (`OrbitalDatacenterSim-test-plan.md`, `OrbitalDatacenterSim-test-cases.json`) so re-uploads overwrite cleanly; version is tracked inside each file's header.*

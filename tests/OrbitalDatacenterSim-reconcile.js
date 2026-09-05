@@ -19,7 +19,7 @@
  *        const m = require('./OrbitalDatacenterSim-test-cases.json');
  *        const report = await page.evaluate((mf) => reconcile(mf), m);   // after injecting this file
  *
- * Version: 1.0.0  (matches manifest tag_contract >= 1.2.0)
+ * Version: 1.1.0  (matches manifest tag_contract >= 1.2.0; consumes tab_buttons + view_style_buttons added in manifest 1.3.1)
  * -----------------------------------------------------------------------------
  */
 (function (root) {
@@ -51,6 +51,9 @@
     (reg.spec_modal || []).forEach(function (x) { decl(x.id, x.type || "button", "modal:spec", x.label, "control"); });
     (reg.breakeven_modal || []).forEach(function (x) { decl(x.id, x.type || "button", "modal:breakeven", x.label || x.id, "control"); });
     (reg.selftest_modal || []).forEach(function (x) { decl(x.id, x.type || "button", "modal:test", x.label, "control"); });
+    // v1.3.1: tab buttons and view/style selector buttons now carry real DOM ids.
+    (reg.tab_buttons || []).forEach(function (x) { decl(x.id, "tab", "global", x.label, "control"); });
+    (reg.view_style_buttons || []).forEach(function (x) { decl(x.id, x.kind || "view", "global", x.label, "control"); });
     (reg.display_registry || []).forEach(function (x) { decl(x.id, "output", x.region, x.shows, "output"); });
 
     // -------- 2. TAGGED set (what the DOM actually carries) -------------------
@@ -155,7 +158,7 @@
     );
   }
 
-  var api = { reconcile: reconcile, buildIndexFromDom: buildIndexFromDom, version: "1.0.0" };
+  var api = { reconcile: reconcile, buildIndexFromDom: buildIndexFromDom, version: "1.1.0" };
   if (typeof module !== "undefined" && module.exports) module.exports = api;
   if (root) { root.reconcile = reconcile; root.buildIndexFromDom = buildIndexFromDom; }
 })(typeof window !== "undefined" ? window : this);

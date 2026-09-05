@@ -1,6 +1,6 @@
 # UI Testability Convention — `data-test-*` tags + manifest + reconciliation
 
-**Version:** 1.1.0 · **Status:** Ready for Review
+**Version:** 1.2.0 · **Status:** Ready for Review
 **Applies to:** Orbital AI Data Center Economics Model (worked example below) — and intended as a **reusable house standard for any future single-file UI** (Drafting Grid, Terrestrial Datacenter Model, Intendit, ArionComply).
 **Companions:** `OrbitalDatacenterSim-test-cases.json` (the manifest) · `OrbitalDatacenterSim-reconcile.js` (the drift check)
 
@@ -164,4 +164,9 @@ Tool v5.5 added two tabs and their controls. The tag vocabulary and reconciler a
 - **New readouts to tag (13):** `stackNote`, `modelNote`, `tpsSrc` (badge on `tpsmw`), and the Stack × model economics panel — `smName`, `smTps`, `smPrice`, `smMargin`, `smMwYear`, `smNode`, `smTraffic`, `smLat`, `smRad`. The existing `tokcmp` readout changed format (now also shows "× market price") but keeps its tag.
 - **`tpsmw` note:** it is now matrix-driven and its `min` changed from 1 to 0; when tagging, give it `data-test-dir="tpsmw-up->tokc-down"` as before and rely on the manifest for the matrix/override behaviour.
 
-**Status of tagging.** As of manifest 1.3.0 the app's `index.html` is **not yet tagged** — `reconcile.js` will report every control in `untagged` until the `data-test-*` attributes are added. The manifest registry is the interim source of truth and has been verified id-for-id against the v5.5 DOM (every registered id exists; no uncatalogued control). The recommended next step is a single tagging pass over `index.html` using the registry, then wiring `reconcile(MANIFEST).pass` into Run self-tests so the two can never drift again.
+**Status of tagging (done, manifest 1.3.1).** `index.html` is now fully tagged. A headless run of `reconcile.js` against the tagged page returns **`pass: true`** with 325 declared = 325 tagged = 325 candidates and zero `dom_only` / `manifest_only` / `untagged` / `attr_mismatch` / `missing_required`. Two implementation notes from the pass:
+
+1. The tab buttons and the view / style / pop-out buttons had no DOM `id` (they keyed on `data-p` / `data-view` / `data-style` / `data-pop`). Per §7 review-flag 3 they were given stable ids (`tab-<key>`, `view-<v>`, `style-<v>`, `pop-<view>-<style>`), their original data-attributes kept so the app's own handlers still work, and matching manifest entries added (`tab_buttons`, `view_style_buttons`, and real-id `popout_buttons`). `reconcile.js` was extended to consume the two new lists (v1.1.0).
+2. `specWindow` (the spec modal's "Open in its own window" button) matched both the pop-out and the spec-modal patterns; it is tagged `kind=button, tab=modal:spec` to agree with its `spec_modal` registry entry, not `popout`.
+
+The drift check is wired into the app's **Run self-tests**: a "Tag/manifest drift (reconcile.pass)" row runs `reconcile(MANIFEST)` when `reconcile.js` and the manifest are reachable (served origin) and asserts `pass`; from `file://` it reports *skipped* rather than failing. On the served site self-tests are now **9/9**. Regenerate the flat indexes from the DOM with `buildIndexFromDom()` whenever tags change.

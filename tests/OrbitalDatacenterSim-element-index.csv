@@ -1,10 +1,10 @@
 index,ref,type,context,label,default,suites,notes
-EL-001,Architecture,tab,top bar,Tab: Architecture,,S2,expects 12 controls
-EL-002,Orbit & traffic,tab,top bar,Tab: Orbit & traffic,,S2,expects 27 controls
-EL-003,Spacecraft,tab,top bar,Tab: Spacecraft,,S2,expects 48 controls
-EL-004,Costs & launch,tab,top bar,Tab: Costs & launch,,S2,expects 35 controls
-EL-005,Inference,tab,top bar,Tab: Inference,,S2,expects 20 controls
-EL-006,Timeline,tab,top bar,Tab: Timeline,,S2,expects 7 controls
+EL-001,tab-arch,tab,top bar,Tab: Architecture,,S2,expects 12 controls
+EL-002,tab-orbit,tab,top bar,Tab: Orbit & traffic,,S2,expects 27 controls
+EL-003,tab-craft,tab,top bar,Tab: Spacecraft,,S2,expects 48 controls
+EL-004,tab-cost,tab,top bar,Tab: Costs & launch,,S2,expects 35 controls
+EL-005,tab-infer,tab,top bar,Tab: Inference,,S2,expects 20 controls
+EL-006,tab-time,tab,top bar,Tab: Timeline,,S2,expects 7 controls
 EL-007,mw,number,Architecture,"Target productive compute for whole constellation, MW",1,S3,
 EL-008,rps,number,Architecture,Racks / maneuverable satellite,1,S3,
 EL-009,rkw,number,Architecture,"Rack TDP, kW",135,S3,
@@ -172,20 +172,20 @@ EL-170,download,button,top bar,Download scenario JSON,,S8.3,Downloads current sc
 EL-171,breakeven,button,top bar,Break-even solver,,S7.4,Opens break-even modal.
 EL-172,runtests,button,top bar,Run self-tests,,S7.8,Opens self-test modal and runs in-file assertions.
 EL-173,openSpec,button,top bar,Specification,,S7.1,"Opens spec modal (fetches sibling .md, renders markdown)."
-EL-174,Single satellite,button,viz view bar,Single satellite,,S6.1,main_view
-EL-175,Cluster,button,viz view bar,Cluster,,S6.1,main_view
-EL-176,System overview,button,viz view bar,System overview,,S6.1,main_view
-EL-177,Orbital shells,button,viz view bar,Orbital shells,,S6.1,main_view
-EL-178,Shells 3D,button,viz view bar,Shells 3D,,S6.1,main_view
-EL-179,Both styles,button,viz view bar,Both styles,,S6.2,style
-EL-180,Concept,button,viz view bar,Concept,,S6.2,style
-EL-181,Technical,button,viz view bar,Technical,,S6.2,style
+EL-174,view-single,button,viz view bar,Single satellite,,S6.1,main_view
+EL-175,view-cluster,button,viz view bar,Cluster,,S6.1,main_view
+EL-176,view-system,button,viz view bar,System overview,,S6.1,main_view
+EL-177,view-shells,button,viz view bar,Orbital shells,,S6.1,main_view
+EL-178,view-shells3d,button,viz view bar,Shells 3D,,S6.1,main_view
+EL-179,style-both,button,viz view bar,Both styles,,S6.2,style
+EL-180,style-concept,button,viz view bar,Concept,,S6.2,style
+EL-181,style-technical,button,viz view bar,Technical,,S6.2,style
 EL-182,specWindow,button,spec modal,Open in its own window,,S6.3,
-EL-183,⧉ Concept,button,viz bar,⧉ Concept,,S6.3,
-EL-184,⧉ Engineering sheet,button,viz bar,⧉ Engineering sheet,,S6.3,
-EL-185,⧉ Cluster,button,viz bar,⧉ Cluster,,S6.3,
-EL-186,⧉ Orbital shells,button,viz bar,⧉ Orbital shells,,S6.3,
-EL-187,⧉ Shells 3D,button,viz bar,⧉ Shells 3D,,S6.3,
+EL-183,pop-single-concept,button,viz bar,⧉ Concept,,S6.3,
+EL-184,pop-single-technical,button,viz bar,⧉ Engineering sheet,,S6.3,
+EL-185,pop-cluster-concept,button,viz bar,⧉ Cluster,,S6.3,
+EL-186,pop-shells-concept,button,viz bar,⧉ Orbital shells,,S6.3,
+EL-187,pop-shells3d-concept,button,viz bar,⧉ Shells 3D,,S6.3,
 EL-188,scaleTrue,button,Shells 3D controls,True scale (zoom out to the Moon),,S6.5,
 EL-189,scaleLeo,button,Shells 3D controls,LEO exaggerated x4,,S6.5,
 EL-190,scaleGeo,button,Shells 3D controls,Log compressed,,S6.5,
@@ -218,8 +218,8 @@ EL-216,sweepSvg,svg,dawn-dusk altitude sweep,Render surface: dawn-dusk altitude 
 EL-217,tornado,svg,sensitivity tornado,Render surface: sensitivity tornado,,S6.7 (zoom/pan/fit),
 EL-218,orbitCanvas,canvas,orbit/cluster/shells 2D,Render surface: orbit/cluster/shells 2D,,S6.7 (zoom/pan/fit),
 EL-219,threeCanvas,canvas,Shells 3D,Render surface: Shells 3D,,S6.7 (zoom/pan/fit),
-EL-220,Compute stack,tab,top bar,Tab: Compute stack,,S2,expects 9 controls (v5.5)
-EL-221,Served model,tab,top bar,Tab: Served model,,S2,expects 12 controls (v5.5)
+EL-220,tab-stack,tab,top bar,Tab: Compute stack,,S2,expects 9 controls (v5.5)
+EL-221,tab-model,tab,top bar,Tab: Served model,,S2,expects 12 controls (v5.5)
 EL-222,nodes,number,Compute stack,Nodes (trays/servers) per rack,18,S3,
 EL-223,hotspare,number,Compute stack,"Hot-spare nodes, % of rack",0,"S3,S16",
 EL-224,nodefail,number,Compute stack,"Node annual failure probability, %",2,"S3,S16",drives node degradation
