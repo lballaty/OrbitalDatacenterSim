@@ -96,3 +96,8 @@ Issues, comments, and pull requests are all welcome, but `main` stays controlled
 3. Keep it single-file and dependency-free, and keep file names stable (see Versioning).
 4. Run the self-tests (**Run self-tests** button, or append `?test` to the URL). All 8 should pass.
 5. Open a pull request against `main`. Every PR gets read; expect questions on any input that changes a default or a labelled assumption.
+
+
+## AI assistance
+
+Claude, ChatGPT, and Gemini were used during development and testing of this project.
