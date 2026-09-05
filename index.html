@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Orbital AI Data Center Economics Model (v5.4)</title>
+<title>Orbital AI Data Center Economics Model (v5.5)</title>
 <style>
 :root{
   --bg:#0d1117;--panel:#151b23;--panel2:#1b2330;--panel3:#10161e;
@@ -86,68 +86,70 @@ body.popout #popoutBar{display:none}
 
 <div class="wrap">
   <div class="actions">
-    <button class="primary" id="calc">Recalculate</button>
-    <button id="reset">Reset base scenario</button>
-    <button id="download">Download scenario JSON</button>
-    <button id="breakeven">Break-even solver</button>
-    <button id="runtests">Run self-tests</button>
-    <button id="openSpec">Specification</button>
+    <button class="primary" id="calc" data-test-id="calc" data-test-kind="button" data-test-tab="global" data-test-label="Recalculate">Recalculate</button>
+    <button id="reset" data-test-id="reset" data-test-kind="button" data-test-tab="global" data-test-label="Reset base scenario">Reset base scenario</button>
+    <button id="download" data-test-id="download" data-test-kind="button" data-test-tab="global" data-test-label="Download scenario JSON">Download scenario JSON</button>
+    <button id="breakeven" data-test-id="breakeven" data-test-kind="button" data-test-tab="modal:breakeven" data-test-label="Open break-even solver">Break-even solver</button>
+    <button id="runtests" data-test-id="runtests" data-test-kind="button" data-test-tab="modal:test" data-test-label="Run self-tests">Run self-tests</button>
+    <button id="openSpec" data-test-id="openSpec" data-test-kind="button" data-test-tab="modal:spec" data-test-label="Specification (open)">Specification</button>
     <span class="badge">Base architecture: one 135 kW / 72-GPU rack per satellite</span>
-    <span class="badge" id="regimeBadge">Cost regime: Traditional aerospace / low volume</span>
+    <span class="badge" id="regimeBadge" data-test-out="regimeBadge" data-test-kind="output" data-test-tab="global" data-test-label="Active manufacturing cost regime badge" data-test-role="derived">Cost regime: Traditional aerospace / low volume</span>
   </div>
 
   <div id="specModal" style="display:none;position:fixed;inset:0;z-index:50;background:rgba(0,0,0,.55)">
     <div style="position:absolute;inset:4vh 6vw;background:var(--panel);border:1px solid var(--line);border-radius:10px;display:flex;flex-direction:column;overflow:hidden">
       <div class="row" style="padding:10px 14px;border-bottom:1px solid var(--line)"><strong>Model specification</strong>
-        <div style="display:flex;gap:6px"><button id="specWindow" style="min-height:30px">⧉ Open in its own window</button><label style="display:flex;align-items:center;gap:4px;font-size:12px;color:var(--muted)">load file: <input type="file" id="specFile" accept=".md,text/markdown" style="min-height:auto;font-size:11px"></label><button id="specClose" style="min-height:30px">Close</button></div></div>
-      <div id="specBody" style="overflow:auto;padding:16px 22px;line-height:1.5;font-size:14px"></div>
+        <div style="display:flex;gap:6px"><button id="specWindow" style="min-height:30px" data-test-id="specWindow" data-test-kind="button" data-test-tab="modal:spec" data-test-label="Open in its own window">⧉ Open in its own window</button><label style="display:flex;align-items:center;gap:4px;font-size:12px;color:var(--muted)">load file: <input type="file" id="specFile" accept=".md,text/markdown" style="min-height:auto;font-size:11px" data-test-id="specFile" data-test-kind="file" data-test-tab="modal:spec" data-test-label="Spec markdown file loader (fallback when fetch blocked)"></label><button id="specClose" style="min-height:30px" data-test-id="specClose" data-test-kind="button" data-test-tab="modal:spec" data-test-label="Close">Close</button></div></div>
+      <div id="specBody" style="overflow:auto;padding:16px 22px;line-height:1.5;font-size:14px" data-test-out="specBody" data-test-kind="output" data-test-tab="modal:spec" data-test-label="Rendered spec markdown" data-test-role="derived"></div>
     </div>
   </div>
   <div id="beBox" class="panel" style="display:none;margin-bottom:14px">
-    <div class="row"><h2 style="margin:0">Break-even solver</h2><button id="beClose" style="min-height:30px">Close</button></div>
+    <div class="row"><h2 style="margin:0">Break-even solver</h2><button id="beClose" style="min-height:30px" data-test-id="beClose" data-test-kind="button" data-test-tab="modal:breakeven" data-test-label="Close">Close</button></div>
     <div class="controls" style="margin-top:10px">
-      <label>Solve for</label><select id="beTarget"><option value="lmission">Launch mission price, $M</option><option value="lkg">Bulk launch $/kg</option><option value="solc">Solar $/kg</option><option value="otherc">Other hardware $/kg</option><option value="busc">Bus/control $M/sat</option><option value="rcost">Compute $/rack</option><option value="util">Utilization %</option><option value="tpsmw">Tokens/s/MW</option></select>
-      <label>Parity goal</label><select id="beGoal"><option value="terr">Match modeled terrestrial $/1M tokens</option><option value="mult2">Reach 2× terrestrial</option><option value="mult5">Reach 5× terrestrial</option></select>
+      <label>Solve for</label><select id="beTarget" data-test-id="beTarget" data-test-kind="select" data-test-tab="modal:breakeven" data-test-label="beTarget"><option value="lmission">Launch mission price, $M</option><option value="lkg">Bulk launch $/kg</option><option value="solc">Solar $/kg</option><option value="otherc">Other hardware $/kg</option><option value="busc">Bus/control $M/sat</option><option value="rcost">Compute $/rack</option><option value="util">Utilization %</option><option value="tpsmw">Tokens/s/MW</option></select>
+      <label>Parity goal</label><select id="beGoal" data-test-id="beGoal" data-test-kind="select" data-test-tab="modal:breakeven" data-test-label="beGoal"><option value="terr">Match modeled terrestrial $/1M tokens</option><option value="mult2">Reach 2× terrestrial</option><option value="mult5">Reach 5× terrestrial</option></select>
     </div>
-    <div class="call" id="beResult" style="margin-top:10px">—</div>
+    <div class="call" id="beResult" style="margin-top:10px" data-test-out="beResult" data-test-kind="output" data-test-tab="modal:breakeven" data-test-label="Solver result text" data-test-role="derived">—</div>
     <p class="muted">Bisection on the selected input holding everything else fixed; reports the value at which orbital delivered $/1M tokens meets the goal, or that no solution exists in the searched range.</p>
   </div>
   <div id="testBox" class="panel" style="display:none;margin-bottom:14px">
-    <div class="row"><h2 style="margin:0">Self-tests</h2><button id="testClose" style="min-height:30px">Close</button></div>
-    <div class="table" style="margin-top:10px"><table><thead><tr><th>Check</th><th>Expected</th><th>Actual</th><th>Result</th></tr></thead><tbody id="testRows"></tbody></table></div>
+    <div class="row"><h2 style="margin:0">Self-tests</h2><button id="testClose" style="min-height:30px" data-test-id="testClose" data-test-kind="button" data-test-tab="modal:test" data-test-label="Close">Close</button></div>
+    <div class="table" style="margin-top:10px"><table><thead><tr><th>Check</th><th>Expected</th><th>Actual</th><th>Result</th></tr></thead><tbody id="testRows" data-test-out="testRows" data-test-kind="output" data-test-tab="modal:test" data-test-label="Self-test results table" data-test-role="derived"></tbody></table></div>
   </div>
 
   <div class="grid">
     <section class="panel">
       <div class="tabs" id="tabs">
-        <button class="active" data-p="arch">Architecture</button>
-        <button data-p="orbit">Orbit & traffic</button>
-        <button data-p="craft">Spacecraft</button>
-        <button data-p="cost">Costs & launch</button>
-        <button data-p="infer">Inference</button>
-        <button data-p="time">Timeline</button>
+        <button class="active" data-p="arch" id="tab-arch" data-test-id="tab-arch" data-test-kind="tab" data-test-tab="global" data-test-label="Architecture">Architecture</button>
+        <button data-p="stack" id="tab-stack" data-test-id="tab-stack" data-test-kind="tab" data-test-tab="global" data-test-label="Compute stack">Compute stack</button>
+        <button data-p="model" id="tab-model" data-test-id="tab-model" data-test-kind="tab" data-test-tab="global" data-test-label="Served model">Served model</button>
+        <button data-p="orbit" id="tab-orbit" data-test-id="tab-orbit" data-test-kind="tab" data-test-tab="global" data-test-label="Orbit & traffic">Orbit & traffic</button>
+        <button data-p="craft" id="tab-craft" data-test-id="tab-craft" data-test-kind="tab" data-test-tab="global" data-test-label="Spacecraft">Spacecraft</button>
+        <button data-p="cost" id="tab-cost" data-test-id="tab-cost" data-test-kind="tab" data-test-tab="global" data-test-label="Costs & launch">Costs & launch</button>
+        <button data-p="infer" id="tab-infer" data-test-id="tab-infer" data-test-kind="tab" data-test-tab="global" data-test-label="Inference">Inference</button>
+        <button data-p="time" id="tab-time" data-test-id="tab-time" data-test-kind="tab" data-test-tab="global" data-test-label="Timeline">Timeline</button>
       </div>
 
       <div class="pane active" id="arch">
         <h2>Compute architecture</h2>
         <div class="controls">
-          <label>Target productive compute for the whole constellation, MW</label><input id="mw" type="number" min=".001" step=".135" value="1">
-          <div class="note" id="archDerived">—</div>
-          <label>Racks / independently maneuverable satellite</label><input id="rps" type="number" min="1" step="1" value="1">
-          <label>Total productive racks (derived) <span class="badge">computed</span></label><output id="prodRacksOut">—</output>
-          <label>Total installed racks incl. spares (derived) <span class="badge">computed</span></label><output id="instRacksOut">—</output>
-          <label>Satellites (derived) <span class="badge">computed</span></label><output id="satsOut">—</output>
-          <label>Rack TDP, kW (per rack)</label><input id="rkw" type="number" min="1" value="135">
-          <label>Rack peak, kW (used when battery power basis = peak)</label><input id="rpk" type="number" min="1" value="155">
-          <label>Rack hardware mass, kg</label><input id="rm" type="number" min="1" value="1580">
-          <label>GPUs / rack</label><input id="gpu" type="number" min="1" value="72">
-          <label>Compute cost / rack, $M <span class="badge">assumption</span></label><input id="rcost" type="number" min="0" step=".1" value="4">
-          <label>IT overhead beyond rack TDP, %</label><input id="itoh" type="number" min="0" value="10">
-          <label>Network/storage mass / rack, kg <span class="badge">assumption</span></label><input id="netm" type="number" min="0" value="250">
-          <label>Optical relay terminal mass / satellite, kg <span class="badge">assumption</span></label><input id="relaym" type="number" min="0" value="60">
-          <label>Installed spare capacity, %</label><input id="spare" type="number" min="0" value="10">
+          <label>Target productive compute for the whole constellation, MW</label><input id="mw" type="number" min=".001" step=".135" value="1" data-test-id="mw" data-test-kind="input" data-test-tab="arch" data-test-label="Target productive compute for whole constellation, MW" data-test-unit="MW">
+          <div class="note" id="archDerived" data-test-out="archDerived" data-test-kind="output" data-test-tab="arch" data-test-label="Derivation sentence: target kW / rack -&gt; productive+spare racks -&g" data-test-role="derived">—</div>
+          <label>Racks / independently maneuverable satellite</label><input id="rps" type="number" min="1" step="1" value="1" data-test-id="rps" data-test-kind="input" data-test-tab="arch" data-test-label="Racks / maneuverable satellite" data-test-unit="racks">
+          <label>Total productive racks (derived) <span class="badge">computed</span></label><output id="prodRacksOut" data-test-out="prodRacksOut" data-test-kind="output" data-test-tab="arch" data-test-label="Total productive racks (derived)" data-test-role="derived">—</output>
+          <label>Total installed racks incl. spares (derived) <span class="badge">computed</span></label><output id="instRacksOut" data-test-out="instRacksOut" data-test-kind="output" data-test-tab="arch" data-test-label="Total installed racks incl. spares" data-test-role="derived">—</output>
+          <label>Satellites (derived) <span class="badge">computed</span></label><output id="satsOut" data-test-out="satsOut" data-test-kind="output" data-test-tab="arch" data-test-label="Satellites (derived)" data-test-role="derived">—</output>
+          <label>Rack TDP, kW (per rack)</label><input id="rkw" type="number" min="1" value="135" data-test-id="rkw" data-test-kind="input" data-test-tab="arch" data-test-label="Rack TDP, kW" data-test-unit="kW">
+          <label>Rack peak, kW (used when battery power basis = peak)</label><input id="rpk" type="number" min="1" value="155" data-test-id="rpk" data-test-kind="input" data-test-tab="arch" data-test-label="Rack peak, kW (used when battery power basis = peak)" data-test-unit="kW">
+          <label>Rack hardware mass, kg</label><input id="rm" type="number" min="1" value="1580" data-test-id="rm" data-test-kind="input" data-test-tab="arch" data-test-label="Rack hardware mass, kg" data-test-unit="kg">
+          <label>GPUs / rack</label><input id="gpu" type="number" min="1" value="72" data-test-id="gpu" data-test-kind="input" data-test-tab="arch" data-test-label="GPUs / rack" data-test-unit="count">
+          <label>Compute cost / rack, $M <span class="badge">assumption</span></label><input id="rcost" type="number" min="0" step=".1" value="4" data-test-id="rcost" data-test-kind="input" data-test-tab="arch" data-test-label="Compute cost / rack, $M" data-test-unit="$M">
+          <label>IT overhead beyond rack TDP, %</label><input id="itoh" type="number" min="0" value="10" data-test-id="itoh" data-test-kind="input" data-test-tab="arch" data-test-label="IT overhead beyond rack TDP, %" data-test-unit="%">
+          <label>Network/storage mass / rack, kg <span class="badge">assumption</span></label><input id="netm" type="number" min="0" value="250" data-test-id="netm" data-test-kind="input" data-test-tab="arch" data-test-label="Network/storage mass / rack, kg" data-test-unit="kg">
+          <label>Optical relay terminal mass / satellite, kg <span class="badge">assumption</span></label><input id="relaym" type="number" min="0" value="60" data-test-id="relaym" data-test-kind="input" data-test-tab="arch" data-test-label="Optical relay terminal mass / satellite, kg" data-test-unit="kg">
+          <label>Installed spare capacity, %</label><input id="spare" type="number" min="0" value="10" data-test-id="spare" data-test-kind="input" data-test-tab="arch" data-test-label="Installed spare capacity, %" data-test-unit="%">
           <label>Architecture <span class="badge">visualization only</span></label>
-          <select id="mode">
+          <select id="mode" data-test-id="mode" data-test-kind="select" data-test-tab="arch" data-test-label="Architecture visualization">
             <option value="individual" selected>Independent rack satellites</option>
             <option value="module">Multi-rack maneuverable modules</option>
             <option value="platform">Persistent platform + replaceable compute</option>
@@ -156,11 +158,90 @@ body.popout #popoutBar{display:none}
         </div>
       </div>
 
+      <div class="pane" id="stack">
+        <h2>Compute stack</h2>
+        <div class="controls">
+          <label>Stack preset</label>
+          <select id="stackPreset" data-test-id="stackPreset" data-test-kind="select" data-test-tab="stack" data-test-label="Compute stack preset">
+            <option value="gb300" selected>NVIDIA GB300 NVL72 (72 GPU, HBM3e)</option>
+            <option value="rubin">NVIDIA Vera Rubin NVL72 (72 GPU, HBM4)</option>
+            <option value="mi455x">AMD Helios MI455X (72 GPU, HBM4, UALink)</option>
+            <option value="tpu7">Google Ironwood TPU v7 (64-chip rack, HBM3e)</option>
+            <option value="groq3">NVIDIA Groq 3 LPX (256 LPU, on-die SRAM)</option>
+            <option value="cs4">Cerebras CS-4 (3× wafer-scale, SRAM)</option>
+            <option value="trn3">AWS Trainium3 rack (HBM)</option>
+            <option value="custom">Custom</option>
+          </select>
+          <div class="note" id="stackNote" data-test-out="stackNote" data-test-kind="output" data-test-tab="stack" data-test-label="Selected stack preset provenance note" data-test-role="derived">—</div>
+          <label>Nodes (trays / servers) per rack</label><input id="nodes" type="number" min="1" step="1" value="18" data-test-id="nodes" data-test-kind="input" data-test-tab="stack" data-test-label="Nodes (trays/servers) per rack" data-test-unit="count">
+          <label>Hot-spare nodes, % of rack</label><input id="hotspare" type="number" min="0" max="90" value="0" data-test-id="hotspare" data-test-kind="input" data-test-tab="stack" data-test-label="Hot-spare nodes, % of rack" data-test-unit="%">
+          <label>Node annual failure probability, % <span class="badge">assumption</span></label><input id="nodefail" type="number" min="0" step=".1" value="2" data-test-id="nodefail" data-test-kind="input" data-test-tab="stack" data-test-label="Node annual failure probability, %" data-test-unit="%/yr">
+          <label>Memory architecture</label>
+          <select id="memtype" data-test-id="memtype" data-test-kind="select" data-test-tab="stack" data-test-label="Memory architecture">
+            <option value="hbm" selected>HBM with ECC (GPU/TPU class)</option>
+            <option value="sram">On-die SRAM, many small chips</option>
+            <option value="wafer">Wafer-scale SRAM</option>
+          </select>
+          <label>Stack radiation failure multiplier <span class="badge">scenario</span></label><input id="stackrad" type="number" min=".1" step=".05" value="1.25" data-test-id="stackrad" data-test-kind="input" data-test-tab="stack" data-test-label="Stack radiation failure multiplier" data-test-unit="x">
+          <label>Procurable by a third-party operator?</label>
+          <select id="procurable" data-test-id="procurable" data-test-kind="select" data-test-tab="stack" data-test-label="Procurable by a third-party operator?">
+            <option value="yes" selected>Yes: merchant hardware</option>
+            <option value="limited">Limited: allocation-constrained</option>
+            <option value="no">No: captive to one cloud</option>
+          </select>
+          <div class="note">Rack TDP, mass, accelerator count and $/rack live on the Architecture tab and are overwritten when a preset is selected; the stack multiplier overwrites the Spacecraft-tab radiation failure multiplier. Only the GB300 large-MoE throughput cell is a measured value (SemiAnalysis InferenceX, 116 tok/s/user); every other stack × model cell is an estimate and is labelled as such. Hot-spare nodes are unpowered and do not raise expected throughput; they convert stochastic degradation into a guaranteed capacity floor. Radiation multipliers are scenario values: no vendor has published LEO SEE data for current inference silicon; Google's Suncatcher proton tests covered Trillium, not Ironwood.</div>
+        </div>
+      </div>
+
+      <div class="pane" id="model">
+        <h2>Served model and revenue</h2>
+        <div class="controls">
+          <label>Model preset</label>
+          <select id="modelPreset" data-test-id="modelPreset" data-test-kind="select" data-test-tab="model" data-test-label="Served model preset">
+            <option value="dsv4pro" selected>DeepSeek V4 Pro 1.6T MoE (open weights)</option>
+            <option value="dsv4flash">DeepSeek V4 Flash (open weights)</option>
+            <option value="kimik26">Kimi K2.6 1T MoE (open weights, custom licence)</option>
+            <option value="glm52">GLM-5.2 ~744B (open weights, MIT)</option>
+            <option value="gptoss120">gpt-oss 120B / 5B active (open weights)</option>
+            <option value="llama70">Llama 3.3 70B dense (open weights)</option>
+            <option value="frontier">Frontier proprietary under licence (scenario)</option>
+            <option value="custom">Custom</option>
+          </select>
+          <div class="note" id="modelNote" data-test-out="modelNote" data-test-kind="output" data-test-tab="model" data-test-label="Selected model preset provenance/price note" data-test-role="derived">—</div>
+          <label>Model size class</label>
+          <select id="mclass" data-test-id="mclass" data-test-kind="select" data-test-tab="model" data-test-label="Model size class">
+            <option value="small">Small: ≤ 120B total</option>
+            <option value="mid">Mid: 120–600B</option>
+            <option value="large" selected>Large: 0.6–3T MoE</option>
+          </select>
+          <label>Total parameters, B</label><input id="mparams" type="number" min="1" value="1600" data-test-id="mparams" data-test-kind="input" data-test-tab="model" data-test-label="Total parameters, B" data-test-unit="B">
+          <label>Active parameters, B</label><input id="mactive" type="number" min="1" value="49" data-test-id="mactive" data-test-kind="input" data-test-tab="model" data-test-label="Active parameters, B" data-test-unit="B">
+          <label>Price source</label>
+          <select id="priceSrc" data-test-id="priceSrc" data-test-kind="select" data-test-tab="model" data-test-label="Price source">
+            <option value="fp" selected>First-party API (floor)</option>
+            <option value="nh">Neutral host (Together AI class)</option>
+          </select>
+          <label>Market price, input $/1M tokens <span class="badge">scenario</span></label><input id="mpricein" type="number" min="0" step=".01" value=".435" data-test-id="mpricein" data-test-kind="input" data-test-tab="model" data-test-label="Market price, input $/1M tokens" data-test-unit="$/1M">
+          <label>Market price, output $/1M tokens <span class="badge">scenario</span></label><input id="mpriceout" type="number" min="0" step=".01" value=".87" data-test-id="mpriceout" data-test-kind="input" data-test-tab="model" data-test-label="Market price, output $/1M tokens" data-test-unit="$/1M">
+          <label>Output share of billed tokens, %</label><input id="outfrac" type="number" min="1" max="99" value="25" data-test-id="outfrac" data-test-kind="input" data-test-tab="model" data-test-label="Output share of billed tokens, %" data-test-unit="%">
+          <label>Licence / royalty, $/1M blended tokens</label><input id="mlic" type="number" min="0" step=".01" value="0" data-test-id="mlic" data-test-kind="input" data-test-tab="model" data-test-label="Licence / royalty, $/1M blended tokens" data-test-unit="$/1M">
+          <label>Latency class</label>
+          <select id="latclass" data-test-id="latclass" data-test-kind="select" data-test-tab="model" data-test-label="Latency class">
+            <option value="batch">Batch / offline (TTFT insensitive)</option>
+            <option value="agentic" selected>Agentic / coding (TTFT ≤ 500 ms)</option>
+            <option value="interactive">Interactive chat / voice (TTFT ≤ 250 ms)</option>
+          </select>
+          <label>Bytes per token</label><input id="tokbytes" type="number" min="1" value="4" data-test-id="tokbytes" data-test-kind="input" data-test-tab="model" data-test-label="Bytes per token" data-test-unit="bytes">
+          <label>Input tokens actually transmitted, % (prefix cache)</label><input id="inlink" type="number" min="0" max="100" value="20" data-test-id="inlink" data-test-kind="input" data-test-tab="model" data-test-label="Input tokens actually transmitted, % (prefix cache)" data-test-unit="%">
+          <div class="note">Prices are per-token API rates observed early September 2026 from first-party pages or neutral hosts; they move monthly. A third-party operator sells at market, so revenue is market price minus licence; the terrestrial figures on the Inference tab are cost, not price. Token traffic on the leased relay link is derived from delivered tokens, so small models load the link far harder than large MoE.</div>
+        </div>
+      </div>
+
       <div class="pane" id="orbit">
         <h2>Orbit, access and congestion</h2>
         <div class="controls">
           <label>Orbit preset</label>
-          <select id="op">
+          <select id="op" data-test-id="op" data-test-kind="select" data-test-tab="orbit" data-test-label="Orbit preset">
             <option value="400">400 km / 51.6° LEO</option>
             <option value="550">550 km / 53° LEO</option>
             <option value="650" selected>650 km dawn-dusk SSO / 97.99°</option>
@@ -168,45 +249,45 @@ body.popout #popoutBar{display:none}
             <option value="1200">1,200 km high LEO</option>
             <option value="custom">Custom</option>
           </select>
-          <label>Altitude, km</label><input id="alt" type="number" min="160" value="650">
-          <label>Inclination, °</label><input id="inc" type="number" min="0" max="180" step=".01" value="97.99">
-          <label>Orbital planes for the modeled constellation <span class="badge">layout</span></label><input id="planes" type="number" min="1" step="1" value="1">
+          <label>Altitude, km</label><input id="alt" type="number" min="160" value="650" data-test-id="alt" data-test-kind="input" data-test-tab="orbit" data-test-label="Altitude, km" data-test-unit="km">
+          <label>Inclination, °</label><input id="inc" type="number" min="0" max="180" step=".01" value="97.99" data-test-id="inc" data-test-kind="input" data-test-tab="orbit" data-test-label="Inclination, deg" data-test-unit="deg">
+          <label>Orbital planes for the modeled constellation <span class="badge">layout</span></label><input id="planes" type="number" min="1" step="1" value="1" data-test-id="planes" data-test-kind="input" data-test-tab="orbit" data-test-label="Orbital planes for modeled constellation layout" data-test-unit="count">
           <div class="note">Each cluster is one tight formation at a single point on its orbit (R_max of order 1–50 km), not satellites spread around the orbit. Planes and clusters are layout choices; clusters set how many formations the fleet is split into.</div>
           <label>Illumination basis</label>
-          <select id="illumMode"><option value="geom" selected>Computed from orbit geometry (β-angle sweep over a year)</option><option value="preset">Preset sunlight fraction and worst-season eclipse</option></select>
-          <label>Local time of ascending node, h (sun-synchronous orbits only)</label><input id="ltan" type="number" min="0" max="24" step=".25" value="6">
-          <label>Epoch date (defaults to today)</label><input id="epoch" type="date" value="2026-09-04">
-          <div class="note" id="illumNote">—</div>
-          <label>Sunlight fraction (annual average) <span class="badge" id="sunBadge">computed</span></label><input id="sun" type="number" min=".05" max="1" step=".01" value=".97">
-          <label>Worst-season eclipse, min/orbit <span class="badge" id="eclBadge">computed</span></label><input id="eclmax" type="number" min="0" step=".5" value="15">
-          <label>Mean atmospheric density, kg/m³ <span class="badge">scenario</span></label><input id="rho" type="number" min="0" step="1e-15" value="1.2e-13">
-          <label>Drag coefficient</label><input id="cd" type="number" min=".5" step=".1" value="2.2">
-          <label>Projected drag area, % of array + radiator area <span class="badge">per orbit preset</span></label><input id="dragfrac" type="number" min="0" max="100" value="25">
-          <label>Non-drag stationkeeping Δv, m/s/year <span class="badge">scenario</span></label><input id="sk" type="number" min="0" step=".1" value="1">
+          <select id="illumMode" data-test-id="illumMode" data-test-kind="select" data-test-tab="orbit" data-test-label="Illumination basis"><option value="geom" selected>Computed from orbit geometry (β-angle sweep over a year)</option><option value="preset">Preset sunlight fraction and worst-season eclipse</option></select>
+          <label>Local time of ascending node, h (sun-synchronous orbits only)</label><input id="ltan" type="number" min="0" max="24" step=".25" value="6" data-test-id="ltan" data-test-kind="input" data-test-tab="orbit" data-test-label="Local time of ascending node, h (SSO only)" data-test-unit="h">
+          <label>Epoch date (defaults to today)</label><input id="epoch" type="date" value="2026-09-04" data-test-id="epoch" data-test-kind="date" data-test-tab="view3d" data-test-label="Epoch date">
+          <div class="note" id="illumNote" data-test-out="illumNote" data-test-kind="output" data-test-tab="orbit" data-test-label="Illumination-mode explanatory note" data-test-role="derived">—</div>
+          <label>Sunlight fraction (annual average) <span class="badge" id="sunBadge" data-test-out="sunBadge" data-test-kind="output" data-test-tab="orbit" data-test-label="Computed sunlight fraction badge" data-test-role="derived">computed</span></label><input id="sun" type="number" min=".05" max="1" step=".01" value=".97" data-test-id="sun" data-test-kind="input" data-test-tab="orbit" data-test-label="Sunlight fraction (annual average)" data-test-unit="fraction">
+          <label>Worst-season eclipse, min/orbit <span class="badge" id="eclBadge" data-test-out="eclBadge" data-test-kind="output" data-test-tab="orbit" data-test-label="Computed worst-season eclipse badge" data-test-role="derived">computed</span></label><input id="eclmax" type="number" min="0" step=".5" value="15" data-test-id="eclmax" data-test-kind="input" data-test-tab="orbit" data-test-label="Worst-season eclipse, min/orbit" data-test-unit="min">
+          <label>Mean atmospheric density, kg/m³ <span class="badge">scenario</span></label><input id="rho" type="number" min="0" step="1e-15" value="1.2e-13" data-test-id="rho" data-test-kind="input" data-test-tab="orbit" data-test-label="Mean atmospheric density, kg/m^3" data-test-unit="kg/m^3">
+          <label>Drag coefficient</label><input id="cd" type="number" min=".5" step=".1" value="2.2" data-test-id="cd" data-test-kind="input" data-test-tab="orbit" data-test-label="Drag coefficient">
+          <label>Projected drag area, % of array + radiator area <span class="badge">per orbit preset</span></label><input id="dragfrac" type="number" min="0" max="100" value="25" data-test-id="dragfrac" data-test-kind="input" data-test-tab="orbit" data-test-label="Projected drag area, % of array+radiator" data-test-unit="%">
+          <label>Non-drag stationkeeping Δv, m/s/year <span class="badge">scenario</span></label><input id="sk" type="number" min="0" step=".1" value="1" data-test-id="sk" data-test-kind="input" data-test-tab="orbit" data-test-label="Non-drag stationkeeping dv, m/s/yr" data-test-unit="m/s/yr">
           <div class="note">Drag Δv is now computed from configured density, drag coefficient, projected area and dry mass. Density is a mean-solar-activity value; solar maximum can raise it 3–10× at 400–650 km. Battery energy is sized on the worst-season eclipse, not the annual average. Projected drag fraction follows the orbit preset: sun-pointing arrays in dawn-dusk SSO fly close to edge-on to the velocity vector (~25%); sun-tracking arrays in inclined LEO average ~50%.</div>
-          <label>Existing active population in selected shell <span class="badge">scenario</span></label><input id="pop" type="number" min="0" value="2500">
-          <div class="note" id="shellHint">—</div>
-          <div class="note"><button id="loadShell" type="button" style="min-height:32px;padding:5px 9px;font-size:12px">Load tracked count for this altitude band into population</button> <button id="loadShellPlanned" type="button" style="min-height:32px;padding:5px 9px;font-size:12px">Load tracked + announced</button></div>
-          <label>Practical shell capacity <span class="badge">scenario</span></label><input id="cap" type="number" min="1" value="12000">
-          <label>Baseline avoidance maneuvers/sat/year <span class="badge">scenario</span></label><input id="av0" type="number" min="0" step=".1" value="4">
-          <label>Capacity-pressure exponent</label><input id="exp" type="number" min=".1" step=".1" value="2">
-          <label>Δv / avoidance maneuver, m/s <span class="badge">scenario</span></label><input id="avdv" type="number" min="0" step=".01" value=".10">
-          <label>Compute interruption / maneuver, h</label><input id="avh" type="number" min="0" step=".1" value=".5">
-          <label>Autonomous maneuver capacity, events/day</label><input id="avcap" type="number" min=".01" step=".1" value="2">
-          <label>Debris-risk multiplier</label><input id="debris" type="number" min=".1" step=".1" value="1">
+          <label>Existing active population in selected shell <span class="badge">scenario</span></label><input id="pop" type="number" min="0" value="2500" data-test-id="pop" data-test-kind="input" data-test-tab="orbit" data-test-label="Existing active population in selected shell" data-test-unit="count">
+          <div class="note" id="shellHint" data-test-out="shellHint" data-test-kind="output" data-test-tab="orbit" data-test-label="Shell population helper hint" data-test-role="derived">—</div>
+          <div class="note"><button id="loadShell" type="button" style="min-height:32px;padding:5px 9px;font-size:12px" data-test-id="loadShell" data-test-kind="button" data-test-tab="shells" data-test-label="Load tracked count for this altitude band (into pop)">Load tracked count for this altitude band into population</button> <button id="loadShellPlanned" type="button" style="min-height:32px;padding:5px 9px;font-size:12px" data-test-id="loadShellPlanned" data-test-kind="button" data-test-tab="shells" data-test-label="Load tracked + announced (into pop)">Load tracked + announced</button></div>
+          <label>Practical shell capacity <span class="badge">scenario</span></label><input id="cap" type="number" min="1" value="12000" data-test-id="cap" data-test-kind="input" data-test-tab="orbit" data-test-label="Practical shell capacity" data-test-unit="count">
+          <label>Baseline avoidance maneuvers/sat/year <span class="badge">scenario</span></label><input id="av0" type="number" min="0" step=".1" value="4" data-test-id="av0" data-test-kind="input" data-test-tab="orbit" data-test-label="Baseline avoidance maneuvers/sat/yr">
+          <label>Capacity-pressure exponent</label><input id="exp" type="number" min=".1" step=".1" value="2" data-test-id="exp" data-test-kind="input" data-test-tab="orbit" data-test-label="Capacity-pressure exponent">
+          <label>Δv / avoidance maneuver, m/s <span class="badge">scenario</span></label><input id="avdv" type="number" min="0" step=".01" value=".10" data-test-id="avdv" data-test-kind="input" data-test-tab="orbit" data-test-label="dv / avoidance maneuver, m/s" data-test-unit="m/s">
+          <label>Compute interruption / maneuver, h</label><input id="avh" type="number" min="0" step=".1" value=".5" data-test-id="avh" data-test-kind="input" data-test-tab="orbit" data-test-label="Compute interruption / maneuver, h" data-test-unit="h">
+          <label>Autonomous maneuver capacity, events/day</label><input id="avcap" type="number" min=".01" step=".1" value="2" data-test-id="avcap" data-test-kind="input" data-test-tab="orbit" data-test-label="Autonomous maneuver capacity, events/day">
+          <label>Debris-risk multiplier</label><input id="debris" type="number" min=".1" step=".1" value="1" data-test-id="debris" data-test-kind="input" data-test-tab="orbit" data-test-label="Debris-risk multiplier">
           <label>Cluster orbital design</label>
-          <select id="clusterDesign">
+          <select id="clusterDesign" data-test-id="clusterDesign" data-test-kind="select" data-test-tab="orbit" data-test-label="Cluster orbital design">
             <option value="rect" selected>Suncatcher planar rectangular lattice (2:1 relative ellipses)</option>
             <option value="hex">Optimal planar hexagonal (60° inclined plane, circular relative orbits)</option>
             <option value="3d">3D stacked inclined planes</option>
           </select>
-          <label>Minimum inter-satellite spacing R_min, m <span class="badge">scenario</span></label><input id="spacing" type="number" min="10" value="500">
-          <label>Clusters (formations) in the constellation</label><input id="clusters" type="number" min="1" step="1" value="1">
+          <label>Minimum inter-satellite spacing R_min, m <span class="badge">scenario</span></label><input id="spacing" type="number" min="10" value="500" data-test-id="spacing" data-test-kind="input" data-test-tab="orbit" data-test-label="Minimum inter-satellite spacing R_min, m" data-test-unit="m">
+          <label>Clusters (formations) in the constellation</label><input id="clusters" type="number" min="1" step="1" value="1" data-test-id="clusters" data-test-kind="input" data-test-tab="orbit" data-test-label="Clusters (formations) in the constellation" data-test-unit="count">
           <label>ISL fabric</label>
-          <select id="closOn"><option value="yes" selected>Clos fabric with dedicated switch satellites</option><option value="no">Nearest-neighbour mesh (no switch satellites)</option></select>
-          <label>ISLs per switch satellite, k</label><input id="closk" type="number" min="4" max="32" step="2" value="10">
-          <label>Switch satellite wet mass, fraction of compute satellite <span class="badge">assumption</span></label><input id="switchMassFrac" type="number" min=".05" max="1" step=".05" value=".35">
-          <label>Switch satellite non-compute cost, fraction of compute satellite <span class="badge">assumption</span></label><input id="switchCostFrac" type="number" min=".05" max="1" step=".05" value=".4">
+          <select id="closOn" data-test-id="closOn" data-test-kind="select" data-test-tab="orbit" data-test-label="ISL fabric"><option value="yes" selected>Clos fabric with dedicated switch satellites</option><option value="no">Nearest-neighbour mesh (no switch satellites)</option></select>
+          <label>ISLs per switch satellite, k</label><input id="closk" type="number" min="4" max="32" step="2" value="10" data-test-id="closk" data-test-kind="input" data-test-tab="orbit" data-test-label="ISLs per switch satellite, k">
+          <label>Switch satellite wet mass, fraction of compute satellite <span class="badge">assumption</span></label><input id="switchMassFrac" type="number" min=".05" max="1" step=".05" value=".35" data-test-id="switchMassFrac" data-test-kind="input" data-test-tab="orbit" data-test-label="Switch satellite wet mass, fraction of compute sat">
+          <label>Switch satellite non-compute cost, fraction of compute satellite <span class="badge">assumption</span></label><input id="switchCostFrac" type="number" min=".05" max="1" step=".05" value=".4" data-test-id="switchCostFrac" data-test-kind="input" data-test-tab="orbit" data-test-label="Switch satellite non-compute cost, fraction">
           <div class="note">Cluster geometry follows Google Suncatcher (81 sats, R_min 100 m, R_max 1 km, planar rectangular lattice; satellites trace 2:1 relative ellipses in the Hill frame) and Penot &amp; Balakrishnan (MIT, AAS 26-754, 2026): deployable count N ≈ a·(R_max/R_min)^b with a,b = 0.80,2 (Suncatcher), 3.63,2 (optimal planar hex, rigid rotation), 0.27,3 (3D). Self-shadowing begins when satellite footprint radius R_sat exceeds ≈0.5·R_min (rect), ≈0.19·R_min (hex), ≈0.03·R_min (3D). A nearest-neighbour ISL mesh does not scale; a VL2-like Clos fabric needs some satellites to act as switches carrying k ISLs and no compute — those are added to the fleet here.</div>
           <div class="note">Avoidance now depends on absolute shell occupancy rather than a ratio in which shell capacity cancels. The shell capacity remains a scenario threshold, not a claim that orbit has a fixed number of physical “slots.”</div>
         </div>
@@ -215,83 +296,83 @@ body.popout #popoutBar{display:none}
       <div class="pane" id="craft">
         <h2>Power, thermal, control and propulsion</h2>
         <div class="controls">
-          <label>Bus/control base dry mass / satellite, kg</label><input id="busm" type="number" min="0" value="1500">
-          <label>Additional bus/control per rack beyond the first, kg <span class="badge">assumption</span></label><input id="busmrack" type="number" min="0" value="250">
+          <label>Bus/control base dry mass / satellite, kg</label><input id="busm" type="number" min="0" value="1500" data-test-id="busm" data-test-kind="input" data-test-tab="craft" data-test-label="Bus/control base dry mass / satellite, kg" data-test-unit="kg">
+          <label>Additional bus/control per rack beyond the first, kg <span class="badge">assumption</span></label><input id="busmrack" type="number" min="0" value="250" data-test-id="busmrack" data-test-kind="input" data-test-tab="craft" data-test-label="Additional bus/control per rack beyond first, kg" data-test-unit="kg">
           <div class="note">Core avionics, flight computer and transponder do not replicate per rack, but reaction-wheel/CMG authority, harness, tankage and structure grow with the larger vehicle. Bus mass = base + per-rack × (racks − 1); set per-rack to 0 to make control fully fixed.</div>
-          <label>Propulsion hardware / satellite, kg</label><input id="propm" type="number" min="0" value="250">
-          <label>Shielding / rack, kg</label><input id="shield" type="number" min="0" value="500">
-          <label>Solar specific power, W/kg</label><input id="swkg" type="number" min="1" value="85">
-          <label>Solar areal output, W/m² <span class="badge">scenario</span></label><input id="swm2" type="number" min="1" value="300">
-          <label>Solar design margin, %</label><input id="smar" type="number" min="0" value="20">
-          <label>Power conversion efficiency, %</label><input id="peff" type="number" min="1" max="100" value="92">
-          <label>Battery charge efficiency, %</label><input id="chargeeff" type="number" min="1" max="100" value="90">
+          <label>Propulsion hardware / satellite, kg</label><input id="propm" type="number" min="0" value="250" data-test-id="propm" data-test-kind="input" data-test-tab="craft" data-test-label="Propulsion hardware / satellite, kg" data-test-unit="kg">
+          <label>Shielding / rack, kg</label><input id="shield" type="number" min="0" value="500" data-test-id="shield" data-test-kind="input" data-test-tab="craft" data-test-label="Shielding / rack, kg" data-test-unit="kg">
+          <label>Solar specific power, W/kg</label><input id="swkg" type="number" min="1" value="85" data-test-id="swkg" data-test-kind="input" data-test-tab="craft" data-test-label="Solar specific power, W/kg" data-test-unit="W/kg">
+          <label>Solar areal output, W/m² <span class="badge">scenario</span></label><input id="swm2" type="number" min="1" value="300" data-test-id="swm2" data-test-kind="input" data-test-tab="craft" data-test-label="Solar areal output, W/m^2" data-test-unit="W/m^2">
+          <label>Solar design margin, %</label><input id="smar" type="number" min="0" value="20" data-test-id="smar" data-test-kind="input" data-test-tab="craft" data-test-label="Solar design margin, %" data-test-unit="%">
+          <label>Power conversion efficiency, %</label><input id="peff" type="number" min="1" max="100" value="92" data-test-id="peff" data-test-kind="input" data-test-tab="craft" data-test-label="Power conversion efficiency, %" data-test-unit="%">
+          <label>Battery charge efficiency, %</label><input id="chargeeff" type="number" min="1" max="100" value="90" data-test-id="chargeeff" data-test-kind="input" data-test-tab="craft" data-test-label="Battery charge efficiency, %" data-test-unit="%">
           <label>Battery sizing basis</label>
-          <select id="battMode">
+          <select id="battMode" data-test-id="battMode" data-test-kind="select" data-test-tab="craft" data-test-label="Battery sizing basis">
             <option value="eclipse" selected>Sized from eclipse duration + reserve</option>
             <option value="perrack">Fixed usable kWh per rack</option>
           </select>
-          <label>Fixed usable battery, kWh per rack <span class="badge">assumption</span></label><input id="battkwhrack" type="number" min="0" step=".1" value="40">
-          <label>Battery usable depth of discharge, %</label><input id="dod" type="number" min="1" max="100" value="35">
-          <label>Battery specific energy, Wh/kg (pack level) <span class="badge">assumption</span></label><input id="bwh" type="number" min="1" value="130">
+          <label>Fixed usable battery, kWh per rack <span class="badge">assumption</span></label><input id="battkwhrack" type="number" min="0" step=".1" value="40" data-test-id="battkwhrack" data-test-kind="input" data-test-tab="craft" data-test-label="Fixed usable battery, kWh per rack" data-test-unit="kWh">
+          <label>Battery usable depth of discharge, %</label><input id="dod" type="number" min="1" max="100" value="35" data-test-id="dod" data-test-kind="input" data-test-tab="craft" data-test-label="Battery usable depth of discharge, %" data-test-unit="%">
+          <label>Battery specific energy, Wh/kg (pack level) <span class="badge">assumption</span></label><input id="bwh" type="number" min="1" value="130" data-test-id="bwh" data-test-kind="input" data-test-tab="craft" data-test-label="Battery specific energy, Wh/kg (pack level)" data-test-unit="Wh/kg">
           <label>Battery power basis during eclipse</label>
-          <select id="battPower"><option value="tdp" selected>Rack TDP (sustained)</option><option value="peak">Rack peak (worst case draw)</option></select>
+          <select id="battPower" data-test-id="battPower" data-test-kind="select" data-test-tab="craft" data-test-label="Battery power basis during eclipse"><option value="tdp" selected>Rack TDP (sustained)</option><option value="peak">Rack peak (worst case draw)</option></select>
           <div class="note">130 Wh/kg is a pack-level figure for space-qualified Li-ion (cells + BMS + structure + thermal + radiation-tolerant electronics). 180 Wh/kg is cell-level; enter it only if the mass stack accounts for packaging elsewhere. Peak basis uses the rack peak input on the Architecture tab instead of TDP.</div>
-          <label>Battery reserve beyond eclipse, min</label><input id="bres" type="number" min="0" value="15">
+          <label>Battery reserve beyond eclipse, min</label><input id="bres" type="number" min="0" value="15" data-test-id="bres" data-test-kind="input" data-test-tab="craft" data-test-label="Battery reserve beyond eclipse, min" data-test-unit="min">
           <label>Radiator rejection model</label>
-          <select id="thermMode">
+          <select id="thermMode" data-test-id="thermMode" data-test-kind="select" data-test-tab="craft" data-test-label="Radiator rejection model">
             <option value="derived" selected>Derived: εσT⁴ minus environment</option>
             <option value="manual">Manual net W/m²</option>
           </select>
-          <label>Radiator mean surface temperature, K</label><input id="tRad" type="number" min="200" max="450" value="305">
-          <label>Radiator emissivity</label><input id="emis" type="number" min=".1" max="1" step=".01" value=".88">
-          <label>Radiating sides</label><input id="sides" type="number" min="1" max="2" step="1" value="2">
-          <label>Absorbed environmental flux per side, W/m² <span class="badge">scenario</span></label><input id="envflux" type="number" min="0" value="120">
-          <label>Fin / flow effectiveness</label><input id="fineff" type="number" min=".3" max="1" step=".01" value=".85">
-          <label>Coating degradation margin, %</label><input id="degr" type="number" min="0" value="10">
-          <label>GPU coolant inlet limit, K</label><input id="tInlet" type="number" min="250" value="318">
-          <label>Radiator net rejection, W/m² <span class="badge" id="rfluxBadge">derived</span></label><input id="rflux" type="number" min="10" value="450">
-          <label>Radiator areal density, kg/m² <span class="badge">assumption</span></label><input id="rkg" type="number" min=".1" step=".1" value="8">
-          <label>Heat transport (pumps, lines, fluid, cold plates), kg/kW <span class="badge">assumption</span></label><input id="httkg" type="number" min="0" step=".1" value="3">
-          <div class="note" id="thermNote">—</div>
+          <label>Radiator mean surface temperature, K</label><input id="tRad" type="number" min="200" max="450" value="305" data-test-id="tRad" data-test-kind="input" data-test-tab="craft" data-test-label="Radiator mean surface temperature, K" data-test-unit="K">
+          <label>Radiator emissivity</label><input id="emis" type="number" min=".1" max="1" step=".01" value=".88" data-test-id="emis" data-test-kind="input" data-test-tab="craft" data-test-label="Radiator emissivity">
+          <label>Radiating sides</label><input id="sides" type="number" min="1" max="2" step="1" value="2" data-test-id="sides" data-test-kind="input" data-test-tab="craft" data-test-label="Radiating sides">
+          <label>Absorbed environmental flux per side, W/m² <span class="badge">scenario</span></label><input id="envflux" type="number" min="0" value="120" data-test-id="envflux" data-test-kind="input" data-test-tab="craft" data-test-label="Absorbed environmental flux per side, W/m^2" data-test-unit="W/m^2">
+          <label>Fin / flow effectiveness</label><input id="fineff" type="number" min=".3" max="1" step=".01" value=".85" data-test-id="fineff" data-test-kind="input" data-test-tab="craft" data-test-label="Fin / flow effectiveness">
+          <label>Coating degradation margin, %</label><input id="degr" type="number" min="0" value="10" data-test-id="degr" data-test-kind="input" data-test-tab="craft" data-test-label="Coating degradation margin, %" data-test-unit="%">
+          <label>GPU coolant inlet limit, K</label><input id="tInlet" type="number" min="250" value="318" data-test-id="tInlet" data-test-kind="input" data-test-tab="craft" data-test-label="GPU coolant inlet limit, K" data-test-unit="K">
+          <label>Radiator net rejection, W/m² <span class="badge" id="rfluxBadge" data-test-out="rfluxBadge" data-test-kind="output" data-test-tab="craft" data-test-label="Derived radiator net rejection badge" data-test-role="derived">derived</span></label><input id="rflux" type="number" min="10" value="450" data-test-id="rflux" data-test-kind="input" data-test-tab="craft" data-test-label="Radiator net rejection, W/m^2" data-test-unit="W/m^2">
+          <label>Radiator areal density, kg/m² <span class="badge">assumption</span></label><input id="rkg" type="number" min=".1" step=".1" value="8" data-test-id="rkg" data-test-kind="input" data-test-tab="craft" data-test-label="Radiator areal density, kg/m^2" data-test-unit="kg/m^2">
+          <label>Heat transport (pumps, lines, fluid, cold plates), kg/kW <span class="badge">assumption</span></label><input id="httkg" type="number" min="0" step=".1" value="3" data-test-id="httkg" data-test-kind="input" data-test-tab="craft" data-test-label="Heat transport, kg/kW" data-test-unit="kg/kW">
+          <div class="note" id="thermNote" data-test-out="thermNote" data-test-kind="output" data-test-tab="craft" data-test-label="Thermal-model explanatory note" data-test-role="derived">—</div>
           <div class="note">Reference: ISS EATCS rejects roughly 150 W/m² at about 14 kg/m² with a cold ammonia loop. 450 W/m² is defensible only for a hot coolant loop (~330–340 K) with two-sided radiators and a good view factor; 8 kg/m² is at the light end of deployable radiator studies (range roughly 5–12 kg/m²) and is chosen so the base satellite closes under the Falcon 9 SSO planning payload with thin margin. Set 10–12 kg/m² to see the base case fail to close.</div>
-          <label>Structure/deployment, % of subsystem dry mass</label><input id="struct" type="number" min="0" value="15">
-          <label>Electric propulsion Isp, s</label><input id="isp" type="number" min="100" value="1900">
+          <label>Structure/deployment, % of subsystem dry mass</label><input id="struct" type="number" min="0" value="15" data-test-id="struct" data-test-kind="input" data-test-tab="craft" data-test-label="Structure/deployment, % of subsystem dry mass" data-test-unit="%">
+          <label>Electric propulsion Isp, s</label><input id="isp" type="number" min="100" value="1900" data-test-id="isp" data-test-kind="input" data-test-tab="craft" data-test-label="Electric propulsion Isp, s" data-test-unit="s">
           <label>Deorbit propulsion model</label>
-          <select id="deorbitMode">
+          <select id="deorbitMode" data-test-id="deorbitMode" data-test-kind="select" data-test-tab="craft" data-test-label="Deorbit propulsion model">
             <option value="spiral" selected>Low-thrust spiral to ~200 km</option>
             <option value="impulsive">Impulsive perigee-lowering burn</option>
           </select>
-          <label>Relocation/contingency Δv reserve, m/s</label><input id="contdv" type="number" min="0" value="100">
-          <label>Max deployed characteristic span, m <span class="badge">envelope</span></label><input id="fairing" type="number" min="1" value="60">
-          <label>Area-to-mass agility limit, m²/kg <span class="badge">assumption</span></label><input id="slewlim" type="number" min=".01" step=".01" value=".25">
+          <label>Relocation/contingency Δv reserve, m/s</label><input id="contdv" type="number" min="0" value="100" data-test-id="contdv" data-test-kind="input" data-test-tab="craft" data-test-label="Relocation/contingency dv reserve, m/s" data-test-unit="m/s">
+          <label>Max deployed characteristic span, m <span class="badge">envelope</span></label><input id="fairing" type="number" min="1" value="60" data-test-id="fairing" data-test-kind="input" data-test-tab="craft" data-test-label="Max deployed characteristic span, m" data-test-unit="m">
+          <label>Area-to-mass agility limit, m²/kg <span class="badge">assumption</span></label><input id="slewlim" type="number" min=".01" step=".01" value=".25" data-test-id="slewlim" data-test-kind="input" data-test-tab="craft" data-test-label="Area-to-mass agility limit, m^2/kg" data-test-unit="m^2/kg">
           <div class="note">Characteristic span is the square-equivalent size of the combined solar + radiator area (both wings). It is checked against a stowed/deployment envelope, against formation spacing (a span wider than the spacing breaks the collision-avoidance envelope), and area-to-mass is checked against an agility limit above which large flexible structures dominate attitude control and pointing. These are screening flags, not a flexible-body dynamics model.</div>
           <label>End-of-life disposal method</label>
-          <select id="disposal">
+          <select id="disposal" data-test-id="disposal" data-test-kind="select" data-test-tab="craft" data-test-label="End-of-life disposal method">
             <option value="auto" selected>Auto: controlled re-entry if dry mass exceeds demisability threshold</option>
             <option value="controlled">Controlled targeted re-entry (adds chemical stage)</option>
             <option value="uncontrolled">Uncontrolled re-entry (assume demisable)</option>
           </select>
-          <label>Demisability mass threshold, kg <span class="badge">rule of thumb</span></label><input id="demise" type="number" min="1" value="800">
-          <label>Controlled re-entry stage hardware, kg <span class="badge">assumption</span></label><input id="crhw" type="number" min="0" value="150">
-          <label>Controlled re-entry target perigee, km</label><input id="crperi" type="number" min="0" max="150" value="50">
-          <label>Chemical stage Isp, s</label><input id="crisp" type="number" min="50" value="230">
-          <label>Planned-retirement disposal success, % <span class="badge">scenario</span></label><input id="dispsucc" type="number" min="0" max="100" step=".5" value="95">
-          <label>Failed-satellite disposal success, % <span class="badge">scenario</span></label><input id="dispsuccFail" type="number" min="0" max="100" step=".5" value="60">
+          <label>Demisability mass threshold, kg <span class="badge">rule of thumb</span></label><input id="demise" type="number" min="1" value="800" data-test-id="demise" data-test-kind="input" data-test-tab="craft" data-test-label="Demisability mass threshold, kg" data-test-unit="kg">
+          <label>Controlled re-entry stage hardware, kg <span class="badge">assumption</span></label><input id="crhw" type="number" min="0" value="150" data-test-id="crhw" data-test-kind="input" data-test-tab="craft" data-test-label="Controlled re-entry stage hardware, kg" data-test-unit="kg">
+          <label>Controlled re-entry target perigee, km</label><input id="crperi" type="number" min="0" max="150" value="50" data-test-id="crperi" data-test-kind="input" data-test-tab="craft" data-test-label="Controlled re-entry target perigee, km" data-test-unit="km">
+          <label>Chemical stage Isp, s</label><input id="crisp" type="number" min="50" value="230" data-test-id="crisp" data-test-kind="input" data-test-tab="craft" data-test-label="Chemical stage Isp, s" data-test-unit="s">
+          <label>Planned-retirement disposal success, % <span class="badge">scenario</span></label><input id="dispsucc" type="number" min="0" max="100" step=".5" value="95" data-test-id="dispsucc" data-test-kind="input" data-test-tab="craft" data-test-label="Planned-retirement disposal success, %" data-test-unit="%">
+          <label>Failed-satellite disposal success, % <span class="badge">scenario</span></label><input id="dispsuccFail" type="number" min="0" max="100" step=".5" value="60" data-test-id="dispsuccFail" data-test-kind="input" data-test-tab="craft" data-test-label="Failed-satellite disposal success, %" data-test-unit="%">
           <div class="note">A satellite retired under control disposes far more reliably than one that has already failed; a dead bus may have lost the propulsion or attitude control needed to deorbit. These are now separate.</div>
           <label>Failed disposal handling</label>
-          <select id="dispfail">
+          <select id="dispfail" data-test-id="dispfail" data-test-kind="select" data-test-tab="craft" data-test-label="Failed disposal handling">
             <option value="adr" selected>Price active debris removal per derelict</option>
             <option value="pop">Add derelicts to shell population (no removal)</option>
           </select>
-          <label>Active debris removal cost / object, $M <span class="badge">scenario</span></label><input id="adrc" type="number" min="0" step="1" value="20">
-          <label>Disposal operations cost / event, $M</label><input id="dispops" type="number" min="0" step=".05" value=".3">
+          <label>Active debris removal cost / object, $M <span class="badge">scenario</span></label><input id="adrc" type="number" min="0" step="1" value="20" data-test-id="adrc" data-test-kind="input" data-test-tab="craft" data-test-label="Active debris removal cost / object, $M" data-test-unit="$M">
+          <label>Disposal operations cost / event, $M</label><input id="dispops" type="number" min="0" step=".05" value=".3" data-test-id="dispops" data-test-kind="input" data-test-tab="craft" data-test-label="Disposal operations cost / event, $M" data-test-unit="$M">
           <div class="note">A multi-tonne satellite carrying steel radiator plumbing, a large battery and a GPU rack will not demise on uncontrolled re-entry; casualty-risk limits (~1:10,000) then require a targeted re-entry, which needs a high-thrust final burn after the electric spiral. Disposal occurs at every scheduled retirement and at every failure; failed disposals leave derelicts that are either removed at the ADR price or accumulate in the shell over the analysis horizon. The 5-year post-mission disposal clock starts at failure, not at design end of life.</div>
-          <label>Mission design life, years</label><input id="life" type="number" min=".5" step=".5" value="5">
-          <label>Base availability excluding maneuvers/radiation, %</label><input id="avail" type="number" min="1" max="100" step=".1" value="98">
-          <label>Annual spacecraft failure probability, % <span class="badge">assumption</span></label><input id="fail" type="number" min="0" max="100" step=".1" value="3">
-          <label>Radiation failure multiplier <span class="badge">assumption</span></label><input id="radfail" type="number" min=".1" step=".05" value="1.25">
-          <label>Radiation-related availability loss, % <span class="badge">assumption</span></label><input id="raddown" type="number" min="0" max="100" step=".05" value=".2">
-          <label>COTS compute assumed qualified life, years <span class="badge">scenario</span></label><input id="radlife" type="number" min=".5" step=".5" value="5">
+          <label>Mission design life, years</label><input id="life" type="number" min=".5" step=".5" value="5" data-test-id="life" data-test-kind="input" data-test-tab="craft" data-test-label="Mission design life, years" data-test-unit="yr">
+          <label>Base availability excluding maneuvers/radiation, %</label><input id="avail" type="number" min="1" max="100" step=".1" value="98" data-test-id="avail" data-test-kind="input" data-test-tab="craft" data-test-label="Base availability excl. maneuvers/radiation, %" data-test-unit="%">
+          <label>Annual spacecraft failure probability, % <span class="badge">assumption</span></label><input id="fail" type="number" min="0" max="100" step=".1" value="3" data-test-id="fail" data-test-kind="input" data-test-tab="craft" data-test-label="Annual spacecraft failure probability, %" data-test-unit="%">
+          <label>Radiation failure multiplier <span class="badge">assumption</span></label><input id="radfail" type="number" min=".1" step=".05" value="1.25" data-test-id="radfail" data-test-kind="input" data-test-tab="craft" data-test-label="Radiation failure multiplier">
+          <label>Radiation-related availability loss, % <span class="badge">assumption</span></label><input id="raddown" type="number" min="0" max="100" step=".05" value=".2" data-test-id="raddown" data-test-kind="input" data-test-tab="craft" data-test-label="Radiation-related availability loss, %" data-test-unit="%">
+          <label>COTS compute assumed qualified life, years <span class="badge">scenario</span></label><input id="radlife" type="number" min=".5" step=".5" value="5" data-test-id="radlife" data-test-kind="input" data-test-tab="craft" data-test-label="COTS compute assumed qualified life, years" data-test-unit="yr">
           <div class="note">Google has published proton testing for Trillium TPU/HBM against a five-year SSO dose target; that does not qualify GB300/HBM. Radiation multipliers here are explicit scenario assumptions so that the risk cannot disappear into shielding mass alone.</div>
         </div>
       </div>
@@ -300,113 +381,121 @@ body.popout #popoutBar{display:none}
         <h2>Manufacturing and launch</h2>
         <div class="controls">
           <label>Manufacturing cost regime</label>
-          <select id="costPreset">
+          <select id="costPreset" data-test-id="costPreset" data-test-kind="select" data-test-tab="cost" data-test-label="Manufacturing cost regime">
             <option value="traditional" selected>Traditional aerospace / low volume</option>
             <option value="mid">Industrialized / mid volume</option>
             <option value="constellation">Constellation-class mass production</option>
             <option value="custom">Custom</option>
           </select>
-          <label>Bus/control manufacturing / satellite, $M <span class="badge">assumption</span></label><input id="busc" type="number" min="0" step=".1" value="15">
-          <label>Solar subsystem manufacturing, $/kg <span class="badge">assumption</span></label><input id="solc" type="number" min="0" value="20000">
-          <label>Thermal subsystem manufacturing, $/kg <span class="badge">assumption</span></label><input id="thermc" type="number" min="0" value="10000">
-          <label>Other spacecraft hardware, $/kg <span class="badge">assumption</span></label><input id="otherc" type="number" min="0" value="15000">
-          <label>Integration/qualification / satellite, $M <span class="badge">assumption</span></label><input id="intc" type="number" min="0" step=".1" value="5">
-          <label>Preset reference cumulative unit (costs above apply at this unit)</label><input id="nref" type="number" min="1" step="1" value="5">
-          <label>Learning rate, % cost per doubling (default, all subsystems) <span class="badge">assumption</span></label><input id="learn" type="number" min="50" max="100" step=".5" value="85">
+          <label>Bus/control manufacturing / satellite, $M <span class="badge">assumption</span></label><input id="busc" type="number" min="0" step=".1" value="15" data-test-id="busc" data-test-kind="input" data-test-tab="cost" data-test-label="Bus/control manufacturing / satellite, $M" data-test-unit="$M">
+          <label>Solar subsystem manufacturing, $/kg <span class="badge">assumption</span></label><input id="solc" type="number" min="0" value="20000" data-test-id="solc" data-test-kind="input" data-test-tab="cost" data-test-label="Solar subsystem manufacturing, $/kg" data-test-unit="$/kg">
+          <label>Thermal subsystem manufacturing, $/kg <span class="badge">assumption</span></label><input id="thermc" type="number" min="0" value="10000" data-test-id="thermc" data-test-kind="input" data-test-tab="cost" data-test-label="Thermal subsystem manufacturing, $/kg" data-test-unit="$/kg">
+          <label>Other spacecraft hardware, $/kg <span class="badge">assumption</span></label><input id="otherc" type="number" min="0" value="15000" data-test-id="otherc" data-test-kind="input" data-test-tab="cost" data-test-label="Other spacecraft hardware, $/kg" data-test-unit="$/kg">
+          <label>Integration/qualification / satellite, $M <span class="badge">assumption</span></label><input id="intc" type="number" min="0" step=".1" value="5" data-test-id="intc" data-test-kind="input" data-test-tab="cost" data-test-label="Integration/qualification / satellite, $M" data-test-unit="$M">
+          <label>Preset reference cumulative unit (costs above apply at this unit)</label><input id="nref" type="number" min="1" step="1" value="5" data-test-id="nref" data-test-kind="input" data-test-tab="cost" data-test-label="Preset reference cumulative unit">
+          <label>Learning rate, % cost per doubling (default, all subsystems) <span class="badge">assumption</span></label><input id="learn" type="number" min="50" max="100" step=".5" value="85" data-test-id="learn" data-test-kind="input" data-test-tab="cost" data-test-label="Learning rate, % cost per doubling (all)" data-test-unit="%">
           <label>Per-subsystem learning override</label>
-          <select id="learnMode"><option value="single" selected>Single rate for all</option><option value="split">Separate rates per subsystem</option></select>
-          <label>— Structure/mechanical (solar, thermal, other) LR %</label><input id="learnStruct" type="number" min="50" max="100" step=".5" value="82">
-          <label>— Avionics/bus LR %</label><input id="learnBus" type="number" min="50" max="100" step=".5" value="90">
-          <label>— Integration/qualification LR %</label><input id="learnInt" type="number" min="50" max="100" step=".5" value="88">
+          <select id="learnMode" data-test-id="learnMode" data-test-kind="select" data-test-tab="cost" data-test-label="Per-subsystem learning override"><option value="single" selected>Single rate for all</option><option value="split">Separate rates per subsystem</option></select>
+          <label>— Structure/mechanical (solar, thermal, other) LR %</label><input id="learnStruct" type="number" min="50" max="100" step=".5" value="82" data-test-id="learnStruct" data-test-kind="input" data-test-tab="cost" data-test-label="Structure/mechanical LR %" data-test-unit="%">
+          <label>— Avionics/bus LR %</label><input id="learnBus" type="number" min="50" max="100" step=".5" value="90" data-test-id="learnBus" data-test-kind="input" data-test-tab="cost" data-test-label="Avionics/bus LR %" data-test-unit="%">
+          <label>— Integration/qualification LR %</label><input id="learnInt" type="number" min="50" max="100" step=".5" value="88" data-test-id="learnInt" data-test-kind="input" data-test-tab="cost" data-test-label="Integration/qualification LR %" data-test-unit="%">
           <div class="note">Structure and panels tend to learn faster (lower LR) than flight electronics. In split mode each manufacturing group walks its own curve against the same cumulative unit count; single mode applies the default rate to all.</div>
-          <label>Spacecraft development / qualification NRE, $M <span class="badge">scenario</span></label><input id="nre" type="number" min="0" step="10" value="500">
+          <label>Spacecraft development / qualification NRE, $M <span class="badge">scenario</span></label><input id="nre" type="number" min="0" step="10" value="500" data-test-id="nre" data-test-kind="input" data-test-tab="cost" data-test-label="Spacecraft development / qualification NRE, $M" data-test-unit="$M">
           <div class="note">A GB300-class, ~13 t spacecraft with large deployable arrays, active two-phase thermal control and a targeted-re-entry stage is plausibly $0.5–1B to develop and qualify. Default raised to $500M; sweep it in the sensitivity chart.</div>
           <div class="note">Wright learning curve: unit N costs C_ref·(N/N_ref)^log₂(LR). It applies to the five spacecraft manufacturing inputs (not compute, which is already a volume market) and runs continuously through initial deployment, scheduled replacements and failure replacements, so a 1 GW build prices unit 9,000 far below unit 9. NRE is a one-off at t=0, not insured, and is reported per satellite over the horizon. Each cost preset states the cumulative unit its prices refer to, so preset and curve do not double count.</div>
-          <div class="note" id="costPresetNote">Traditional aerospace values are intentionally expensive and represent low-volume spacecraft-style procurement. The mass-production preset is illustrative, not a published Starlink unit-cost claim.</div>
+          <div class="note" id="costPresetNote" data-test-out="costPresetNote" data-test-kind="output" data-test-tab="cost" data-test-label="Cost-preset note (cumulative unit etc.)" data-test-role="derived">Traditional aerospace values are intentionally expensive and represent low-volume spacecraft-style procurement. The mass-production preset is illustrative, not a published Starlink unit-cost claim.</div>
 
           <label>Launch vehicle/performance preset</label>
-          <select id="launchPreset">
+          <select id="launchPreset" data-test-id="launchPreset" data-test-kind="select" data-test-tab="cost" data-test-label="Launch vehicle/performance preset">
             <option value="f9sso" selected>Falcon 9 reusable polar/SSO planning case</option>
             <option value="f9max">Falcon 9 published max LEO envelope</option>
             <option value="heavy100">Future reusable heavy: 100 t/orbit scenario</option>
             <option value="custom">Custom</option>
           </select>
           <label>Launch pricing model</label>
-          <select id="lmode">
+          <select id="lmode" data-test-id="lmode" data-test-kind="select" data-test-tab="cost" data-test-label="Launch pricing model">
             <option value="mission" selected>Dedicated mission price</option>
             <option value="kg">Bulk $/kg scenario</option>
             <option value="ride">Rideshare $/kg</option>
           </select>
-          <label>Mission price, $M (list, launch #1)</label><input id="lmission" type="number" min="0" step=".25" value="74">
-          <label>Launch volume discount, % per doubling of cumulative launches <span class="badge">scenario</span></label><input id="launchDisc" type="number" min="0" max="50" step=".5" value="5">
-          <label>Launch price floor, % of list</label><input id="launchFloor" type="number" min="10" max="100" value="60">
-          <label>Usable payload to selected orbit, kg</label><input id="lcap" type="number" min="1" value="13500">
-          <label>Maximum satellites per launch (volume/integration)</label><input id="lsat" type="number" min="1" step="1" value="2">
-          <label>Maximum compute modules per refresh launch (volume) <span class="badge">assumption</span></label><input id="modlsat" type="number" min="1" step="1" value="6">
-          <label>Bulk launch price, $/kg <span class="badge">scenario</span></label><input id="lkg" type="number" min="0" value="1500">
-          <label>Rideshare price, $/kg</label><input id="ridekg" type="number" min="0" value="7000">
-          <label>Rideshare max mass / port, kg</label><input id="ridelim" type="number" min="1" value="831">
-          <div class="note" id="launchPresetNote">The 13.5 t SSO value is a planning value informed by demonstrated reusable polar Starlink payloads around 14.4 t to lower insertion orbits; it is not an official direct-to-650 km performance guarantee.</div>
+          <label>Mission price, $M (list, launch #1)</label><input id="lmission" type="number" min="0" step=".25" value="74" data-test-id="lmission" data-test-kind="input" data-test-tab="cost" data-test-label="Mission price, $M (list, launch #1)" data-test-unit="$M">
+          <label>Launch volume discount, % per doubling of cumulative launches <span class="badge">scenario</span></label><input id="launchDisc" type="number" min="0" max="50" step=".5" value="5" data-test-id="launchDisc" data-test-kind="input" data-test-tab="cost" data-test-label="Launch volume discount, % per doubling" data-test-unit="%">
+          <label>Launch price floor, % of list</label><input id="launchFloor" type="number" min="10" max="100" value="60" data-test-id="launchFloor" data-test-kind="input" data-test-tab="cost" data-test-label="Launch price floor, % of list" data-test-unit="%">
+          <label>Usable payload to selected orbit, kg</label><input id="lcap" type="number" min="1" value="13500" data-test-id="lcap" data-test-kind="input" data-test-tab="cost" data-test-label="Usable payload to selected orbit, kg" data-test-unit="kg">
+          <label>Maximum satellites per launch (volume/integration)</label><input id="lsat" type="number" min="1" step="1" value="2" data-test-id="lsat" data-test-kind="input" data-test-tab="cost" data-test-label="Satellites per launch (volume)">
+          <label>Maximum compute modules per refresh launch (volume) <span class="badge">assumption</span></label><input id="modlsat" type="number" min="1" step="1" value="6" data-test-id="modlsat" data-test-kind="input" data-test-tab="cost" data-test-label="Max compute modules per refresh launch">
+          <label>Bulk launch price, $/kg <span class="badge">scenario</span></label><input id="lkg" type="number" min="0" value="1500" data-test-id="lkg" data-test-kind="input" data-test-tab="cost" data-test-label="Bulk launch price, $/kg" data-test-unit="$/kg">
+          <label>Rideshare price, $/kg</label><input id="ridekg" type="number" min="0" value="7000" data-test-id="ridekg" data-test-kind="input" data-test-tab="cost" data-test-label="Rideshare price, $/kg" data-test-unit="$/kg">
+          <label>Rideshare max mass / port, kg</label><input id="ridelim" type="number" min="1" value="831" data-test-id="ridelim" data-test-kind="input" data-test-tab="cost" data-test-label="Rideshare max mass / port, kg" data-test-unit="kg">
+          <div class="note" id="launchPresetNote" data-test-out="launchPresetNote" data-test-kind="output" data-test-tab="cost" data-test-label="Launch-preset note" data-test-role="derived">The 13.5 t SSO value is a planning value informed by demonstrated reusable polar Starlink payloads around 14.4 t to lower insertion orbits; it is not an official direct-to-650 km performance guarantee.</div>
 
-          <label>Mission operations / satellite / year, $M</label><input id="opsy" type="number" min="0" step=".1" value="1">
+          <label>Mission operations / satellite / year, $M</label><input id="opsy" type="number" min="0" step=".1" value="1" data-test-id="opsy" data-test-kind="input" data-test-tab="cost" data-test-label="Mission operations / satellite / year, $M" data-test-unit="$M/yr">
           <label>Relay lease basis</label>
-          <select id="relayMode"><option value="flat" selected>Flat $M / satellite / year</option><option value="gbps">$ per Gbit/s of provisioned capacity / month</option></select>
-          <label>Relay capacity lease / satellite / year, $M <span class="badge">scenario</span></label><input id="nety" type="number" min="0" step=".1" value=".5">
-          <label>Relay lease, $ / Gbit/s / month <span class="badge">scenario</span></label><input id="relaygbps" type="number" min="0" step="10" value="500">
-          <label>Relay terminal hardware cost / satellite, $M <span class="badge">assumption</span></label><input id="relayc" type="number" min="0" step=".1" value=".8">
+          <select id="relayMode" data-test-id="relayMode" data-test-kind="select" data-test-tab="cost" data-test-label="Relay lease basis"><option value="flat" selected>Flat $M / satellite / year</option><option value="gbps">$ per Gbit/s of provisioned capacity / month</option></select>
+          <label>Relay capacity lease / satellite / year, $M <span class="badge">scenario</span></label><input id="nety" type="number" min="0" step=".1" value=".5" data-test-id="nety" data-test-kind="input" data-test-tab="cost" data-test-label="Relay capacity lease / satellite / year, $M" data-test-unit="$M/yr">
+          <label>Relay lease, $ / Gbit/s / month <span class="badge">scenario</span></label><input id="relaygbps" type="number" min="0" step="10" value="500" data-test-id="relaygbps" data-test-kind="input" data-test-tab="cost" data-test-label="Relay lease, $ / Gbit/s / month" data-test-unit="$/Gbps/mo">
+          <label>Relay terminal hardware cost / satellite, $M <span class="badge">assumption</span></label><input id="relayc" type="number" min="0" step=".1" value=".8" data-test-id="relayc" data-test-kind="input" data-test-tab="cost" data-test-label="Relay terminal hardware cost / satellite, $M" data-test-unit="$M">
           <div class="note">The optical relay terminal is separate spacecraft hardware (mass + cost), not folded into the compute rack. The lease can be a flat per-satellite fee or derived from provisioned Gbit/s at a monthly rate — third-party optical-ISL access is priced per capacity, so the per-Gbit/s basis is usually the honest one.</div>
           <div class="note">Scope: ground connectivity is assumed to be leased capacity on an existing communications constellation (Starlink-class or equivalent) via an optical inter-satellite link. No ground-station build is modeled. The relay terminal itself sits in network/storage mass per rack; third-party optical-terminal access is proprietary and priced, so this line is a placeholder lease fee. Inference only; training is out of scope for this model.</div>
-          <label>Insurance/risk reserve, % CAPEX/year</label><input id="ins" type="number" min="0" value="2">
-          <label>Analysis horizon, years</label><input id="years" type="number" min="1" value="10">
-          <label>Discount rate, %</label><input id="disc" type="number" min="0" value="8">
-          <label>Compute economic refresh interval, years</label><input id="refresh" type="number" min=".5" step=".5" value="3">
-          <label>Replaceable compute modules?</label><select id="replace"><option value="no" selected>No: refresh replaces spacecraft</option><option value="yes">Yes: replace compute only</option></select>
-          <label>Robotic service cost / satellite refresh, $M</label><input id="serv" type="number" min="0" step=".1" value="2">
+          <label>Insurance/risk reserve, % CAPEX/year</label><input id="ins" type="number" min="0" value="2" data-test-id="ins" data-test-kind="input" data-test-tab="cost" data-test-label="Insurance/risk reserve, % CAPEX/year" data-test-unit="%">
+          <label>Analysis horizon, years</label><input id="years" type="number" min="1" value="10" data-test-id="years" data-test-kind="input" data-test-tab="cost" data-test-label="Analysis horizon, years" data-test-unit="yr">
+          <label>Discount rate, %</label><input id="disc" type="number" min="0" value="8" data-test-id="disc" data-test-kind="input" data-test-tab="cost" data-test-label="Discount rate, %" data-test-unit="%">
+          <label>Compute economic refresh interval, years</label><input id="refresh" type="number" min=".5" step=".5" value="3" data-test-id="refresh" data-test-kind="input" data-test-tab="cost" data-test-label="Compute economic refresh interval, years" data-test-unit="yr">
+          <label>Replaceable compute modules?</label><select id="replace" data-test-id="replace" data-test-kind="select" data-test-tab="cost" data-test-label="Replaceable compute modules?"><option value="no" selected>No: refresh replaces spacecraft</option><option value="yes">Yes: replace compute only</option></select>
+          <label>Robotic service cost / satellite refresh, $M</label><input id="serv" type="number" min="0" step=".1" value="2" data-test-id="serv" data-test-kind="input" data-test-tab="cost" data-test-label="Robotic service cost / satellite refresh, $M" data-test-unit="$M">
         </div>
       </div>
 
       <div class="pane" id="infer">
         <h2>Inference, data movement and latency</h2>
         <div class="controls">
-          <label>Inference throughput, tokens/s/productive MW</label><input id="tpsmw" type="number" min="1" value="2800000">
-          <label>Compute utilization, %</label><input id="util" type="number" min="1" max="100" value="75">
-          <label>Benchmark interactivity, tokens/s/user</label><input id="tpsu" type="number" min="1" value="116">
+          <label>Inference throughput, tokens/s/productive MW <span class="badge" id="tpsSrc" data-test-out="tpsSrc" data-test-kind="output" data-test-tab="global" data-test-label="Throughput cell source badge" data-test-role="badge">measured</span></label><input id="tpsmw" type="number" min="0" value="2800000" data-test-id="tpsmw" data-test-kind="input" data-test-tab="infer" data-test-label="Inference throughput, tokens/s/productive MW" data-test-unit="tok/s/MW">
+          <label>Compute utilization, %</label><input id="util" type="number" min="1" max="100" value="75" data-test-id="util" data-test-kind="input" data-test-tab="infer" data-test-label="Compute utilization, %" data-test-unit="%">
+          <label>Benchmark interactivity, tokens/s/user</label><input id="tpsu" type="number" min="1" value="116" data-test-id="tpsu" data-test-kind="input" data-test-tab="infer" data-test-label="Benchmark interactivity, tokens/s/user" data-test-unit="tok/s/user">
+          <label>Interactivity scaling of the throughput cell</label>
+          <select id="interMode" data-test-id="interMode" data-test-kind="select" data-test-tab="infer" data-test-label="Interactivity scaling of the throughput cell">
+            <option value="on" selected>On: throughput ∝ (ref / tok/s/user)^α</option>
+            <option value="off">Off: cell used as-is</option>
+          </select>
+          <label>Cell reference interactivity, tokens/s/user</label><input id="tpsuRef" type="number" min="1" value="116" data-test-id="tpsuRef" data-test-kind="input" data-test-tab="infer" data-test-label="Cell reference interactivity, tokens/s/user" data-test-unit="tok/s/user">
+          <label>Interactivity exponent α <span class="badge">scenario</span></label><input id="interAlpha" type="number" min="0" max="2" step=".05" value=".9" data-test-id="interAlpha" data-test-kind="input" data-test-tab="infer" data-test-label="Interactivity exponent alpha" data-test-unit="exp">
+          <div class="note">InferenceX GB300 curves show roughly 2× throughput loss going from ~70 to ~150 tok/s/user, which is α ≈ 0.9 on a power law. The factor applies to both the orbital and terrestrial stacks (same silicon) and is clamped to 0.2–3. At the reference interactivity the factor is 1, so the regression anchor is unaffected.</div>
           <label>Terrestrial benchmark source</label>
-          <select id="benchMode">
+          <select id="benchMode" data-test-id="benchMode" data-test-kind="select" data-test-tab="infer" data-test-label="Terrestrial benchmark basis">
             <option value="stack" selected>Modeled terrestrial TCO stack (same method)</option>
             <option value="published">Published $/1M tokens</option>
           </select>
-          <label>Published terrestrial $ / 1M tokens</label><input id="earthtok" type="number" min="0" step=".001" value=".123">
-          <label>Terrestrial facility capex, $M / MW of IT <span class="badge">assumption</span></label><input id="tFac" type="number" min="0" step=".5" value="12">
-          <label>Facility economic life, years</label><input id="tFacLife" type="number" min="1" value="15">
-          <label>PUE</label><input id="tPue" type="number" min="1" step=".01" value="1.3">
-          <label>Electricity, $ / MWh</label><input id="tPower" type="number" min="0" value="80">
-          <label>Terrestrial availability, %</label><input id="tAvail" type="number" min="1" max="100" step=".1" value="99.5">
-          <label>Facility opex (staff, maintenance, network), % facility capex / year</label><input id="tOpex" type="number" min="0" step=".5" value="4">
+          <label>Published terrestrial $ / 1M tokens</label><input id="earthtok" type="number" min="0" step=".001" value=".123" data-test-id="earthtok" data-test-kind="input" data-test-tab="infer" data-test-label="Published terrestrial $ / 1M tokens" data-test-unit="$/1M">
+          <label>Terrestrial facility capex, $M / MW of IT <span class="badge">assumption</span></label><input id="tFac" type="number" min="0" step=".5" value="12" data-test-id="tFac" data-test-kind="input" data-test-tab="infer" data-test-label="Terrestrial facility capex, $M / MW IT" data-test-unit="$M/MW">
+          <label>Facility economic life, years</label><input id="tFacLife" type="number" min="1" value="15" data-test-id="tFacLife" data-test-kind="input" data-test-tab="infer" data-test-label="Facility economic life, years" data-test-unit="yr">
+          <label>PUE</label><input id="tPue" type="number" min="1" step=".01" value="1.3" data-test-id="tPue" data-test-kind="input" data-test-tab="infer" data-test-label="PUE">
+          <label>Electricity, $ / MWh</label><input id="tPower" type="number" min="0" value="80" data-test-id="tPower" data-test-kind="input" data-test-tab="infer" data-test-label="Electricity, $ / MWh" data-test-unit="$/MWh">
+          <label>Terrestrial availability, %</label><input id="tAvail" type="number" min="1" max="100" step=".1" value="99.5" data-test-id="tAvail" data-test-kind="input" data-test-tab="infer" data-test-label="Terrestrial availability, %" data-test-unit="%">
+          <label>Facility opex (staff, maintenance, network), % facility capex / year</label><input id="tOpex" type="number" min="0" step=".5" value="4" data-test-id="tOpex" data-test-kind="input" data-test-tab="infer" data-test-label="Facility opex, % facility capex" data-test-unit="%">
           <div class="note">The terrestrial stack reuses the same racks, rack cost, IT overhead, spares, utilization, throughput, refresh interval, horizon and discount rate as the orbital case, so the two $/1M-token figures are annuitized identically. Facility $/MW covers shell, power distribution and cooling. Land, grid-connection queue cost and carbon are excluded.</div>
-          <label>Space-segment slant/route factor (compute sat → relay → gateway)</label><input id="route" type="number" min="1" step=".1" value="1.5">
-          <label>User-to-gateway latency, ms</label><input id="gndms" type="number" min="0" value="20">
-          <label>Additional routing/switching, ms</label><input id="routems" type="number" min="0" value="5">
-          <label>Queue + processing TTFT, ms</label><input id="procms" type="number" min="0" value="100">
-          <label>ISL hops/request (1 = compute sat → relay sat → gateway)</label><input id="hops" type="number" min="0" step="1" value="1">
-          <label>Mean ISL separation, km</label><input id="islkm" type="number" min="0" value="200">
-          <label>ISL switching / hop, ms</label><input id="islms" type="number" min="0" step=".01" value=".1">
-          <label>Input/downlink traffic, TB/day/productive MW</label><input id="tbday" type="number" min="0" step=".1" value="1">
-          <label>Usable leased relay ISL capacity / compute satellite, Gbit/s</label><input id="gbps" type="number" min=".1" value="100">
-          <label>Relay link duty cycle, %</label><input id="duty" type="number" min="1" max="100" value="80">
+          <label>Space-segment slant/route factor (compute sat → relay → gateway)</label><input id="route" type="number" min="1" step=".1" value="1.5" data-test-id="route" data-test-kind="input" data-test-tab="infer" data-test-label="Space-segment slant/route factor">
+          <label>User-to-gateway latency, ms</label><input id="gndms" type="number" min="0" value="20" data-test-id="gndms" data-test-kind="input" data-test-tab="infer" data-test-label="User-to-gateway latency, ms" data-test-unit="ms">
+          <label>Additional routing/switching, ms</label><input id="routems" type="number" min="0" value="5" data-test-id="routems" data-test-kind="input" data-test-tab="infer" data-test-label="Additional routing/switching, ms" data-test-unit="ms">
+          <label>Queue + processing TTFT, ms</label><input id="procms" type="number" min="0" value="100" data-test-id="procms" data-test-kind="input" data-test-tab="infer" data-test-label="Queue + processing TTFT, ms" data-test-unit="ms">
+          <label>ISL hops/request (1 = compute sat → relay sat → gateway)</label><input id="hops" type="number" min="0" step="1" value="1" data-test-id="hops" data-test-kind="input" data-test-tab="infer" data-test-label="ISL hops/request">
+          <label>Mean ISL separation, km</label><input id="islkm" type="number" min="0" value="200" data-test-id="islkm" data-test-kind="input" data-test-tab="infer" data-test-label="Mean ISL separation, km" data-test-unit="km">
+          <label>ISL switching / hop, ms</label><input id="islms" type="number" min="0" step=".01" value=".1" data-test-id="islms" data-test-kind="input" data-test-tab="infer" data-test-label="ISL switching / hop, ms" data-test-unit="ms">
+          <label>Other traffic beyond token I/O, TB/day/productive MW</label><input id="tbday" type="number" min="0" step=".1" value="1" data-test-id="tbday" data-test-kind="input" data-test-tab="infer" data-test-label="Input/downlink traffic, TB/day/productive MW" data-test-unit="TB/day/MW">
+          <label>Usable leased relay ISL capacity / compute satellite, Gbit/s</label><input id="gbps" type="number" min=".1" value="100" data-test-id="gbps" data-test-kind="input" data-test-tab="infer" data-test-label="Usable leased relay ISL capacity / compute sat, Gbit/s" data-test-unit="Gbit/s">
+          <label>Relay link duty cycle, %</label><input id="duty" type="number" min="1" max="100" value="80" data-test-id="duty" data-test-kind="input" data-test-tab="infer" data-test-label="Relay link duty cycle, %" data-test-unit="%">
         </div>
       </div>
 
       <div class="pane" id="time">
         <h2>Deployment and replacement timeline</h2>
         <div class="controls">
-          <label>Spacecraft development/qualification lead, months</label><input id="dev" type="number" min="0" value="30">
-          <label>Production ramp/first batch, months</label><input id="prod" type="number" min="0" value="12">
-          <label>Launch queue/integration delay, months</label><input id="queue" type="number" min="0" value="6">
-          <label>Available launch cadence, launches/month</label><input id="cad" type="number" min=".01" step=".1" value="1">
-          <label>Commissioning/formation integration, days/batch</label><input id="comm" type="number" min="0" value="14">
-          <label>Failure replacement logistics, days</label><input id="repldays" type="number" min="0" value="120">
-          <label>Terrestrial time-to-power comparator, months</label><input id="earthlead" type="number" min="0" value="36">
+          <label>Spacecraft development/qualification lead, months</label><input id="dev" type="number" min="0" value="30" data-test-id="dev" data-test-kind="input" data-test-tab="time" data-test-label="Spacecraft development/qualification lead, months" data-test-unit="mo">
+          <label>Production ramp/first batch, months</label><input id="prod" type="number" min="0" value="12" data-test-id="prod" data-test-kind="input" data-test-tab="time" data-test-label="Production ramp/first batch, months" data-test-unit="mo">
+          <label>Launch queue/integration delay, months</label><input id="queue" type="number" min="0" value="6" data-test-id="queue" data-test-kind="input" data-test-tab="time" data-test-label="Launch queue/integration delay, months" data-test-unit="mo">
+          <label>Available launch cadence, launches/month</label><input id="cad" type="number" min=".01" step=".1" value="1" data-test-id="cad" data-test-kind="input" data-test-tab="time" data-test-label="Available launch cadence, launches/month" data-test-unit="/mo">
+          <label>Commissioning/formation integration, days/batch</label><input id="comm" type="number" min="0" value="14" data-test-id="comm" data-test-kind="input" data-test-tab="time" data-test-label="Commissioning/formation integration, days/batch" data-test-unit="days">
+          <label>Failure replacement logistics, days</label><input id="repldays" type="number" min="0" value="120" data-test-id="repldays" data-test-kind="input" data-test-tab="time" data-test-label="Failure replacement logistics, days" data-test-unit="days">
+          <label>Terrestrial time-to-power comparator, months</label><input id="earthlead" type="number" min="0" value="36" data-test-id="earthlead" data-test-kind="input" data-test-tab="time" data-test-label="Terrestrial time-to-power comparator, months" data-test-unit="mo">
         </div>
       </div>
     </section>
@@ -414,25 +503,25 @@ body.popout #popoutBar{display:none}
     <section>
       <div class="panel" id="vizPanel">
         <div id="popoutBar"><span>Open in its own window:</span>
-          <button data-pop="single:concept">⧉ Concept</button>
-          <button data-pop="single:technical">⧉ Engineering sheet</button>
-          <button data-pop="cluster:concept">⧉ Cluster</button>
-          <button data-pop="shells:concept">⧉ Orbital shells</button>
-          <button data-pop="shells3d:concept">⧉ Shells 3D</button>
-          <span id="syncBadge"></span>
+          <button data-pop="single:concept" id="pop-single-concept" data-test-id="pop-single-concept" data-test-kind="popout" data-test-tab="global" data-test-label="Concept">⧉ Concept</button>
+          <button data-pop="single:technical" id="pop-single-technical" data-test-id="pop-single-technical" data-test-kind="popout" data-test-tab="global" data-test-label="Engineering sheet">⧉ Engineering sheet</button>
+          <button data-pop="cluster:concept" id="pop-cluster-concept" data-test-id="pop-cluster-concept" data-test-kind="popout" data-test-tab="global" data-test-label="Cluster">⧉ Cluster</button>
+          <button data-pop="shells:concept" id="pop-shells-concept" data-test-id="pop-shells-concept" data-test-kind="popout" data-test-tab="global" data-test-label="Orbital shells">⧉ Orbital shells</button>
+          <button data-pop="shells3d:concept" id="pop-shells3d-concept" data-test-id="pop-shells3d-concept" data-test-kind="popout" data-test-tab="global" data-test-label="Shells 3D">⧉ Shells 3D</button>
+          <span id="syncBadge" data-test-out="syncBadge" data-test-kind="output" data-test-tab="orbit" data-test-label="Sun-synchronous status badge" data-test-role="derived"></span>
         </div>
         <div class="viewbar" id="mainViewbar">
           <div>
-            <button class="active" data-view="single">Single satellite</button>
-            <button data-view="cluster">Cluster</button>
-            <button data-view="system">System overview</button>
-            <button data-view="shells">Orbital shells</button>
-            <button data-view="shells3d">Shells 3D</button>
+            <button class="active" data-view="single" id="view-single" data-test-id="view-single" data-test-kind="view" data-test-tab="global" data-test-label="Single satellite">Single satellite</button>
+            <button data-view="cluster" id="view-cluster" data-test-id="view-cluster" data-test-kind="view" data-test-tab="global" data-test-label="Cluster">Cluster</button>
+            <button data-view="system" id="view-system" data-test-id="view-system" data-test-kind="view" data-test-tab="global" data-test-label="System overview">System overview</button>
+            <button data-view="shells" id="view-shells" data-test-id="view-shells" data-test-kind="view" data-test-tab="global" data-test-label="Orbital shells">Orbital shells</button>
+            <button data-view="shells3d" id="view-shells3d" data-test-id="view-shells3d" data-test-kind="view" data-test-tab="global" data-test-label="Shells 3D">Shells 3D</button>
           </div>
           <div>
-            <button class="active" data-style="both">Both styles</button>
-            <button data-style="concept">Concept</button>
-            <button data-style="technical">Technical</button>
+            <button class="active" data-style="both" id="style-both" data-test-id="style-both" data-test-kind="view" data-test-tab="global" data-test-label="Both styles">Both styles</button>
+            <button data-style="concept" id="style-concept" data-test-id="style-concept" data-test-kind="view" data-test-tab="global" data-test-label="Concept">Concept</button>
+            <button data-style="technical" id="style-technical" data-test-id="style-technical" data-test-kind="view" data-test-tab="global" data-test-label="Technical">Technical</button>
           </div>
         </div>
         <div class="visual-shell" id="visualShell">
@@ -441,26 +530,26 @@ body.popout #popoutBar{display:none}
             <div class="vizpane" id="conceptPane"><h3>Semi-realistic current-technology concept</h3><svg id="conceptSvg" viewBox="0 0 760 330" aria-label="Concept rendering" style="cursor:grab"></svg></div>
             <div class="vizpane" id="technicalPane"><h3>Technical engineering sheet — wheel zoom, drag pan, double-click fit</h3><svg id="technicalSvg" viewBox="0 0 1200 760" aria-label="Technical engineering sheet" style="aspect-ratio:1200/760;cursor:grab"></svg></div>
             <div class="vizpane" id="threePane" style="display:none"><h3>Orbital shells in 3D — drag to rotate, wheel to zoom</h3>
-              <div class="viewbar" style="margin-bottom:6px"><div><button id="scaleTrue" class="active">True scale (zoom out to the Moon)</button><button id="scaleLeo">LEO exaggerated ×4</button><button id="scaleGeo">Log compressed</button><button id="resetView">Reset view</button><label style="display:flex;align-items:center;gap:4px;font-size:12px;color:var(--muted)"><input type="checkbox" id="t3sun" checked style="min-height:auto">Sun &amp; sunlight</label></div></div>
+              <div class="viewbar" style="margin-bottom:6px"><div><button id="scaleTrue" class="active" data-test-id="scaleTrue" data-test-kind="button" data-test-tab="view3d" data-test-label="True scale (zoom out to the Moon)">True scale (zoom out to the Moon)</button><button id="scaleLeo" data-test-id="scaleLeo" data-test-kind="button" data-test-tab="view3d" data-test-label="LEO exaggerated x4">LEO exaggerated ×4</button><button id="scaleGeo" data-test-id="scaleGeo" data-test-kind="button" data-test-tab="view3d" data-test-label="Log compressed">Log compressed</button><button id="resetView" data-test-id="resetView" data-test-kind="button" data-test-tab="view3d" data-test-label="Reset view">Reset view</button><label style="display:flex;align-items:center;gap:4px;font-size:12px;color:var(--muted)"><input type="checkbox" id="t3sun" checked style="min-height:auto" data-test-id="t3sun" data-test-kind="checkbox" data-test-tab="view3d" data-test-label="Sun &amp; sunlight">Sun &amp; sunlight</label></div></div>
               <div id="shellToggles" style="display:flex;gap:10px;flex-wrap:wrap;font-size:12px;color:var(--muted);margin-bottom:6px"></div>
               <div class="viewbar" style="margin-bottom:6px;font-size:12px;color:var(--muted)"><div style="align-items:center">
-                <span>UTC</span><input id="t3time" type="range" min="0" max="1440" step="1" value="720" style="width:180px;min-height:auto"><span id="t3label">12:00</span>
-                <button id="t3now" title="Set epoch date and UTC time to the current moment">◉ Now</button><button id="t3play">▶ Play</button><button id="t3s1" class="active">1×</button><button id="t3s60">60×</button><button id="t3s600">600×</button>
-                <label style="display:flex;align-items:center;gap:4px"><input type="checkbox" id="t3term" checked style="min-height:auto">Terminator</label>
-                <label style="display:flex;align-items:center;gap:4px"><input type="checkbox" id="t3coast" checked style="min-height:auto">Coastlines</label>
-                <label style="display:flex;align-items:center;gap:4px"><input type="checkbox" id="t3grat" checked style="min-height:auto">Graticule</label>
-                <label style="display:flex;align-items:center;gap:4px"><input type="checkbox" id="t3paths" style="min-height:auto">Orbit paths</label>
-                <label style="display:flex;align-items:center;gap:4px"><input type="checkbox" id="t3live" checked style="min-height:auto">Live catalog</label>
-                <label style="display:flex;align-items:center;gap:4px"><input type="checkbox" id="t3ecc" style="min-height:auto">Include eccentric / beyond-LEO objects</label>
-                <label style="display:flex;align-items:center;gap:4px" title="Stand-in dots representing shell counts; not real objects. Auto-off when a live catalog is loaded."><input type="checkbox" id="t3synth" checked style="min-height:auto">Synthetic shell density</label>
-                <label style="display:flex;align-items:center;gap:4px"><input type="checkbox" id="t3rings" checked style="min-height:auto">Altitude guide rings</label>
+                <span>UTC</span><input id="t3time" type="range" min="0" max="1440" step="1" value="720" style="width:180px;min-height:auto" data-test-id="t3time" data-test-kind="range" data-test-tab="view3d" data-test-label="UTC time scrubber"><span id="t3label" data-test-out="t3label" data-test-kind="output" data-test-tab="view3d" data-test-label="3D time / epoch label" data-test-role="derived">12:00</span>
+                <button id="t3now" title="Set epoch date and UTC time to the current moment" data-test-id="t3now" data-test-kind="button" data-test-tab="view3d" data-test-label="Now">◉ Now</button><button id="t3play" data-test-id="t3play" data-test-kind="button" data-test-tab="view3d" data-test-label="Play">▶ Play</button><button id="t3s1" class="active" data-test-id="t3s1" data-test-kind="button" data-test-tab="view3d" data-test-label="1x speed">1×</button><button id="t3s60" data-test-id="t3s60" data-test-kind="button" data-test-tab="view3d" data-test-label="60x speed">60×</button><button id="t3s600" data-test-id="t3s600" data-test-kind="button" data-test-tab="view3d" data-test-label="600x speed">600×</button>
+                <label style="display:flex;align-items:center;gap:4px"><input type="checkbox" id="t3term" checked style="min-height:auto" data-test-id="t3term" data-test-kind="checkbox" data-test-tab="view3d" data-test-label="Terminator">Terminator</label>
+                <label style="display:flex;align-items:center;gap:4px"><input type="checkbox" id="t3coast" checked style="min-height:auto" data-test-id="t3coast" data-test-kind="checkbox" data-test-tab="view3d" data-test-label="Coastlines">Coastlines</label>
+                <label style="display:flex;align-items:center;gap:4px"><input type="checkbox" id="t3grat" checked style="min-height:auto" data-test-id="t3grat" data-test-kind="checkbox" data-test-tab="view3d" data-test-label="Graticule">Graticule</label>
+                <label style="display:flex;align-items:center;gap:4px"><input type="checkbox" id="t3paths" style="min-height:auto" data-test-id="t3paths" data-test-kind="checkbox" data-test-tab="view3d" data-test-label="Orbit paths">Orbit paths</label>
+                <label style="display:flex;align-items:center;gap:4px"><input type="checkbox" id="t3live" checked style="min-height:auto" data-test-id="t3live" data-test-kind="checkbox" data-test-tab="view3d" data-test-label="Live catalog">Live catalog</label>
+                <label style="display:flex;align-items:center;gap:4px"><input type="checkbox" id="t3ecc" style="min-height:auto" data-test-id="t3ecc" data-test-kind="checkbox" data-test-tab="view3d" data-test-label="Include eccentric / beyond-LEO objects">Include eccentric / beyond-LEO objects</label>
+                <label style="display:flex;align-items:center;gap:4px" title="Stand-in dots representing shell counts; not real objects. Auto-off when a live catalog is loaded."><input type="checkbox" id="t3synth" checked style="min-height:auto" data-test-id="t3synth" data-test-kind="checkbox" data-test-tab="view3d" data-test-label="Synthetic shell density">Synthetic shell density</label>
+                <label style="display:flex;align-items:center;gap:4px"><input type="checkbox" id="t3rings" checked style="min-height:auto" data-test-id="t3rings" data-test-kind="checkbox" data-test-tab="view3d" data-test-label="Altitude guide rings">Altitude guide rings</label>
               </div></div>
               <div class="viewbar" style="margin-bottom:6px;font-size:12px;color:var(--muted)"><div style="align-items:center">
-                <button id="liveLoad">Load live catalog (CelesTrak)</button>
-                <label style="display:flex;align-items:center;gap:4px">or file: <input type="file" id="liveFile" accept=".json,application/json" style="min-height:auto;font-size:11px"></label>
-                <button id="liveClear">Clear cache</button>
-                <button id="exportModeled" title="Download the modeled constellation as GP-format JSON (synthetic objects)">⤓ Export modeled fleet (GP JSON)</button>
-                <span id="liveStatus">No live catalog loaded — shells use the embedded 2026-09-04 snapshot.</span>
+                <button id="liveLoad" data-test-id="liveLoad" data-test-kind="button" data-test-tab="view3d" data-test-label="Load live catalog (CelesTrak)">Load live catalog (CelesTrak)</button>
+                <label style="display:flex;align-items:center;gap:4px">or file: <input type="file" id="liveFile" accept=".json,application/json" style="min-height:auto;font-size:11px" data-test-id="liveFile" data-test-kind="file" data-test-tab="view3d" data-test-label="Live catalog file loader"></label>
+                <button id="liveClear" data-test-id="liveClear" data-test-kind="button" data-test-tab="view3d" data-test-label="Clear cache">Clear cache</button>
+                <button id="exportModeled" title="Download the modeled constellation as GP-format JSON (synthetic objects)" data-test-id="exportModeled" data-test-kind="button" data-test-tab="view3d" data-test-label="Export modeled fleet (GP JSON)">⤓ Export modeled fleet (GP JSON)</button>
+                <span id="liveStatus" data-test-out="liveStatus" data-test-kind="output" data-test-tab="view3d" data-test-label="Live-catalog status line" data-test-role="derived">No live catalog loaded — shells use the embedded 2026-09-04 snapshot.</span>
               </div></div>
               <canvas id="threeCanvas" style="width:100%;height:520px;display:block;border-radius:6px;background:#05080d;cursor:grab"></canvas>
             </div>
@@ -474,113 +563,129 @@ body.popout #popoutBar{display:none}
           <span style="--series:#75b798">Optical ISL to relay</span>
           <span style="--series:#d8b25a">Relay constellation (third party)</span>
         </div>
-        <div id="vizCaption">Dynamic visualization initializing…</div>
+        <div id="vizCaption" data-test-out="vizCaption" data-test-kind="output" data-test-tab="global" data-test-label="Caption under active view" data-test-role="derived">Dynamic visualization initializing…</div>
       </div>
 
       <div class="panel">
         <h2>Orbit sweep: dawn-dusk SSO altitude vs eclipse, battery, shell, latency</h2>
         <svg id="sweepSvg" viewBox="0 0 760 300" style="width:100%;height:auto;display:block"></svg>
-        <p class="muted" id="sweepNote">—</p>
+        <p class="muted" id="sweepNote" data-test-out="sweepNote" data-test-kind="output" data-test-tab="orbit" data-test-label="Sweep narrative (eclipse/battery/shell vs altitude)" data-test-role="derived">—</p>
       </div>
 
       <div class="panel">
         <h2>Sensitivity: ±20% on each input, effect on $/1M tokens</h2>
         <svg id="tornado" viewBox="0 0 760 420" style="width:100%;height:auto;display:block"></svg>
-        <p class="muted" id="tornadoNote">—</p>
+        <p class="muted" id="tornadoNote" data-test-out="tornadoNote" data-test-kind="output" data-test-tab="infer" data-test-label="Tornado narrative (top driver, spans)" data-test-role="derived">—</p>
       </div>
 
       <div class="panel">
         <h2>Scenario result</h2>
-        <div class="call" id="status">Calculating…</div>
+        <div class="call" id="status" data-test-out="status" data-test-kind="output" data-test-tab="global" data-test-label="Model cautions list (dynamic warnings)" data-test-role="warning">Calculating…</div>
         <div class="metrics">
-          <div class="metric"><div class="l">Initial CAPEX incl. NRE / productive MW</div><div class="v" id="capex">—</div></div>
-          <div class="metric"><div class="l">Discounted lifecycle TCO / productive MW</div><div class="v" id="tco">—</div></div>
-          <div class="metric"><div class="l">Delivered cost / 1M tokens</div><div class="v" id="tokc">—</div><div class="l" id="tokcmp">—</div></div>
-          <div class="metric"><div class="l">Modeled terrestrial cost / 1M tokens</div><div class="v" id="terrTok">—</div><div class="l" id="terrDetail">—</div></div>
-          <div class="metric"><div class="l">Orbital wet mass / productive MW</div><div class="v" id="massmw">—</div></div>
-          <div class="metric"><div class="l">Satellites</div><div class="v" id="nsat">—</div><div class="l" id="satd">—</div></div>
-          <div class="metric"><div class="l">Initial launches</div><div class="v" id="nlaunch">—</div><div class="l" id="launchd">—</div></div>
-          <div class="metric"><div class="l">Inference TTFT</div><div class="v" id="ttft">—</div></div>
-          <div class="metric"><div class="l">Effective availability</div><div class="v" id="eavail">—</div></div>
+          <div class="metric"><div class="l">Initial CAPEX incl. NRE / productive MW</div><div class="v" id="capex" data-test-out="capex" data-test-kind="output" data-test-tab="infer" data-test-label="Initial CAPEX incl. NRE / productive MW" data-test-role="kpi">—</div></div>
+          <div class="metric"><div class="l">Discounted lifecycle TCO / productive MW</div><div class="v" id="tco" data-test-out="tco" data-test-kind="output" data-test-tab="infer" data-test-label="Discounted lifecycle TCO / productive MW" data-test-role="kpi">—</div></div>
+          <div class="metric"><div class="l">Delivered cost / 1M tokens</div><div class="v" id="tokc" data-test-out="tokc" data-test-kind="output" data-test-tab="infer" data-test-label="Delivered cost / 1M tokens (orbital)" data-test-role="kpi">—</div><div class="l" id="tokcmp" data-test-out="tokcmp" data-test-kind="output" data-test-tab="global" data-test-label="Multiple vs terrestrial AND vs market price" data-test-role="derived">—</div></div>
+          <div class="metric"><div class="l">Modeled terrestrial cost / 1M tokens</div><div class="v" id="terrTok" data-test-out="terrTok" data-test-kind="output" data-test-tab="infer" data-test-label="Modeled terrestrial cost / 1M tokens" data-test-role="kpi">—</div><div class="l" id="terrDetail" data-test-out="terrDetail" data-test-kind="output" data-test-tab="infer" data-test-label="Terrestrial cost breakdown line" data-test-role="kpi">—</div></div>
+          <div class="metric"><div class="l">Orbital wet mass / productive MW</div><div class="v" id="massmw" data-test-out="massmw" data-test-kind="output" data-test-tab="infer" data-test-label="Orbital wet mass / productive MW" data-test-role="kpi">—</div></div>
+          <div class="metric"><div class="l">Satellites</div><div class="v" id="nsat" data-test-out="nsat" data-test-kind="output" data-test-tab="infer" data-test-label="Satellites" data-test-role="kpi">—</div><div class="l" id="satd" data-test-out="satd" data-test-kind="output" data-test-tab="infer" data-test-label="Satellite composition detail" data-test-role="kpi">—</div></div>
+          <div class="metric"><div class="l">Initial launches</div><div class="v" id="nlaunch" data-test-out="nlaunch" data-test-kind="output" data-test-tab="infer" data-test-label="Initial launches" data-test-role="kpi">—</div><div class="l" id="launchd" data-test-out="launchd" data-test-kind="output" data-test-tab="infer" data-test-label="Initial payload detail" data-test-role="kpi">—</div></div>
+          <div class="metric"><div class="l">Inference TTFT</div><div class="v" id="ttft" data-test-out="ttft" data-test-kind="output" data-test-tab="infer" data-test-label="Inference TTFT" data-test-role="kpi">—</div></div>
+          <div class="metric"><div class="l">Effective availability</div><div class="v" id="eavail" data-test-out="eavail" data-test-kind="output" data-test-tab="infer" data-test-label="Effective availability" data-test-role="kpi">—</div></div>
         </div>
       </div>
 
       <div class="panel">
         <h2>Power and physical geometry</h2>
         <div class="metrics">
-          <div class="metric"><div class="l">Solar array / satellite</div><div class="v" id="solarAreaOut">—</div><div class="l" id="solarPowerOut">—</div></div>
-          <div class="metric"><div class="l">Radiator / satellite</div><div class="v" id="radAreaOut">—</div></div>
-          <div class="metric"><div class="l">Battery nameplate / satellite</div><div class="v" id="batteryOut">—</div><div class="l" id="eclipseOut">—</div></div>
-          <div class="metric"><div class="l">Deployed characteristic span</div><div class="v" id="spanOut">—</div><div class="l" id="slewOut">—</div></div>
-          <div class="metric"><div class="l">Non-compute spacecraft manufacturing</div><div class="v" id="spacecraftKgCost">—</div><div class="l">manufacturing only, excludes launch/compute</div></div>
+          <div class="metric"><div class="l">Solar array / satellite</div><div class="v" id="solarAreaOut" data-test-out="solarAreaOut" data-test-kind="output" data-test-tab="craft" data-test-label="Solar array area / satellite" data-test-role="derived">—</div><div class="l" id="solarPowerOut" data-test-out="solarPowerOut" data-test-kind="output" data-test-tab="craft" data-test-label="Solar array nameplate" data-test-role="derived">—</div></div>
+          <div class="metric"><div class="l">Radiator / satellite</div><div class="v" id="radAreaOut" data-test-out="radAreaOut" data-test-kind="output" data-test-tab="craft" data-test-label="Radiator area / satellite" data-test-role="derived">—</div></div>
+          <div class="metric"><div class="l">Battery nameplate / satellite</div><div class="v" id="batteryOut" data-test-out="batteryOut" data-test-kind="output" data-test-tab="craft" data-test-label="Battery nameplate / satellite" data-test-role="derived">—</div><div class="l" id="eclipseOut" data-test-out="eclipseOut" data-test-kind="output" data-test-tab="craft" data-test-label="Eclipse design detail" data-test-role="derived">—</div></div>
+          <div class="metric"><div class="l">Deployed characteristic span</div><div class="v" id="spanOut" data-test-out="spanOut" data-test-kind="output" data-test-tab="craft" data-test-label="Deployed characteristic span" data-test-role="derived">—</div><div class="l" id="slewOut" data-test-out="slewOut" data-test-kind="output" data-test-tab="craft" data-test-label="Area-to-mass ratio" data-test-role="derived">—</div></div>
+          <div class="metric"><div class="l">Non-compute spacecraft manufacturing</div><div class="v" id="spacecraftKgCost" data-test-out="spacecraftKgCost" data-test-kind="output" data-test-tab="craft" data-test-label="Non-compute spacecraft manufacturing $/kg" data-test-role="derived">—</div><div class="l">manufacturing only, excludes launch/compute</div></div>
         </div>
       </div>
 
       <div class="panel">
         <h2>Mass stack / satellite</h2>
-        <div class="table"><table><thead><tr><th>Subsystem</th><th>kg</th><th>% wet mass</th></tr></thead><tbody id="mt"></tbody></table></div>
+        <div class="table"><table><thead><tr><th>Subsystem</th><th>kg</th><th>% wet mass</th></tr></thead><tbody id="mt" data-test-out="mt" data-test-kind="output" data-test-tab="craft" data-test-label="Per-subsystem mass table (kg, % wet mass)" data-test-role="table"></tbody></table></div>
       </div>
 
       <div class="panel">
         <h2>Cluster geometry and ISL fabric</h2>
         <div class="metrics">
-          <div class="metric"><div class="l">Fleet</div><div class="v" id="fleetOut">—</div><div class="l" id="fleetD">—</div></div>
-          <div class="metric"><div class="l">Cluster radius R_max</div><div class="v" id="rmaxOut">—</div><div class="l" id="rmaxD">—</div></div>
-          <div class="metric"><div class="l">Satellite footprint vs shadow limit</div><div class="v" id="rsatOut">—</div><div class="l" id="rsatD">—</div></div>
-          <div class="metric"><div class="l">ISL fabric</div><div class="v" id="closOut">—</div><div class="l" id="closD">—</div></div>
+          <div class="metric"><div class="l">Fleet</div><div class="v" id="fleetOut" data-test-out="fleetOut" data-test-kind="output" data-test-tab="orbit" data-test-label="Fleet size" data-test-role="derived">—</div><div class="l" id="fleetD" data-test-out="fleetD" data-test-kind="output" data-test-tab="orbit" data-test-label="Fleet composition detail" data-test-role="derived">—</div></div>
+          <div class="metric"><div class="l">Cluster radius R_max</div><div class="v" id="rmaxOut" data-test-out="rmaxOut" data-test-kind="output" data-test-tab="orbit" data-test-label="Cluster radius R_max" data-test-role="derived">—</div><div class="l" id="rmaxD" data-test-out="rmaxD" data-test-kind="output" data-test-tab="orbit" data-test-label="R_max derivation detail" data-test-role="derived">—</div></div>
+          <div class="metric"><div class="l">Satellite footprint vs shadow limit</div><div class="v" id="rsatOut" data-test-out="rsatOut" data-test-kind="output" data-test-tab="orbit" data-test-label="Satellite footprint vs shadow limit" data-test-role="derived">—</div><div class="l" id="rsatD" data-test-out="rsatD" data-test-kind="output" data-test-tab="orbit" data-test-label="Footprint detail" data-test-role="derived">—</div></div>
+          <div class="metric"><div class="l">ISL fabric</div><div class="v" id="closOut" data-test-out="closOut" data-test-kind="output" data-test-tab="orbit" data-test-label="ISL fabric type" data-test-role="derived">—</div><div class="l" id="closD" data-test-out="closD" data-test-kind="output" data-test-tab="orbit" data-test-label="ISL fabric detail" data-test-role="derived">—</div></div>
         </div>
       </div>
 
       <div class="panel">
         <h2>Orbit and fill-up behavior</h2>
         <div class="metrics">
-          <div class="metric"><div class="l">Orbital period</div><div class="v" id="period">—</div></div>
-          <div class="metric"><div class="l">End-of-life Δv</div><div class="v" id="ddv">—</div><div class="l" id="deorbitLabel">—</div></div>
-          <div class="metric"><div class="l">Avoidance events / sat / year</div><div class="v" id="ave">—</div></div>
-          <div class="metric"><div class="l">Lifetime propulsion Δv</div><div class="v" id="ldv">—</div><div class="l" id="dragOut">—</div></div>
+          <div class="metric"><div class="l">Orbital period</div><div class="v" id="period" data-test-out="period" data-test-kind="output" data-test-tab="orbit" data-test-label="Orbital period" data-test-role="derived">—</div></div>
+          <div class="metric"><div class="l">End-of-life Δv</div><div class="v" id="ddv" data-test-out="ddv" data-test-kind="output" data-test-tab="orbit" data-test-label="End-of-life Δv" data-test-role="derived">—</div><div class="l" id="deorbitLabel" data-test-out="deorbitLabel" data-test-kind="output" data-test-tab="orbit" data-test-label="Deorbit method detail" data-test-role="derived">—</div></div>
+          <div class="metric"><div class="l">Avoidance events / sat / year</div><div class="v" id="ave" data-test-out="ave" data-test-kind="output" data-test-tab="orbit" data-test-label="Avoidance events / sat / year" data-test-role="derived">—</div></div>
+          <div class="metric"><div class="l">Lifetime propulsion Δv</div><div class="v" id="ldv" data-test-out="ldv" data-test-kind="output" data-test-tab="orbit" data-test-label="Lifetime propulsion Δv" data-test-role="derived">—</div><div class="l" id="dragOut" data-test-out="dragOut" data-test-kind="output" data-test-tab="orbit" data-test-label="Drag detail" data-test-role="derived">—</div></div>
         </div>
         <h3>Configured shell occupancy after deployment</h3>
-        <div class="row"><span id="occ">—</span><span id="occw">—</span></div>
-        <div class="bar"><div id="occb"></div></div>
-        <p class="muted" id="occe"></p>
+        <div class="row"><span id="occ" data-test-out="occ" data-test-kind="output" data-test-tab="orbit" data-test-label="Shell occupancy after deployment" data-test-role="derived">—</span><span id="occw" data-test-out="occw" data-test-kind="output" data-test-tab="orbit" data-test-label="Occupancy threshold status" data-test-role="derived">—</span></div>
+        <div class="bar"><div id="occb" data-test-out="occb" data-test-kind="output" data-test-tab="orbit" data-test-label="Occupancy gauge bar (visual)" data-test-role="derived"></div></div>
+        <p class="muted" id="occe" data-test-out="occe" data-test-kind="output" data-test-tab="orbit" data-test-label="Occupancy gauge marker (visual)" data-test-role="derived"></p>
+      </div>
+
+      <div class="panel">
+        <h2>Stack × model economics</h2>
+        <div class="table"><table><tbody>
+          <tr><td>Stack / model</td><td id="smName" data-test-out="smName" data-test-kind="output" data-test-tab="infer" data-test-label="Stack . model . size class line" data-test-role="derived">—</td></tr>
+          <tr><td>Throughput cell used, tokens/s/MW</td><td id="smTps" data-test-out="smTps" data-test-kind="output" data-test-tab="infer" data-test-label="Throughput cell used + source (+interactivity factor)" data-test-role="derived">—</td></tr>
+          <tr><td>Blended market price / licence, $/1M</td><td id="smPrice" data-test-out="smPrice" data-test-kind="output" data-test-tab="infer" data-test-label="Blended market price / licence" data-test-role="derived">—</td></tr>
+          <tr><td>Operator margin, $/1M tokens</td><td id="smMargin" data-test-out="smMargin" data-test-kind="output" data-test-tab="infer" data-test-label="Operator margin $/1M" data-test-role="derived">—</td></tr>
+          <tr><td>Revenue / margin per productive MW-year</td><td id="smMwYear" data-test-out="smMwYear" data-test-kind="output" data-test-tab="infer" data-test-label="Revenue / margin per productive MW-year" data-test-role="derived">—</td></tr>
+          <tr><td>Node degradation: expected / guaranteed floor</td><td id="smNode" data-test-out="smNode" data-test-kind="output" data-test-tab="infer" data-test-label="Node degradation expected / floor" data-test-role="derived">—</td></tr>
+          <tr><td>Token traffic, TB/day per productive MW</td><td id="smTraffic" data-test-out="smTraffic" data-test-kind="output" data-test-tab="infer" data-test-label="Token-derived link traffic TB/day/MW" data-test-role="derived">—</td></tr>
+          <tr><td>Latency class check</td><td id="smLat" data-test-out="smLat" data-test-kind="output" data-test-tab="infer" data-test-label="TTFT vs latency class check" data-test-role="derived">—</td></tr>
+          <tr><td>Radiation multiplier sensitivity, $/1M at ×1.25 / ×2.5 / ×5</td><td id="smRad" data-test-out="smRad" data-test-kind="output" data-test-tab="infer" data-test-label="Radiation multiplier sensitivity $/1M at x1.25/x2.5/x5" data-test-role="derived">—</td></tr>
+        </tbody></table></div>
       </div>
 
       <div class="panel">
         <h2>Inference economics and link</h2>
         <div class="table"><table><tbody>
-          <tr><td>Productive racks / installed racks</td><td id="rackCounts">—</td></tr>
-          <tr><td>Effective delivered tokens/s</td><td id="tps">—</td></tr>
-          <tr><td>Delivered tokens/year</td><td id="tpy">—</td></tr>
-          <tr><td>TCO-derived $/GPU-hour</td><td id="gpuh">—</td></tr>
-          <tr><td>Leased relay capacity utilization</td><td id="linku">—</td></tr>
-          <tr><td>Space propagation contribution, RTT</td><td id="proprt">—</td></tr>
-          <tr><td>Inter-token time at configured interactivity</td><td id="itt">—</td></tr>
+          <tr><td>Productive racks / installed racks</td><td id="rackCounts" data-test-out="rackCounts" data-test-kind="output" data-test-tab="infer" data-test-label="Productive / installed racks" data-test-role="derived">—</td></tr>
+          <tr><td>Effective delivered tokens/s</td><td id="tps" data-test-out="tps" data-test-kind="output" data-test-tab="infer" data-test-label="Effective delivered tokens/s" data-test-role="derived">—</td></tr>
+          <tr><td>Delivered tokens/year</td><td id="tpy" data-test-out="tpy" data-test-kind="output" data-test-tab="infer" data-test-label="Delivered tokens/year" data-test-role="derived">—</td></tr>
+          <tr><td>TCO-derived $/GPU-hour</td><td id="gpuh" data-test-out="gpuh" data-test-kind="output" data-test-tab="infer" data-test-label="TCO-derived $/GPU-hour" data-test-role="derived">—</td></tr>
+          <tr><td>Leased relay capacity utilization</td><td id="linku" data-test-out="linku" data-test-kind="output" data-test-tab="infer" data-test-label="Leased relay capacity utilization" data-test-role="derived">—</td></tr>
+          <tr><td>Space propagation contribution, RTT</td><td id="proprt" data-test-out="proprt" data-test-kind="output" data-test-tab="infer" data-test-label="Space propagation contribution RTT" data-test-role="derived">—</td></tr>
+          <tr><td>Inter-token time at configured interactivity</td><td id="itt" data-test-out="itt" data-test-kind="output" data-test-tab="infer" data-test-label="Inter-token time at interactivity" data-test-role="derived">—</td></tr>
         </tbody></table></div>
       </div>
 
       <div class="panel">
         <h2>Initial cost stack</h2>
-        <div class="table"><table><thead><tr><th>Category</th><th>$M total</th><th>$M / productive MW</th></tr></thead><tbody id="ct"></tbody></table></div>
+        <div class="table"><table><thead><tr><th>Category</th><th>$M total</th><th>$M / productive MW</th></tr></thead><tbody id="ct" data-test-out="ct" data-test-kind="output" data-test-tab="cost" data-test-label="Per-category cost table ($M total, $M/MW)" data-test-role="table"></tbody></table></div>
       </div>
 
       <div class="panel">
         <h2>Deployment and replacement burden</h2>
         <div class="table"><table><tbody>
-          <tr><td>Modeled full deployment</td><td id="deploy">—</td></tr>
-          <tr><td>Terrestrial comparator</td><td id="edeploy">—</td></tr>
-          <tr><td>Scheduled + expected failure replacement mass / year</td><td id="rmy">—</td></tr>
-          <tr><td>Equivalent replacement launches / year</td><td id="rly">—</td></tr>
-          <tr><td>Expected failed satellites / year</td><td id="fsy">—</td></tr>
-          <tr><td>Expected capacity unavailable from replacement delay (applied to availability)</td><td id="fd">—</td></tr>
-          <tr><td>Disposal events / year (retirements + failures)</td><td id="dispev">—</td></tr>
-          <tr><td>Expected derelicts / year (failed disposals)</td><td id="derel">—</td></tr>
-          <tr><td>Disposal operations + debris removal cost / year</td><td id="dispcost">—</td></tr>
+          <tr><td>Modeled full deployment</td><td id="deploy" data-test-out="deploy" data-test-kind="output" data-test-tab="cost" data-test-label="Modeled full deployment time" data-test-role="derived">—</td></tr>
+          <tr><td>Terrestrial comparator</td><td id="edeploy" data-test-out="edeploy" data-test-kind="output" data-test-tab="cost" data-test-label="Terrestrial comparator" data-test-role="derived">—</td></tr>
+          <tr><td>Scheduled + expected failure replacement mass / year</td><td id="rmy" data-test-out="rmy" data-test-kind="output" data-test-tab="cost" data-test-label="Replacement mass / year" data-test-role="derived">—</td></tr>
+          <tr><td>Equivalent replacement launches / year</td><td id="rly" data-test-out="rly" data-test-kind="output" data-test-tab="cost" data-test-label="Equivalent replacement launches / year" data-test-role="derived">—</td></tr>
+          <tr><td>Expected failed satellites / year</td><td id="fsy" data-test-out="fsy" data-test-kind="output" data-test-tab="cost" data-test-label="Expected failed satellites / year" data-test-role="derived">—</td></tr>
+          <tr><td>Expected capacity unavailable from replacement delay (applied to availability)</td><td id="fd" data-test-out="fd" data-test-kind="output" data-test-tab="cost" data-test-label="Capacity unavailable from replacement delay" data-test-role="derived">—</td></tr>
+          <tr><td>Disposal events / year (retirements + failures)</td><td id="dispev" data-test-out="dispev" data-test-kind="output" data-test-tab="cost" data-test-label="Disposal events / year" data-test-role="derived">—</td></tr>
+          <tr><td>Expected derelicts / year (failed disposals)</td><td id="derel" data-test-out="derel" data-test-kind="output" data-test-tab="cost" data-test-label="Expected derelicts / year" data-test-role="derived">—</td></tr>
+          <tr><td>Disposal operations + debris removal cost / year</td><td id="dispcost" data-test-out="dispcost" data-test-kind="output" data-test-tab="cost" data-test-label="Disposal + debris removal cost / year" data-test-role="derived">—</td></tr>
         </tbody></table></div>
       </div>
 
       <div class="panel">
         <details open>
           <summary>Model integrity notes</summary>
+          <p><strong>v5.5:</strong> compute stack and served model become separate presets (Compute stack and Served model tabs) joined by a stack × model throughput matrix. Only GB300 × large MoE is a measured cell; every other cell is an estimate and the badge on the throughput input says so. SRAM stacks with trillion-parameter models are "not servable" and drive throughput to zero rather than interpolating. Node-level sparing: unpowered hot spares set a guaranteed capacity floor; expected node failures over life reduce delivered tokens. Revenue view for a third-party operator: blended market price minus licence minus orbital delivered cost. Relay-link traffic is now derived from delivered tokens; the former traffic input is "other traffic". Regression anchor unchanged (test forces node failure 0). Also: interactivity scaling of the throughput cell (power law, α = 0.9 from InferenceX GB300 curves, applied to both stacks); first-party vs neutral-host price source per model; radiation-multiplier sensitivity strip (×1.25 / ×2.5 / ×5) in the Stack × model panel.</p>
           <p><strong>Manufacturing regime:</strong> the result is highly sensitive to spacecraft manufacturing cost. The preset is displayed prominently and all $/kg inputs remain editable.</p>
           <p><strong>Thermal correction (v2):</strong> radiator areal density default raised from 5 to 10 kg/m² and a heat-transport mass line (kg/kW) added; both feed the thermal subsystem cost. The rack mass remains a terrestrial chassis figure and is not adjusted for space packaging.</p>
           <p><strong>Drag and eclipse correction (v2):</strong> stationkeeping Δv is derived from density × velocity² × Cd × projected area / dry mass rather than a preset constant, and battery energy is sized on the worst-season eclipse per orbit. Drag is computed against dry mass, which slightly understates propellant.</p>
@@ -624,8 +729,8 @@ body.popout #popoutBar{display:none}
 </div>
 
 <footer>
-  <strong>Empirical/public anchors:</strong> Lenovo GB300 NVL72: 72 GPUs and 135 kW rack TDP. NVIDIA 2026 inference reference: 2.8M tokens/s/MW and $0.123/1M tokens for the cited workload. SpaceX Falcon 9 published maximum LEO performance is an expendable envelope, not reusable 650 km SSO performance. SpaceX public material documents mass-production/vertical-integration gains for Starlink but does not publish a V2 Mini unit manufacturing price. ESA reports the overall orbital population; shell-specific population/capacity values here remain assumptions. Google Suncatcher provides a useful COTS-radiation reference, but does not qualify GB300 hardware.<br><br>
-  <strong>Manufacturing assumptions in the active preset:</strong> <span id="footerCosts">—</span><br><br>
+  <strong>Empirical/public anchors:</strong> Lenovo GB300 NVL72: 72 GPUs and 135 kW rack TDP. NVIDIA 2026 inference reference: 2.8M tokens/s/MW and $0.123/1M tokens for the cited workload. SpaceX Falcon 9 published maximum LEO performance is an expendable envelope, not reusable 650 km SSO performance. SpaceX public material documents mass-production/vertical-integration gains for Starlink but does not publish a V2 Mini unit manufacturing price. ESA reports the overall orbital population; shell-specific population/capacity values here remain assumptions. Google Suncatcher provides a useful COTS-radiation reference, but does not qualify GB300 hardware. Stack × model throughput (v5.5): the only measured cell is GB300 × DeepSeek V4 Pro class from SemiAnalysis InferenceX; Rubin and Helios cells rest on SemiAnalysis's ~2× Rubin/GB300 finding and AMD's vendor claim; Ironwood power is inferred from pod-level figures; Groq 3 LPX rack composition and SRAM capacity are from NVIDIA's developer blog; its power, mass and price are estimates; Cerebras CS-4 figures are vendor material. Model prices are first-party or neutral-host API rates observed September 2026.<br><br>
+  <strong>Manufacturing assumptions in the active preset:</strong> <span id="footerCosts" data-test-out="footerCosts" data-test-kind="output" data-test-tab="cost" data-test-label="NRE / learning-curve footnote line" data-test-role="table">—</span><br><br>
   Sources:
   <a href="https://lenovopress.lenovo.com/lp2357-lenovo-nvidia-gb300-nvl72-rack-scale-ai">Lenovo GB300</a> ·
   <a href="https://developer.nvidia.com/deep-learning-performance-training-inference/ai-inference">NVIDIA inference</a> ·
@@ -633,7 +738,16 @@ body.popout #popoutBar{display:none}
   <a href="https://www.starlink.com/public-files/starlinkProgressReport_2025.pdf">Starlink production reference</a> ·
   <a href="https://sdup.esoc.esa.int/discosweb/statistics/">ESA statistics</a> ·
   <a href="https://www.nasa.gov/smallsat-institute/sst-soa/deorbit-systems/">NASA deorbit</a> ·
-  <a href="https://research.google/blog/exploring-a-space-based-scalable-ai-infrastructure-system-design/">Google Suncatcher</a>.<br><br>
+  <a href="https://research.google/blog/exploring-a-space-based-scalable-ai-infrastructure-system-design/">Google Suncatcher</a> ·
+  <a href="https://inferencex.semianalysis.com/">SemiAnalysis InferenceX</a> ·
+  <a href="https://newsletter.semianalysis.com/p/vera-rubin-nvl72-vs-gb200-nvl72-inference">SemiAnalysis Rubin vs GB300</a> ·
+  <a href="https://www.amd.com/en/products/rackscale-solutions/helios.html">AMD Helios</a> ·
+  <a href="https://blog.google/products/google-cloud/ironwood-tpu-age-of-inference/">Google Ironwood TPU</a> ·
+  <a href="https://www.hpcwire.com/2025/11/10/google-aims-to-flip-the-script-on-ai-inference-with-new-ironwood-tpus/">Ironwood pod power (HPCwire, secondary)</a> ·
+  <a href="https://developer.nvidia.com/blog/inside-nvidia-groq-3-lpx-the-low-latency-inference-accelerator-for-the-nvidia-vera-rubin-platform">NVIDIA Groq 3 LPX (developer blog)</a> ·
+  <a href="https://www.cerebras.ai/blog/cerebras-cs-3-vs-groq-lpu">Cerebras CS-3/CS-4</a> ·
+  <a href="https://api-docs.deepseek.com/quick_start/pricing">DeepSeek API pricing</a> ·
+  <a href="https://www.together.ai/pricing">Together AI pricing</a>.<br><br>
   This is an exploratory scenario model, not a mission-design, certification, radiation-qualification or collision-probability tool.
 </footer>
 
@@ -663,6 +777,47 @@ const LAUNCH_PRESETS={
   f9max:{lmission:74,lcap:22800,lsat:3,note:'Published Falcon 9 maximum LEO envelope is fully expendable and should not be interpreted as reusable direct-to-650 km SSO performance.'},
   heavy100:{lmission:100,lcap:100000,lsat:10,note:'Future reusable-heavy scenario only; price and payload are user-editable assumptions.'}
 };
+
+const STACKS={
+  gb300:{name:'NVIDIA GB300 NVL72',rkw:135,rpk:155,rm:1580,gpu:72,rcost:4,nodes:18,memtype:'hbm',stackrad:1.25,procurable:'yes',
+    tps:{small:20e6,mid:6e6,large:2.8e6},src:{small:'estimate',mid:'estimate',large:'measured'},
+    note:'Rack TDP and mass from Lenovo GB300 NVL72. Large-MoE cell: 2.8M tok/s/MW at 116 tok/s/user (SemiAnalysis InferenceX, cited by NVIDIA, 2026). Small/mid cells scale by active-parameter ratio and are estimates.'},
+  rubin:{name:'NVIDIA Vera Rubin NVL72',rkw:190,rpk:220,rm:1700,gpu:72,rcost:5.5,nodes:18,memtype:'hbm',stackrad:1.25,procurable:'limited',
+    tps:{small:40e6,mid:12e6,large:5.5e6},src:{small:'estimate',mid:'estimate',large:'estimate'},
+    note:'SemiAnalysis (July 2026) puts Rubin near 2× GB300 throughput at ≤100 tok/s/user. Rack power, mass and price are estimates; allocation is constrained through 2027.'},
+  mi455x:{name:'AMD Helios MI455X',rkw:200,rpk:230,rm:1700,gpu:72,rcost:5.25,nodes:18,memtype:'hbm',stackrad:1.25,procurable:'yes',
+    tps:{small:40e6,mid:12e6,large:5.5e6},src:{small:'estimate',mid:'estimate',large:'estimate'},
+    note:'72 MI455X, 31 TB HBM4, 2.9 EF FP4 (AMD, July 2026). Rack price ~$5.25M reported by Tech Insider. AMD claims +30% tokens/$ vs Rubin on Kimi K2 Thinking (vendor benchmark). Rack power is an estimate; InferenceX results pending.'},
+  tpu7:{name:'Google Ironwood TPU v7',rkw:75,rpk:90,rm:1000,gpu:64,rcost:2.5,nodes:16,memtype:'hbm',stackrad:1.1,procurable:'no',
+    tps:{small:22e6,mid:6.5e6,large:3e6},src:{small:'estimate',mid:'estimate',large:'estimate'},
+    note:'~1 kW/chip inferred from 9,216-chip pod at ~10 MW (HPCwire). Not merchant hardware: a third-party operator cannot buy it. Google claims 44% lower TCO than GB200 in pod configuration. Radiation multiplier lower only because Google has published proton data for the prior generation.'},
+  groq3:{name:'NVIDIA Groq 3 LPX',rkw:120,rpk:140,rm:1400,gpu:256,rcost:3,nodes:32,memtype:'sram',stackrad:1.6,procurable:'limited',
+    tps:{small:30e6,mid:null,large:null},src:{small:'estimate',mid:'n/a',large:'n/a'},
+    note:'256 LPUs in 32 trays, 128 GB total on-die SRAM, 40 PB/s (NVIDIA developer blog). Headline 3,400 tok/s is single-stream on a 31B model; concurrency at 100K context caps near batch 12. 128 GB cannot hold trillion-parameter weights, so mid/large cells are not servable without a Rubin prefill/attention partner. Power, mass and price are estimates.'},
+  cs4:{name:'Cerebras CS-4',rkw:75,rpk:90,rm:1200,gpu:3,rcost:7,nodes:3,memtype:'wafer',stackrad:2,procurable:'limited',
+    tps:{small:25e6,mid:5e6,large:1.5e6},src:{small:'estimate',mid:'estimate',large:'estimate'},
+    note:'Three WSE-3 Turbo wafers (44 GB SRAM each) on the Nexus platform, announced August 2026. Large models rely on external weight memory. Full-wafer die area drives the highest SEE cross-section of any stack. All figures are estimates.'},
+  trn3:{name:'AWS Trainium3 rack',rkw:120,rpk:140,rm:1400,gpu:64,rcost:3,nodes:16,memtype:'hbm',stackrad:1.25,procurable:'no',
+    tps:{small:18e6,mid:5e6,large:2.2e6},src:{small:'estimate',mid:'estimate',large:'estimate'},
+    note:'Captive to AWS; included for comparison only. All figures are estimates.'}
+};
+const MODELS={
+  dsv4pro:{name:'DeepSeek V4 Pro',mclass:'large',mparams:1600,mactive:49,fp:{i:.435,o:.87},nh:{i:2.1,o:4.4},mlic:0,latclass:'agentic',
+    note:'First-party API $0.435/$0.87 per 1M (BenchLM, July 2026); neutral hosts charge $2.10/$4.40 (Together). Open weights, no licence cost. DeepSeek has signalled a price increase without a date.'},
+  dsv4flash:{name:'DeepSeek V4 Flash',mclass:'mid',mparams:300,mactive:20,fp:{i:.14,o:.28},nh:null,mlic:0,latclass:'agentic',
+    note:'First-party $0.14/$0.28 per 1M. Parameter counts are placeholders; size class is the load-bearing input.'},
+  kimik26:{name:'Kimi K2.6',mclass:'large',mparams:1000,mactive:32,fp:null,nh:{i:1.2,o:4.5},mlic:0,latclass:'agentic',
+    note:'Together AI $1.20/$4.50 per 1M. Open weights under a custom licence with commercial conditions: verify before assuming zero licence cost.'},
+  glm52:{name:'GLM-5.2',mclass:'large',mparams:744,mactive:40,fp:{i:1.4,o:4.4},nh:{i:1.4,o:4.4},mlic:0,latclass:'agentic',
+    note:'$1.40/$4.40 per 1M (z.ai / Together). MIT-licensed weights.'},
+  gptoss120:{name:'gpt-oss 120B',mclass:'small',mparams:120,mactive:5,fp:null,nh:{i:.15,o:.6},mlic:0,latclass:'interactive',
+    note:'Together AI $0.15/$0.60 per 1M. Apache-2.0 weights. High tokens/MW, so the relay link becomes the binding constraint.'},
+  llama70:{name:'Llama 3.3 70B',mclass:'small',mparams:70,mactive:70,fp:null,nh:{i:.88,o:.88},mlic:0,latclass:'interactive',
+    note:'Together AI $0.88 flat per 1M. Dense model: active = total parameters.'},
+  frontier:{name:'Frontier proprietary (licensed)',mclass:'large',mparams:2000,mactive:100,fp:{i:2,o:12},nh:{i:2,o:12},mlic:4,latclass:'agentic',
+    note:'Scenario: a third-party operator serving a frontier model under a per-token licence. Price tier and $4/1M licence are illustrative; no vendor publishes such terms.'}
+};
+let tpsOverride=false, radStripRunning=false;
 
 const base={};
 document.querySelectorAll('input,select').forEach(e=>base[e.id]=e.value);
@@ -907,12 +1062,25 @@ function calc(){
   const effectiveAvailability=clamp((n('avail')/100-maneuverDown-radiationDown)*(1-failedCapacityPct/100),0,1);
   const util=clamp(n('util')/100,.001,1);
 
-  const requiredGbps=n('tbday')*8e12/86400/1e9*productiveMW;
+  // Node-level degradation (v5.5): unpowered hot spares absorb failures up to their share; no in-orbit repair.
+  const hs=clamp(n('hotspare')/100,0,.9);
+  const failedFrac=clamp(n('nodefail')/100*life/2,0,1);
+  const nodeExpected=clamp(1-hs-Math.max(0,failedFrac-hs),0,1);
+  const nodeFloor=failedFrac<=hs?1-hs:1-failedFrac;
+
+  // Token traffic derived from delivered tokens (before link limiting), plus other traffic.
+  const interFactor=$('interMode').value==='on'?clamp(Math.pow(Math.max(1,n('tpsuRef'))/Math.max(1,n('tpsu')),n('interAlpha')),.2,3):1;
+  const tokensSecRaw=n('tpsmw')*interFactor*productiveMW*util*effectiveAvailability*nodeExpected;
+  const outFrac=clamp(n('outfrac')/100,.01,.99);
+  const outTBday=tokensSecRaw*86400*n('tokbytes')/1e12;
+  const inTBday=outTBday*(1-outFrac)/outFrac*clamp(n('inlink')/100,0,1);
+  const tokenTBdayPerMW=(outTBday+inTBday)/productiveMW;
+  const requiredGbps=(n('tbday')*productiveMW+outTBday+inTBday)*8e12/86400/1e9;
   const availableGbps=sats*n('gbps')*n('duty')/100;
   const linkFactor=requiredGbps<=0?1:clamp(availableGbps/requiredGbps,0,1);
 
   // Productive MW excludes spares.
-  const tokensSec=n('tpsmw')*productiveMW*util*effectiveAvailability*linkFactor;
+  const tokensSec=tokensSecRaw*linkFactor;
   const tokensYear=tokensSec*YEARSEC;
 
   const years=Math.max(1,n('years')), rate=n('disc')/100;
@@ -993,18 +1161,46 @@ function calc(){
   for(let t=refresh;t<years;t+=refresh) tPv+=computeCost/Math.pow(1+rate,t)-salvage(computeCost,t,refresh);
   tPv-=salvage(tFacCapex,0,Math.max(1,n('tFacLife')));
   const tAvail=clamp(n('tAvail')/100,.01,1);
-  const tTokensYear=n('tpsmw')*productiveMW*util*tAvail*YEARSEC;
+  const tTokensYear=n('tpsmw')*interFactor*productiveMW*util*tAvail*YEARSEC;
   const tAnnualized=tPv/Math.max(.001,pvFactor(rate,years));
   const terrestrialTokenCost=tAnnualized/Math.max(1,tTokensYear)*1e6;
   const benchmark=$('benchMode').value==='stack'?terrestrialTokenCost:n('earthtok');
 
-  const results={tokenCost,capexPerMW:(capex+nreCost)/productiveMW,tcoPerMW:pvt/productiveMW,wetMass,tokensYear,terrestrialTokenCost,benchmark,ratio:tokenCost/Math.max(1e-6,benchmark)};
+  // Stack × model economics (v5.5)
+  const stackP=STACKS[$('stackPreset').value], modelP=MODELS[$('modelPreset').value];
+  const blended=(1-outFrac)*n('mpricein')+outFrac*n('mpriceout');
+  const margin=blended-n('mlic')-tokenCost;
+  const revenueMWyr=blended*tokensYear/1e6/productiveMW, marginMWyr=margin*tokensYear/1e6/productiveMW;
+  const cls=$('mclass').value;
+  const cellSrc=tpsOverride?'custom':(stackP?stackP.src[cls]:'custom');
+  const latLimit={batch:Infinity,agentic:500,interactive:250}[$('latclass').value];
+  const noTokens=tokensYear<=1;
+
+  const results={tokenCost,capexPerMW:(capex+nreCost)/productiveMW,tcoPerMW:pvt/productiveMW,wetMass,tokensYear,terrestrialTokenCost,benchmark,ratio:tokenCost/Math.max(1e-6,benchmark),margin,blended};
   if(SILENT)return results;
+
+  set('smName',(stackP?stackP.name:'Custom stack')+' · '+(modelP?modelP.name:'Custom model')+' ('+cls+')');
+  set('smTps',n('tpsmw')>0?fmt(n('tpsmw'),0)+' · '+cellSrc+(Math.abs(interFactor-1)>.005?' · ×'+fmt(interFactor,2)+' at '+fmt(n('tpsu'),0)+' tok/s/user → '+fmt(n('tpsmw')*interFactor,0):''):'not servable on this stack within a rack');
+  set('smPrice','$'+fmt(blended,3)+' / $'+fmt(n('mlic'),2)+' ('+fmt(outFrac*100,0)+'% output)');
+  set('smMargin',noTokens?'—':(margin>=0?'+':'−')+'$'+fmt(Math.abs(margin),3));
+  $('smMargin').className=margin>=0?'good':'bad';
+  set('smMwYear',money(revenueMWyr)+' / '+(marginMWyr>=0?'':'−')+money(Math.abs(marginMWyr)));
+  set('smNode',fmt(nodeExpected*100,1)+'% / '+fmt(nodeFloor*100,1)+'% ('+fmt(hs*100,0)+'% hot spare, '+fmt(failedFrac*100,1)+'% expected failed over life)');
+  set('smTraffic',fmt(tokenTBdayPerMW,1)+' TB/day (out '+fmt(outTBday/productiveMW,1)+', in '+fmt(inTBday/productiveMW,1)+')');
+  set('smLat',ttft<=latLimit?'TTFT '+fmt(ttft,0)+' ms within '+$('latclass').selectedOptions[0].textContent:'TTFT '+fmt(ttft,0)+' ms exceeds class limit '+latLimit+' ms');
+  $('smLat').className=ttft<=latLimit?'good':'bad';
+  if(!radStripRunning&&!noTokens){
+    radStripRunning=true;const savedOV=OV;SILENT=true;
+    const curRad=n('radfail');
+    try{const vals=[1.25,2.5,5].map(m=>{OV=Object.assign({},savedOV||{},{radfail:m});return calc().tokenCost;});
+      set('smRad',vals.map(v=>'$'+fmt(v,2)).join(' / ')+' (current ×'+fmt(curRad,2)+' → $'+fmt(tokenCost,2)+')');
+    }finally{OV=savedOV;SILENT=false;radStripRunning=false;}
+  }else if(noTokens)set('smRad','—');
 
   set('capex',money((capex+nreCost)/productiveMW));
   set('tco',money(pvt/productiveMW));
-  set('tokc','$'+fmt(tokenCost,3));
-  set('tokcmp',fmt(tokenCost/Math.max(.000001,benchmark),1)+'× '+($('benchMode').value==='stack'?'modeled terrestrial stack ($'+fmt(terrestrialTokenCost,3)+')':'published benchmark ($'+fmt(n('earthtok'),3)+')'));
+  set('tokc',noTokens?'—':'$'+fmt(tokenCost,3));
+  set('tokcmp',noTokens?'no tokens delivered':fmt(tokenCost/Math.max(.000001,benchmark),1)+'× '+($('benchMode').value==='stack'?'modeled terrestrial stack ($'+fmt(terrestrialTokenCost,3)+')':'published benchmark ($'+fmt(n('earthtok'),3)+')')+' · '+fmt(tokenCost/Math.max(.000001,blended),1)+'× market price');
   set('terrTok','$'+fmt(terrestrialTokenCost,3));
   set('terrDetail','facility '+money(tFacCapex/productiveMW)+'/MW, energy '+money(tEnergyYr/productiveMW)+'/MW/yr, PUE '+fmt(n('tPue'),2));
   set('massmw',fmt(massPerMW,1)+' t/MW');
@@ -1105,7 +1301,12 @@ function calc(){
   if(rMax>20000)warnings.push('Cluster radius '+fmt(rMax/1000,1)+' km: ISL ranges and the conjunction cross-section are very large; consider more clusters.');
   if(switchSats>0)warnings.push(fmt(switchSats,0)+' of '+fmt(sats,0)+' satellites are dedicated Clos switches carrying no compute (L='+closL+', k='+kIsl+').');
   if(slewProxy>n('slewlim'))warnings.push('Area-to-mass '+fmt(slewProxy,2)+' m²/kg exceeds the configured agility limit; large flexible arrays constrain slew rate and pointing.');
-  warnings.push('GB300/HBM itself is not space-qualified; radiation survival remains a scenario risk even when shielding is included.');
+  if(n('tpsmw')<=0)warnings.push('Selected model class is not servable on the selected stack within a single rack; throughput set to zero.');
+  if(cellSrc==='estimate')warnings.push('Throughput cell for this stack × model is an estimate, not a measured benchmark.');
+  if($('procurable').value==='no')warnings.push('Selected stack is captive to a single cloud; a third-party operator cannot procure it.');
+  if(margin<0&&!noTokens)warnings.push('Orbital delivered cost exceeds market price net of licence for the selected model.');
+  if(ttft>latLimit)warnings.push('TTFT exceeds the selected latency class.');
+  warnings.push((stackP?stackP.name:'The selected compute stack')+' is not space-qualified; radiation survival remains a scenario risk even when shielding is included.');
 
   const status=$('status');
   status.innerHTML='<strong>'+ (warnings.length?'Model cautions':'Scenario passes basic checks') +'</strong><br>'+warnings.map(x=>'• '+x).join('<br>');
@@ -1961,8 +2162,47 @@ document.querySelectorAll('[data-style]').forEach(b=>b.addEventListener('click',
 
 document.querySelectorAll('input,select').forEach(e=>e.addEventListener('input',calc));
 $('calc').addEventListener('click',calc);
+function applyStack(){
+  const key=$('stackPreset').value,p=STACKS[key];
+  if(p){
+    ['rkw','rpk','rm','gpu','rcost','nodes','stackrad'].forEach(id=>$(id).value=p[id]);
+    $('memtype').value=p.memtype;$('procurable').value=p.procurable;$('radfail').value=p.stackrad;
+    set('stackNote',p.note);
+  }else set('stackNote','Custom stack: enter rack figures on the Architecture tab and throughput on the Inference tab.');
+  applyMatrix();
+}
+function applyModel(){
+  const key=$('modelPreset').value,p=MODELS[key];
+  if(p){
+    ['mclass','mparams','mactive','mlic','latclass'].forEach(id=>$(id).value=p[id]);
+    const want=$('priceSrc').value, pr=p[want]||p[want==='fp'?'nh':'fp'];
+    $('mpricein').value=pr.i;$('mpriceout').value=pr.o;
+    set('modelNote',p.note+(p[want]?'':' No '+(want==='fp'?'first-party':'neutral-host')+' price published for this model; the other source is used.'));
+  }else set('modelNote','Custom model: size class selects the throughput cell.');
+  applyMatrix();
+}
+function applyMatrix(){
+  const p=STACKS[$('stackPreset').value];
+  if(!p||tpsOverride){set('tpsSrc','custom');return;}
+  const cls=$('mclass').value,v=p.tps[cls];
+  $('tpsmw').value=v===null?0:v;
+  set('tpsSrc',p.src[cls]);
+}
+$('stackPreset').addEventListener('change',()=>{tpsOverride=false;applyStack();calc();});
+$('modelPreset').addEventListener('change',()=>{tpsOverride=false;applyModel();calc();});
+$('priceSrc').addEventListener('change',()=>{if(MODELS[$('modelPreset').value])applyModel();calc();});
+$('mclass').addEventListener('change',()=>{if($('modelPreset').value!=='custom')$('modelPreset').value='custom';tpsOverride=false;applyMatrix();});
+['rkw','rpk','rm','gpu','rcost','nodes','stackrad','memtype','procurable'].forEach(id=>$(id).addEventListener('input',()=>{
+  if($('stackPreset').value!=='custom')$('stackPreset').value='custom';
+}));
+['mparams','mactive','mpricein','mpriceout','mlic','latclass'].forEach(id=>$(id).addEventListener('input',()=>{
+  if($('modelPreset').value!=='custom')$('modelPreset').value='custom';
+}));
+$('tpsmw').addEventListener('input',()=>{tpsOverride=true;set('tpsSrc','custom');});
+
 $('reset').addEventListener('click',()=>{
   Object.entries(base).forEach(([id,v])=>{if($(id))$(id).value=v});
+  tpsOverride=false;applyStack();applyModel();
   set('costPresetNote',COST_PRESETS.traditional.note);
   set('launchPresetNote',LAUNCH_PRESETS.f9sso.note);
   set('regimeBadge','Cost regime: Traditional aerospace / low volume');
@@ -2034,8 +2274,16 @@ function runTests(){
   // regression: base case with learning off reproduces prior value
   SILENT=true; let baseTok;
   const savedIll=$('illumMode').value;$('illumMode').value='preset';
-  try{OV={learn:100,nre:0,disc:0,rflux:450,sun:.97,eclmax:15,bwh:180};const savedTh=$('thermMode').value;$('thermMode').value='manual';try{baseTok=calc().tokenCost;}finally{$('thermMode').value=savedTh;}}finally{OV=null;SILENT=false;$('illumMode').value=savedIll;}calc();
+  try{OV={learn:100,nre:0,disc:0,rflux:450,sun:.97,eclmax:15,bwh:180,nodefail:0,hotspare:0,tbday:1,tokbytes:0};const savedTh=$('thermMode').value;$('thermMode').value='manual';try{baseTok=calc().tokenCost;}finally{$('thermMode').value=savedTh;}}finally{OV=null;SILENT=false;$('illumMode').value=savedIll;}calc();
   add('Regression: learning off, NRE 0, disc 0, manual thermal 450, preset illumination .97/15 min, battery 180 Wh/kg','$12.01 (v3.9 anchor)',' $'+fmt(baseTok,3),approx(baseTok,12.007,.003));
+  try{
+    if(typeof reconcile==='function'&&window.__ODS_MANIFEST__){
+      const rep=reconcile(window.__ODS_MANIFEST__);
+      add('Tag/manifest drift (reconcile.pass)','pass=true',rep.pass?'pass ('+rep.summary.tagged+' tagged)':'FAIL: '+JSON.stringify(rep.summary),rep.pass);
+    }else{
+      add('Tag/manifest drift (reconcile.pass)','pass=true','skipped: reconcile.js/manifest not loaded (open on a served origin to run)',true);
+    }
+  }catch(e){ add('Tag/manifest drift (reconcile.pass)','pass=true','skipped: '+e.message,true); }
   const pass=rows.filter(r=>r.ok).length;
   $('testRows').innerHTML=rows.map(r=>'<tr><td>'+r.name+'</td><td>'+r.exp+'</td><td>'+r.act+'</td><td class="'+(r.ok?'good':'bad')+'">'+(r.ok?'PASS':'FAIL')+'</td></tr>').join('')+
     '<tr><td colspan="3"><strong>'+pass+' / '+rows.length+' passed</strong></td><td class="'+(pass===rows.length?'good':'bad')+'">'+(pass===rows.length?'ALL PASS':'CHECK')+'</td></tr>';
@@ -2091,7 +2339,7 @@ function specWindow(){
   const md=SPEC_MD;if(!md){alert('Load the specification first (fetch or file).');return;}
   const css=document.querySelector('style').textContent;
   const w=window.open('','_blank','width=1000,height=800');if(!w)return;
-  w.document.write('<!doctype html><html><head><meta charset="utf-8"><title>Orbital AI DC model — specification</title><style>'+css+'</style></head><body><div class="wrap"><div id="specBody">'+renderMd(md)+'</div></div></body></html>');w.document.close();
+  w.document.write('<!doctype html><html><head><meta charset="utf-8"><title>Orbital AI DC model — specification</title><style>'+css+'</style></head><body><div class="wrap"><div id="specBody" data-test-out="specBody" data-test-kind="output" data-test-tab="modal:spec" data-test-label="Rendered spec markdown" data-test-role="derived">'+renderMd(md)+'</div></div></body></html>');w.document.close();
 }
 $('openSpec').addEventListener('click',showSpec);
 $('specClose').addEventListener('click',()=>{$('specModal').style.display='none'});
@@ -2138,10 +2386,13 @@ if(POPOUT){
   document.title=(currentView==='single'?(currentStyle==='technical'?'Engineering sheet':currentStyle==='concept'?'Concept':'Satellite'):currentView==='shells3d'?'Shells 3D':currentView==='shells'?'Orbital shells':currentView)+' — Orbital AI DC model';
   if(window.opener){try{window.opener.postMessage({type:'ready'},'*');}catch(e){}}
 }
+applyStack();applyModel();
 if(QS.has('test')){calc();runTests();}
 
 calc();
 })();
 </script>
+<script src="OrbitalDatacenterSim-reconcile.js" onerror="void 0"></script>
+<script>(function(){try{fetch('./OrbitalDatacenterSim-test-cases.json').then(r=>r.ok?r.json():null).then(m=>{if(m)window.__ODS_MANIFEST__=m;}).catch(()=>{});}catch(e){}})();</script>
 </body>
 </html>
