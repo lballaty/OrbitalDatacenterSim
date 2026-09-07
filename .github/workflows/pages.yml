@@ -37,6 +37,16 @@ jobs:
           cp index.html site/
           cp orbital_ai_datacenter_model_specification.md site/
           cp README.md site/ 2>/dev/null || true
+          # Publish the agent test artifacts beside the tool, at the site root, so that:
+          #   * the in-page self-test can load ./OrbitalDatacenterSim-reconcile.js and
+          #     fetch ./OrbitalDatacenterSim-test-cases.json (same origin, no CORS), and
+          #   * a UI test agent that can see only the running page can fetch the manifest
+          #     and plan from the page's own origin.
+          # These are copied to the site root even though they live in tests/ in the repo,
+          # because index.html references them with root-relative ./ paths.
+          cp tests/OrbitalDatacenterSim-test-cases.json site/
+          cp tests/OrbitalDatacenterSim-reconcile.js    site/
+          cp tests/OrbitalDatacenterSim-test-plan.md    site/ 2>/dev/null || true
           touch site/.nojekyll
 
       - uses: actions/upload-pages-artifact@v3
