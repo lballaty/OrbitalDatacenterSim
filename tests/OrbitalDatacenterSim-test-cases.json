@@ -1751,7 +1751,7 @@
           "util",
           "tpsmw"
         ],
-        "default": "util",
+        "default": "lmission",
         "context": "break-even modal"
       },
       {
@@ -3865,6 +3865,7 @@
       "At this altitude, active end-of-life disposal should be treated as mandatory.",
       "Auto disposal selected a controlled re-entry stage: dry mass exceeds the 800 kg demisability threshold.",
       "Expected ~2.9 derelict satellites over the analysis horizon from failed disposals.",
+      "Orbital delivered cost exceeds market price net of licence for the selected model.",
       "GB300/HBM is not space-qualified; radiation survival remains a scenario risk."
     ],
     "stack_model_baseline": {
@@ -3872,11 +3873,11 @@
       "smName": "NVIDIA GB300 NVL72 . DeepSeek V4 Pro (large)",
       "tpsSrc": "measured",
       "smTps": "2,800,000 . measured",
-      "smPrice": "$0.544 / $0.00 (25% output)",
+      "smPrice": "$0.544 / $0 (25% output)",
       "smMargin": "-$14.163",
       "smNode": "95% / 95% (0% hot spare, 5% expected failed over life)",
       "smTraffic": "1.1 TB/day (out 0.7, in 0.4)",
-      "smRad": "$14.71 / $15.85 / $18.19 (current x1.25 -> $14.71)",
+      "smRad": "$14.71 / $15.85 / $18.17 (current x1.25 -> $14.71)",
       "key_variants": {
         "gb300_x_gptoss120": "tokc $2.059, tpsmw 20,000,000 estimate, 7.8x market",
         "groq3_x_gptoss120": "tokc $1.436, tpsmw 30,000,000 estimate, nsat 10",
@@ -3906,14 +3907,14 @@
       "coverage_pct": "float"
     },
     "coverage_manifest": {
-      "numeric_inputs_tested": "count / 132",
-      "selects_tested": "count / 20 (18 main + 2 modal)",
+      "numeric_inputs_tested": "count / 146",
+      "selects_tested": "count / 28 (26 main + 2 modal)",
       "checkboxes_tested": "count / 9",
       "buttons_exercised": "count",
       "modals_exercised": "3 / 3 (spec, break-even, self-tests)",
-      "views_rendered": "count / 5 main + 2 styles",
-      "reasonableness_rules_run": "count / 22",
-      "display_readouts_tested": "count / 81"
+      "views_rendered": "count / 5 main + 3 styles",
+      "reasonableness_rules_run": "count / 36",
+      "display_readouts_tested": "count / 93"
     },
     "findings": [
       {
