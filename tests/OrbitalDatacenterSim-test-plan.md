@@ -1,7 +1,7 @@
 # Test Plan — Orbital AI Data Center Economics Model
 **Target:** https://lballaty.github.io/OrbitalDatacenterSim/ (app v5.5 at authoring)
-**Plan version:** 1.3.1 · **Authored:** 2026-09-05 · **Revised:** 2026-09-05 · **Status:** Ready for Review
-**Machine-readable companion:** `OrbitalDatacenterSim-test-cases.json` (catalog_version **1.3.1** — the executable catalog this document wraps)
+**Plan version:** 1.3.2 · **Authored:** 2026-09-05 · **Revised:** 2026-09-05 · **Status:** Ready for Review
+**Machine-readable companion:** `OrbitalDatacenterSim-test-cases.json` (catalog_version **1.3.2** — the executable catalog this document wraps)
 **Flat reference indexes:** `OrbitalDatacenterSim-element-index.csv` (232 interactive elements) · `OrbitalDatacenterSim-display-index.csv` (93 read-only readouts/warnings)
 **Owner:** Libor Ballaty · Arion Networks s.r.o.
 
@@ -51,7 +51,7 @@ Server-side pieces that are not part of the page: the GitHub Actions catalog bui
 - Any **self-test FAIL** (S7.8) — these are the app's own regression anchors and outrank everything else.
 - Any KPI **drift beyond ±2%** from the oracle baseline.
 - **Download** and **external-fetch** side-effects (S8.3, S8.4, S10) — permissioned actions.
-- The `reconcile.pass` self-test row is currently **skipped** (not run) on the deployed page — see §10.7.
+- The `reconcile.pass` self-test row was **skipped** on the deployed page because the workflow did not publish the manifest/reconciler to the site root; the updated `.github/workflows/pages.yml` in this revision publishes them, which should let the row run — re-verify on the next deploy (§10.7).
 - The JSON companion's `report_schema.coverage_manifest` still carries **pre-v5.5 denominators** (`/132` inputs, `/20` selects, `/81` readouts). Update them to `/146`, `/28`, `/93` — see §10.9.
 
 ---

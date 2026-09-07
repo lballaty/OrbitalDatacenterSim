@@ -4,7 +4,7 @@
     "target": "Orbital AI Data Center Economics Model",
     "url": "https://lballaty.github.io/OrbitalDatacenterSim/",
     "app_version_at_authoring": "v5.5",
-    "catalog_version": "1.3.1",
+    "catalog_version": "1.3.2",
     "authored": "2026-09-05",
     "author": "Test plan generated for Libor Ballaty (Arion Networks s.r.o.)",
     "status": "Ready for Review",
@@ -16,14 +16,21 @@
       "Derived/computed fields are read-only in their default mode and only become editable in an alternate mode (see mode_gated_inputs).",
       "v1.3.0 (app v5.5): added Compute stack and Served model tabs; 14 numeric inputs, 8 selects, 13 readouts; stack x model throughput matrix; interactivity scaling; price-source selector; node-level sparing; radiation sensitivity strip. tpsmw min changed 1->0 and it is now matrix-driven unless manually overridden.",
       "v1.3.1: tab/view/style/pop-out buttons given real DOM ids and declared (tab_buttons, view_style_buttons, popout_buttons) so reconcile.js covers them; reconcile.js updated to consume tab_buttons and view_style_buttons.",
-      "v1.3.1 tagging complete: index.html carries data-test-* on all 325 elements; reconcile(MANIFEST).pass wired into Run self-tests (9/9 on served origin). tag_contract.tabs vocabulary now includes 'stack' and 'model'."
+      "v1.3.1 tagging complete: index.html carries data-test-* on all 325 elements; reconcile(MANIFEST).pass wired into Run self-tests (9/9 on served origin). tag_contract.tabs vocabulary now includes 'stack' and 'model'.",
+      "v1.3.2: de-duplicated tokcmp in display_registry (94->93 entries, matching the single DOM element and the plan's 93 readouts); added meta.served_artifacts documenting the same-origin test files published by the Pages workflow."
     ],
     "changelog": [
       "1.2.0: designated as canonical manifest; added tag_contract (in-page data-test-* attribute schema) + reconciliation workflow. Companion: OrbitalDatacenterSim-reconcile.js, OrbitalDatacenterSim-tagging-convention.md.",
       "1.1.0: added display_registry (81 non-interactive readouts the user sees) + suite S12; catalog_version bump.",
       "1.0.0: initial interactive control registry + suites S1-S11 + 22 reasonableness rules."
     ],
-    "role": "Canonical MANIFEST for the app: the single source of rich per-element detail (validity rules, expected direction, formulas, baselines) that the in-page data-test-* tags cannot hold. The reconciliation script (OrbitalDatacenterSim-reconcile.js) checks the live DOM tags against this manifest so the two never drift."
+    "role": "Canonical MANIFEST for the app: the single source of rich per-element detail (validity rules, expected direction, formulas, baselines) that the in-page data-test-* tags cannot hold. The reconciliation script (OrbitalDatacenterSim-reconcile.js) checks the live DOM tags against this manifest so the two never drift.",
+    "served_artifacts": {
+      "note": "Published at the site root by .github/workflows/pages.yml so a UI-only agent can fetch them same-origin.",
+      "manifest": "./OrbitalDatacenterSim-test-cases.json",
+      "plan": "./OrbitalDatacenterSim-test-plan.md",
+      "reconciler": "./OrbitalDatacenterSim-reconcile.js"
+    }
   },
   "runner_protocol": {
     "capabilities_required": [
@@ -2215,14 +2222,6 @@
         "baseline": "$13.971",
         "check": "≥0; ↓ with util & tpsmw",
         "rules": "R2,R3,R6,R7"
-      },
-      {
-        "id": "tokcmp",
-        "region": "Scenario result",
-        "shows": "Multiple vs terrestrial",
-        "baseline": "56.5×",
-        "check": "= tokc/terrTok; >1 in normal ranges",
-        "rules": "R13"
       },
       {
         "id": "terrTok",
