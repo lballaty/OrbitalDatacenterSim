@@ -92,10 +92,18 @@ body.popout #popoutBar{display:none}
     <button id="breakeven" data-test-id="breakeven" data-test-kind="button" data-test-tab="modal:breakeven" data-test-label="Open break-even solver">Break-even solver</button>
     <button id="runtests" data-test-id="runtests" data-test-kind="button" data-test-tab="modal:test" data-test-label="Run self-tests">Run self-tests</button>
     <button id="openSpec" data-test-id="openSpec" data-test-kind="button" data-test-tab="modal:spec" data-test-label="Specification (open)">Specification</button>
+    <button id="openPlanned" data-test-id="openPlanned" data-test-kind="button" data-test-tab="global" data-test-label="Planned builds">Planned builds</button>
     <span class="badge">Base architecture: one 135 kW / 72-GPU rack per satellite</span>
     <span class="badge" id="regimeBadge" data-test-out="regimeBadge" data-test-kind="output" data-test-tab="global" data-test-label="Active manufacturing cost regime badge" data-test-role="derived">Cost regime: Traditional aerospace / low volume</span>
   </div>
 
+  <div id="plannedModal" style="display:none;position:fixed;inset:0;z-index:50;background:rgba(0,0,0,.55)">
+    <div style="position:absolute;inset:4vh 6vw;background:var(--panel,#151b23);border:1px solid var(--line,#303843);border-radius:10px;display:flex;flex-direction:column;overflow:hidden">
+      <div style="display:flex;justify-content:space-between;align-items:center;gap:10px;padding:10px 14px;border-bottom:1px solid var(--line,#303843);flex-wrap:wrap"><strong>Planned orbital AI datacenters</strong>
+        <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center"><span class="badge" id="plannedAsOf">—</span><label style="display:flex;align-items:center;gap:4px;font-size:12px;color:var(--muted,#9da7b3)">load file: <input type="file" id="plannedFile" data-test-id="plannedFile" data-test-kind="file" data-test-tab="modal:planned" data-test-label="Load planned-builds file" accept=".json,application/json" style="font-size:11px"></label><button id="plannedClose" data-test-id="plannedClose" data-test-kind="button" data-test-tab="modal:planned" data-test-label="Close planned builds">Close</button></div></div>
+      <div id="plannedBody" style="overflow:auto;padding:14px 18px"></div>
+    </div>
+  </div>
   <div id="specModal" style="display:none;position:fixed;inset:0;z-index:50;background:rgba(0,0,0,.55)">
     <div style="position:absolute;inset:4vh 6vw;background:var(--panel);border:1px solid var(--line);border-radius:10px;display:flex;flex-direction:column;overflow:hidden">
       <div class="row" style="padding:10px 14px;border-bottom:1px solid var(--line)"><strong>Model specification</strong>
@@ -2393,6 +2401,41 @@ calc();
 })();
 </script>
 <script src="OrbitalDatacenterSim-reconcile.js" onerror="void 0"></script>
-<script>(function(){try{fetch('./OrbitalDatacenterSim-test-cases.json').then(r=>r.ok?r.json():null).then(m=>{if(m)window.__ODS_MANIFEST__=m;}).catch(()=>{});}catch(e){}})();</script>
+<script>(function(){try{fetch('./OrbitalDatacenterSim-test-cases.json').then(r=>r.ok?r.json():null).then(m=>{if(m)window.__ODS_MANIFEST__=m;}).catch(()=>{});}catch(e){}})();
+/* ===== Planned builds (orbital) — self-contained, defensive ===== */
+(function(){
+  function init(){
+    var ob=document.getElementById('openPlanned'); if(!ob) return;
+    var PLANNED=null;
+    function _set(id,t){var e=document.getElementById(id);if(e)e.textContent=t;}
+    function esc(t){return String(t==null?'':t).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
+    function cb(c){var cls=c==='known'?'ref':c==='reported'?'baseline':'scenario';return '<span class="badge '+cls+'" title="'+(c==='known'?'operator/official':c==='reported'?'press/analyst':'our estimate')+'">'+(c||'?')+'</span>';}
+    function fv(f){return (f&&typeof f==='object'&&'value'in f)?f:null;}
+    function cell(f){var v=fv(f);if(!v||v.value==null)return '<span class="muted">—</span>';return esc(v.value)+' '+cb(v.confidence);}
+    function detail(r){var h='<div style="display:grid;grid-template-columns:auto 1fr;gap:3px 12px">';Object.keys(r).forEach(function(k){if(k==='id'||k==='operator')return;var v=fv(r[k]);if(!v)return;h+='<div style="color:var(--muted,#9da7b3)">'+esc(k.replace(/_/g,' '))+'</div><div>'+esc(v.value==null?'—':v.value)+' '+cb(v.confidence)+(v.source?' · <a href="'+esc(v.source)+'" target="_blank" rel="noopener">source</a>':'')+(v.note?' · <em>'+esc(v.note)+'</em>':'')+(v.as_of?' <span class="muted">('+esc(v.as_of)+')</span>':'')+'</div>';});return h+'</div>';}
+    function render(data){PLANNED=data;var recs=data.records||[];
+      _set('plannedAsOf','data as of '+(data.generated||'?')+' · '+recs.length+' projects · refresh: scripts/research_planned.py');
+      var cols=[['operator','Operator'],['program','Program'],['satellites_planned','Satellites'],['orbit','Orbit'],['compute','Compute'],['first_launch','First launch'],['status','Status']];
+      var left={operator:1,program:1,orbit:1,compute:1,status:1};
+      var html='<p class="muted" style="font-size:12px;margin:0 0 10px">'+esc(data.note||'')+' Confidence: '+cb('known')+' operator/official · '+cb('reported')+' press/analyst · '+cb('inferred')+' our estimate. Lead list to verify, not authoritative.</p>';
+      html+='<div style="overflow:auto"><table style="width:100%;border-collapse:collapse"><thead><tr>'+cols.map(function(c){return '<th style="text-align:'+(left[c[0]]?'left':'right')+';padding:7px;border-bottom:1px solid var(--line,#303843)">'+c[1]+'</th>';}).join('')+'<th></th></tr></thead><tbody>';
+      recs.forEach(function(r,i){html+='<tr>'+cols.map(function(c){var val=c[0]==='operator'?esc(r.operator||'—'):cell(r[c[0]]);return '<td style="text-align:'+(left[c[0]]?'left':'right')+';padding:7px;border-bottom:1px solid var(--line,#303843)">'+val+'</td>';}).join('')+'<td style="padding:7px;border-bottom:1px solid var(--line,#303843)"><button class="pMore" data-i="'+i+'" style="padding:3px 8px">details</button></td></tr><tr id="pd'+i+'" style="display:none"><td colspan="'+(cols.length+1)+'" style="background:var(--panel3,#10161e)"><div style="padding:8px 10px;font-size:12px" id="pdc'+i+'"></div></td></tr>';});
+      html+='</tbody></table></div>';
+      document.getElementById('plannedBody').innerHTML=html;
+      Array.prototype.forEach.call(document.querySelectorAll('.pMore'),function(b){b.addEventListener('click',function(){var i=b.getAttribute('data-i'),row=document.getElementById('pd'+i),show=row.style.display==='none';row.style.display=show?'':'none';if(show&&!row.getAttribute('data-b')){row.setAttribute('data-b','1');document.getElementById('pdc'+i).innerHTML=detail(recs[i]);}});});
+    }
+    function show(){document.getElementById('plannedModal').style.display='block';if(PLANNED){render(PLANNED);return;}
+      fetch('./data/planned_orbital.json',{cache:'no-cache'}).then(function(r){if(!r.ok)throw 0;return r.json();}).then(render).catch(function(){
+        document.getElementById('plannedBody').innerHTML='<p class="muted">No data at <code>./data/planned_orbital.json</code>. On a served origin it loads automatically; from disk use "load file", or run <code>scripts/research_planned.py orbital</code> locally and commit.</p>';_set('plannedAsOf','no data loaded');});
+    }
+    ob.addEventListener('click',show);
+    var cbtn=document.getElementById('plannedClose');if(cbtn)cbtn.addEventListener('click',function(){document.getElementById('plannedModal').style.display='none';});
+    var pm=document.getElementById('plannedModal');if(pm)pm.addEventListener('click',function(e){if(e.target===pm)pm.style.display='none';});
+    var pf=document.getElementById('plannedFile');if(pf)pf.addEventListener('change',function(e){var f=e.target.files&&e.target.files[0];if(!f)return;var rd=new FileReader();rd.onload=function(){try{render(JSON.parse(rd.result));}catch(err){alert('Could not read: '+(err&&err.message||err));}};rd.readAsText(f);});
+  }
+  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init);else init();
+})();
+
+</script>
 </body>
 </html>
