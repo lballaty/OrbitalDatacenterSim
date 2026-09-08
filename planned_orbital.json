@@ -1,0 +1,177 @@
+{
+ "schema": "planned-orbital/1.0",
+ "generated": "2026-09-08",
+ "note": "Planned/announced orbital (space-based) AI datacenters. Compiled from public reporting via LLM web search. Every field carries a confidence tag. Refresh locally via scripts/research_planned.py. Lead list to verify, not authoritative.",
+ "confidence_legend": {
+  "known": "stated by the operator or an official/primary source",
+  "reported": "from press or analyst coverage",
+  "inferred": "our estimate from context; not directly sourced"
+ },
+ "records": [
+  {
+   "id": "google-suncatcher",
+   "operator": "Google (Project Suncatcher, with Planet Labs)",
+   "program": {
+    "value": "Project Suncatcher",
+    "confidence": "known",
+    "source": "https://www.datacenterdynamics.com/en/news/project-suncatcher-google-to-launch-tpus-into-orbit-with-planet-labs-envisions-1km-arrays-of-81-satellite-compute-clusters/",
+    "as_of": "2026-07"
+   },
+   "satellites_planned": {
+    "value": "2 prototypes first; illustrative 81-satellite, 1 km cluster",
+    "confidence": "reported",
+    "source": "https://www.datacenterdynamics.com/en/news/project-suncatcher-google-to-launch-tpus-into-orbit-with-planet-labs-envisions-1km-arrays-of-81-satellite-compute-clusters/",
+    "as_of": "2026-07"
+   },
+   "orbit": {
+    "value": "sun-synchronous LEO, ~650 km mean cluster altitude",
+    "confidence": "known",
+    "source": "https://www.datacenterdynamics.com/en/news/project-suncatcher-google-to-launch-tpus-into-orbit-with-planet-labs-envisions-1km-arrays-of-81-satellite-compute-clusters/",
+    "as_of": "2026-07"
+   },
+   "compute": {
+    "value": "Google Trillium-gen TPUs; radiation-tested",
+    "confidence": "known",
+    "source": "https://www.datacenterfrontier.com/site-selection/article/55328204/",
+    "as_of": "2025-11"
+   },
+   "interconnect": {
+    "value": "free-space optical (laser) inter-satellite links",
+    "confidence": "known",
+    "source": "https://www.datacenterfrontier.com/site-selection/article/55328204/",
+    "as_of": "2025-11"
+   },
+   "first_launch": {
+    "value": "two prototypes by early 2027",
+    "confidence": "known",
+    "source": "https://www.fierce-network.com/cloud/space-data-centers-starcloud-spacex-and-project-suncatcher-explained",
+    "as_of": "2026-03"
+   },
+   "full_deployment": {
+    "value": "small production ~2029, larger constellations early 2030s",
+    "confidence": "inferred",
+    "note": "analyst projection, not a Google commitment"
+   },
+   "purpose": {
+    "value": "AI compute (research moonshot)",
+    "confidence": "known",
+    "source": "https://www.datacenterfrontier.com/site-selection/article/55328204/",
+    "as_of": "2025-11"
+   },
+   "status": {
+    "value": "prototype phase; feasibility research",
+    "confidence": "reported",
+    "source": "https://www.datacenterfrontier.com/site-selection/article/55328204/",
+    "as_of": "2025-11"
+   }
+  },
+  {
+   "id": "starcloud",
+   "operator": "Starcloud (NVIDIA-aligned)",
+   "program": {
+    "value": "Starcloud-1 → 2 → 3 → 4",
+    "confidence": "known",
+    "source": "https://spacenews.com/starcloud-files-plans-for-88000-satellite-constellation/",
+    "as_of": "2026-03"
+   },
+   "satellites_planned": {
+    "value": "FCC filing for up to 88,000 satellites",
+    "confidence": "reported",
+    "source": "https://spacenews.com/starcloud-files-plans-for-88000-satellite-constellation/",
+    "as_of": "2026-03"
+   },
+   "orbit": {
+    "value": "range of LEO; Starcloud-2 into sun-synchronous",
+    "confidence": "known",
+    "source": "https://spacenews.com/starcloud-files-plans-for-88000-satellite-constellation/",
+    "as_of": "2026-03"
+   },
+   "compute": {
+    "value": "Starcloud-1: 60 kg, single NVIDIA H100 (launched Nov 2025); Starcloud-2: GPU cluster",
+    "confidence": "known",
+    "source": "https://spacenews.com/starcloud-files-plans-for-88000-satellite-constellation/",
+    "as_of": "2026-03"
+   },
+   "interconnect": {
+    "value": "optical downlink + third-party RF backhaul",
+    "confidence": "known",
+    "source": "https://www.fierce-network.com/cloud/space-data-centers-starcloud-spacex-and-project-suncatcher-explained",
+    "as_of": "2026-03"
+   },
+   "first_launch": {
+    "value": "Starcloud-1 launched Nov 2025; Starcloud-2 in 2027",
+    "confidence": "known",
+    "source": "https://spacenews.com/starcloud-files-plans-for-88000-satellite-constellation/",
+    "as_of": "2026-03"
+   },
+   "full_deployment": {
+    "value": "long-term 5 GW orbital DC (~4 km solar array) by ~2035",
+    "confidence": "reported",
+    "source": "https://www.scientificamerican.com/article/data-centers-in-space/",
+    "as_of": "2025-12"
+   },
+   "purpose": {
+    "value": "AI compute in orbit",
+    "confidence": "known",
+    "source": "https://spacenews.com/starcloud-files-plans-for-88000-satellite-constellation/",
+    "as_of": "2026-03"
+   },
+   "status": {
+    "value": "Starcloud-1 in orbit; Starcloud-2 in development",
+    "confidence": "reported",
+    "source": "https://interestingengineering.com/space/starcloud-orbital-ai-datacenter-satellites",
+    "as_of": "2026-03"
+   }
+  },
+  {
+   "id": "spacex-orbital-dc",
+   "operator": "SpaceX",
+   "program": {
+    "value": "orbital data centers (Starlink-derived)",
+    "confidence": "reported",
+    "source": "https://www.fierce-network.com/cloud/space-data-centers-starcloud-spacex-and-project-suncatcher-explained",
+    "as_of": "2026-03"
+   },
+   "satellites_planned": {
+    "value": "seeking approval for up to ~1 million satellites",
+    "confidence": "reported",
+    "source": "https://www.fierce-network.com/cloud/space-data-centers-starcloud-spacex-and-project-suncatcher-explained",
+    "as_of": "2026-03"
+   },
+   "orbit": {
+    "value": "sun-synchronous (for solar)",
+    "confidence": "known",
+    "source": "https://www.fierce-network.com/cloud/space-data-centers-starcloud-spacex-and-project-suncatcher-explained",
+    "as_of": "2026-03"
+   },
+   "compute": {
+    "value": "~100 kW compute per tonne (stated design target)",
+    "confidence": "reported",
+    "source": "https://www.fierce-network.com/cloud/space-data-centers-starcloud-spacex-and-project-suncatcher-explained",
+    "as_of": "2026-03"
+   },
+   "first_launch": {
+    "value": null,
+    "confidence": "inferred",
+    "note": "no committed date; Musk statement of intent only"
+   },
+   "full_deployment": {
+    "value": null,
+    "confidence": "inferred",
+    "note": "not disclosed"
+   },
+   "purpose": {
+    "value": "scaled-up next-gen Starlink hosting compute",
+    "confidence": "reported",
+    "source": "https://www.space.com/technology/data-centers-in-space-will-2027-really-be-the-year-ai-goes-to-orbit",
+    "as_of": "2025-12"
+   },
+   "status": {
+    "value": "stated intent; regulatory filing stage",
+    "confidence": "reported",
+    "source": "https://www.fierce-network.com/cloud/space-data-centers-starcloud-spacex-and-project-suncatcher-explained",
+    "as_of": "2026-03"
+   }
+  }
+ ]
+}
